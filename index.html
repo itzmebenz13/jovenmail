@@ -90,14 +90,14 @@
   .inbox-alias-tag{font-family:var(--mono);font-size:.55rem;color:var(--muted);background:#1a1a1a;border:1px solid var(--border);padding:1px 6px;border-radius:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   /* EMPTY STATE */
-  .inbox-empty{border:1px dashed #1e1e1e;border-radius:2px;padding:40px 24px;text-align:center}
+  .inbox-empty{border:1px dashed #1e1e1e;border-radius:2px;text-align:center;position:relative;height:160px}
   .inbox-empty p{font-family:var(--mono);font-size:.65rem;color:var(--muted);line-height:1.8;margin-top:10px}
   .empty-icon{font-size:2rem;margin-bottom:4px;filter:grayscale(1);opacity:.3}
 
   /* ── EMPTY STATE LOADER ── */
-  .empty-loader{display:none;flex-direction:column;align-items:center;gap:14px;padding:8px 0}
+  .empty-loader{display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;position:absolute;inset:0}
   .empty-loader.active{display:flex}
-  .empty-text{transition:opacity .5s}
+  .empty-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s}
   .empty-text.hidden{opacity:0;pointer-events:none}
 
   .loader-bars{display:flex;align-items:flex-end;gap:3px;height:28px}
