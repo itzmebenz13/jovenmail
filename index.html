@@ -296,8 +296,11 @@
   .modal-meta-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-dim); }
   .modal-meta-row strong { color: var(--text-main); font-weight: 600; width: 40px; }
   
-  .modal-body { padding: 0; color: var(--text-main); font-size: 0.9rem; overflow-y: auto; overflow-x: hidden; line-height: 1.6; }
-  .modal-body.is-plain { padding: 24px; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+  /* Restored default padding for all modals */
+  .modal-body { padding: 20px; color: var(--text-main); font-size: 0.9rem; overflow-y: auto; overflow-x: hidden; line-height: 1.6; }
+  .modal-body.is-plain { white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+  /* Created specific zero-padding class for HTML email iframes */
+  .modal-body.is-iframe { padding: 0; }
   .modal-body iframe { display: block; border-radius: 0 0 16px 16px; border: none; width: 100%; background: #fff;}
 
   /* -- LOGIN MODAL EXTRAS -- */
@@ -833,6 +836,7 @@
     
     if (isHtml) {
       bodyEl.classList.remove('is-plain');
+      bodyEl.classList.add('is-iframe'); // Trigger zero padding
       var iframe = document.createElement('iframe');
       // Allowed popups so external links work when clicked
       iframe.style.cssText = 'width:100%;border:none;min-height:400px;background:#ffffff;border-radius:0 0 16px 16px;display:block;';
@@ -848,7 +852,8 @@
       // Removed strict table sizing and padding so promotional emails can render natively
       iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;color:#000;background:#fff;}img{max-width:100%;height:auto;}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
     } else {
-      bodyEl.classList.add('is-plain');
+      bodyEl.classList.remove('is-iframe'); // Remove zero padding
+      bodyEl.classList.add('is-plain');     // Add monospace styling
       bodyEl.innerHTML = '';
       bodyEl.textContent = body;
     }
