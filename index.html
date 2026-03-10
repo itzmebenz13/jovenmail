@@ -103,7 +103,6 @@
     padding:13px 14px;cursor:pointer;transition:all .15s;
     display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;
     gap:3px 12px;align-items:start;position:relative;overflow:hidden;
-    animation:fadeIn .3s ease both;
     will-change:opacity;contain:layout style
   }
   .email-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:0;transition:opacity .15s}
@@ -142,7 +141,6 @@
   footer p{font-family:var(--mono);font-size:.58rem;color:var(--muted);line-height:2}
   footer a{color:var(--accent);text-decoration:none}
 
-  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   ::-webkit-scrollbar{width:4px}
   ::-webkit-scrollbar-track{background:#0a0a0a}
   ::-webkit-scrollbar-thumb{background:#333}
@@ -430,7 +428,7 @@
     if (!emails.length) { empty.style.display='block'; list.innerHTML=''; return; }
     empty.style.display = 'none';
     list.innerHTML = emails.map(function(e,i) {
-      return '<div class="email-item'+(e.unread?' unread':'')+'" onclick="openEmail('+i+')" style="animation-delay:'+(i*.04)+'s">'+
+      return '<div class="email-item'+(e.unread?' unread':'')+'" onclick="openEmail('+i+')">'+
         '<div class="email-sender">'+escHtml(e.sender)+'</div>'+
         '<div class="email-time">'+escHtml(e.time)+'</div>'+
         '<div class="email-subject">'+escHtml(e.subject)+'</div>'+
