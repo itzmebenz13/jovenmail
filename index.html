@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DotMail — Temporary Gmail Aliases</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0a0a0a; --surface: #111111; --border: #222222;
+    --accent: #b5ff4d; --accent2: #4dffb5; --text: #f0f0f0;
+    --muted: #666; --red: #ff4d4d;
+    --mono: 'Space Mono', monospace; --sans: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(181,255,77,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(181,255,77,0.03) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(181,255,77,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 24px; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 28px 0 24px; border-bottom: 1px solid var(--border); }
+  .logo { font-family: var(--mono); font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+  .logo span { color: var(--accent); }
+  .badge { font-family: var(--mono); font-size: 0.65rem; color: var(--accent); border: 1px solid var(--accent); padding: 3px 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .hero { padding: 64px 0 40px; text-align: center; }
+  .hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px; }
+  .hero h1 em { font-style: normal; color: var(--accent); position: relative; }
+  .hero h1 em::after { content: ''; position: absolute; bottom: 4px; left: 0; right: 0; height: 3px; background: var(--accent); opacity: 0.4; }
+  .hero p { color: var(--muted); font-size: 1rem; max-width: 480px; margin: 0 auto 40px; line-height: 1.7; font-family: var(--mono); }
+
+  /* ALIAS BOX */
+  .alias-box { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 28px 32px; margin-bottom: 16px; position: relative; overflow: hidden; }
+  .alias-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .alias-label { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px; }
+  .alias-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .alias-address { flex: 1; font-family: var(--mono); font-size: 1.05rem; color: var(--accent); background: #0d0d0d; border: 1px solid #2a2a2a; padding: 14px 18px; border-radius: 2px; word-break: break-all; min-width: 0; cursor: text; user-select: all; transition: border-color 0.2s; }
+  .alias-address:hover { border-color: var(--accent); }
+  .alias-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .countdown { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin-top: 12px; display: flex; align-items: center; gap: 6px; }
+  .dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+
+  /* RECOVER BOX */
+  .recover-box { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 20px 32px; margin-bottom: 32px; position: relative; overflow: hidden; }
+  .recover-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #4d9bff, var(--accent2)); }
+  .recover-label { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; }
+  .recover-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .recover-input { flex: 1; font-family: var(--mono); font-size: 0.9rem; color: var(--text); background: #0d0d0d; border: 1px solid #2a2a2a; padding: 12px 16px; border-radius: 2px; outline: none; transition: border-color 0.2s; min-width: 0; }
+  .recover-input::placeholder { color: var(--muted); }
+  .recover-input:focus { border-color: #4d9bff; }
+
+  /* BUTTONS */
+  .btn { font-family: var(--mono); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 14px 20px; border: none; border-radius: 2px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-accent { background: var(--accent); color: #0a0a0a; }
+  .btn-accent:hover { background: #c8ff66; transform: translateY(-1px); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-blue { background: transparent; color: #4d9bff; border: 1px solid #4d9bff; padding: 12px 18px; }
+  .btn-blue:hover { background: #4d9bff; color: #0a0a0a; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid #1e1e1e; font-size: 0.65rem; }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border); }
+
+  /* INBOX */
+  .inbox-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .inbox-title { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+  .inbox-count { background: var(--accent); color: #0a0a0a; font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 20px; }
+  .inbox-alias-tag { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); background: #1a1a1a; border: 1px solid var(--border); padding: 2px 8px; border-radius: 2px; }
+  .inbox-empty { border: 1px dashed #222; border-radius: 2px; padding: 64px 32px; text-align: center; }
+  .inbox-empty .icon { font-size: 2.5rem; margin-bottom: 16px; filter: grayscale(1); opacity: 0.3; }
+  .inbox-empty p { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); line-height: 1.8; }
+  .scan-line { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); margin: 24px 0; animation: scan 2.5s ease-in-out infinite; opacity: 0.4; }
+  @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+  /* EMAIL LIST */
+  .email-list { display: flex; flex-direction: column; gap: 8px; }
+  .email-item { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 18px 20px; cursor: pointer; transition: all 0.15s; display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: start; position: relative; overflow: hidden; animation: fadeIn 0.3s ease both; }
+  .email-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); opacity: 0; transition: opacity 0.15s; }
+  .email-item:hover { border-color: #333; background: #161616; }
+  .email-item:hover::before { opacity: 1; }
+  .email-item.unread .email-sender::before { content: '\25CF  '; color: var(--accent); font-size: 0.5rem; vertical-align: middle; }
+  .email-sender { font-weight: 700; font-size: 0.85rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .email-subject { font-size: 0.82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; grid-column: 1; font-family: var(--mono); }
+  .email-time { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); text-align: right; grid-row: 1; grid-column: 2; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 24px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; width: 100%; max-width: 640px; max-height: 80vh; overflow-y: auto; position: relative; animation: slideUp 0.2s ease; }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal::before { content: ''; position: sticky; top: 0; display: block; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .modal-head { padding: 24px 28px 16px; border-bottom: 1px solid var(--border); position: sticky; top: 2px; background: var(--surface); z-index: 2; }
+  .modal-close { position: absolute; top: 20px; right: 24px; background: none; border: 1px solid var(--border); color: var(--muted); font-size: 1rem; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 2px; transition: all 0.15s; font-family: var(--mono); }
+  .modal-close:hover { border-color: var(--red); color: var(--red); }
+  .modal-subject { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; padding-right: 40px; line-height: 1.3; }
+  .modal-meta { display: flex; flex-direction: column; gap: 4px; }
+  .modal-meta span { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+  .modal-meta span strong { color: #aaa; font-weight: 400; }
+  .modal-body { padding: 24px 28px 32px; font-family: var(--mono); font-size: 0.8rem; line-height: 1.8; color: #ccc; white-space: pre-wrap; word-break: break-word; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--accent); color: #0a0a0a; font-family: var(--mono); font-size: 0.72rem; font-weight: 700; padding: 10px 20px; border-radius: 2px; z-index: 999; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  footer { text-align: center; padding: 40px 0 32px; border-top: 1px solid var(--border); margin-top: 60px; }
+  footer p { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); line-height: 2; }
+  footer a { color: var(--accent); text-decoration: none; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 0; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  @media (max-width: 560px) { .alias-row { flex-direction: column; } .alias-row .alias-address { width: 100%; } .hero { padding: 40px 0 28px; } .recover-row { flex-direction: column; } .recover-row .recover-input { width: 100%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">dot<span>.</span>mail</div>
+    <div class="badge">Beta</div>
+  </header>
+  <section class="hero">
+    <h1>One Gmail,<br/><em>Infinite</em> Aliases</h1>
+    <p>Gmail ignores dots in addresses. Use any dot-variant — all emails land in one inbox, shown here instantly.</p>
+  </section>
+
+  <!-- ALIAS BOX -->
+  <div class="alias-box">
+    <div class="alias-label">// Your temporary address</div>
+    <div class="alias-row">
+      <div class="alias-address" id="aliasDisplay" title="Click to select">generating...</div>
+      <button class="btn btn-accent" onclick="copyAlias()">Copy</button>
+      <button class="btn btn-outline" onclick="newAlias()">New</button>
+    </div>
+    <div class="alias-actions">
+      <button class="btn btn-ghost" onclick="refreshInbox(false)">&#8635; Refresh</button>
+    </div>
+    <div class="countdown">
+      <div class="dot-live"></div>
+      <span id="countdownText">Checking for new mail...</span>
+    </div>
+  </div>
+
+  <!-- RECOVER BOX -->
+  <div class="recover-box">
+    <div class="recover-label">// Recover a previous alias</div>
+    <div class="recover-row">
+      <input class="recover-input" id="recoverInput" type="text"
+        placeholder="e.g. j.en.ze.nadwann@gmail.com"
+        onkeydown="if(event.key==='Enter') recoverAlias()" />
+      <button class="btn btn-blue" onclick="recoverAlias()">Recover</button>
+    </div>
+  </div>
+
+  <!-- INBOX -->
+  <div class="inbox-header">
+    <div class="inbox-title">
+      Inbox
+      <span class="inbox-count" id="emailCount">0</span>
+      <span class="inbox-alias-tag" id="inboxAliasTag"></span>
+    </div>
+    <button class="btn btn-ghost" onclick="clearInbox()">Clear all</button>
+  </div>
+  <div id="inboxArea">
+    <div class="inbox-empty" id="emptyState">
+      <div class="icon">&#128587;</div>
+      <div class="scan-line"></div>
+      <p>No emails yet.<br/>Share your alias above and<br/>watch messages appear here.</p>
+    </div>
+    <div class="email-list" id="emailList"></div>
+  </div>
+
+  <footer>
+    <p>All dot-variants of your Gmail address deliver here.<br/>
+    <a href="#">How it works</a> &middot; <a href="#">Privacy</a> &middot; <a href="#">GitHub</a></p>
+  </footer>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+      <div class="modal-subject" id="modalSubject"></div>
+      <div class="modal-meta">
+        <span><strong>From:</strong> <span id="modalFrom"></span></span>
+        <span><strong>To:</strong> <span id="modalTo"></span></span>
+        <span><strong>Date:</strong> <span id="modalDate"></span></span>
+      </div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var BASE         = 'jenzenadwann';
+  var DOMAIN       = 'gmail.com';
+  var STORAGE_KEY  = 'dotmail_alias';
+  var SUPABASE_URL  = 'https://rjecgkfrwitvcrpodriw.supabase.co';
+  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqZWNna2Zyd2l0dmNycG9kcml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzg3OTgsImV4cCI6MjA4ODcxNDc5OH0.a26LLka39iM_9cFf2vdXY3ljd4rkw0PS2C2ERm74OyE';
+
+  var currentAlias = '';
+  var emails       = [];
+  var refreshTimer = null;
+  var countdownVal = 30;
+
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // ── ALIAS GENERATION ──
+  function generateDotVariants(username) {
+    var letters = username.split('');
+    var n       = letters.length;
+    var total   = Math.pow(2, n - 1);
+    var picks   = new Set();
+    while (picks.size < Math.min(80, total)) {
+      picks.add(Math.floor(Math.random() * total));
+    }
+    var variants = [];
+    picks.forEach(function(mask) {
+      var result = letters[0];
+      for (var i = 1; i < n; i++) {
+        if (mask & (1 << (i - 1))) result += '.';
+        result += letters[i];
+      }
+      variants.push(result);
+    });
+    return variants;
+  }
+
+  // Called only when user clicks "New" button
+  function newAlias() {
+    var variants = generateDotVariants(BASE);
+    var chosen   = variants[Math.floor(Math.random() * variants.length)];
+    setAlias(chosen + '@' + DOMAIN);
+    showToast('New alias generated');
+  }
+
+  // Sets alias, saves to localStorage, subscribes, refreshes
+  function setAlias(alias) {
+    currentAlias = alias;
+    document.getElementById('aliasDisplay').textContent = alias;
+    document.getElementById('inboxAliasTag').textContent = alias;
+    localStorage.setItem(STORAGE_KEY, alias);
+    startCountdown();
+    subscribeToAlias(alias);
+    refreshInbox(true);
+  }
+
+  // ── RECOVER ALIAS ──
+  function recoverAlias() {
+    var input = document.getElementById('recoverInput').value.trim().toLowerCase();
+    if (!input) { showToast('Enter an alias to recover'); return; }
+
+    // Basic validation — must contain @ and match our domain
+    if (!input.includes('@')) {
+      input = input + '@' + DOMAIN;
+    }
+
+    // Normalize to check it's a dot-variant of our base
+    var userPart = input.split('@')[0].replace(/\./g, '');
+    if (userPart !== BASE) {
+      showToast('That alias is not from this Gmail');
+      return;
+    }
+
+    document.getElementById('recoverInput').value = '';
+    setAlias(input);
+    showToast('Recovering inbox for ' + input);
+  }
+
+  // ── COPY ──
+  function copyAlias() {
+    var text = document.getElementById('aliasDisplay').textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      showToast('Copied to clipboard!');
+    });
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2200);
+  }
+
+  // ── COUNTDOWN ──
+  function startCountdown() {
+    clearInterval(refreshTimer);
+    countdownVal = 30;
+    updateCountdownText();
+    refreshTimer = setInterval(function() {
+      countdownVal--;
+      if (countdownVal <= 0) {
+        countdownVal = 30;
+        refreshInbox(true);
+      }
+      updateCountdownText();
+    }, 1000);
+  }
+
+  function updateCountdownText() {
+    document.getElementById('countdownText').textContent = 'Auto-refresh in ' + countdownVal + 's';
+  }
+
+  // ── FETCH EMAILS ──
+  async function refreshInbox(auto) {
+    if (!auto) showToast('Refreshed');
+    countdownVal = 30;
+    updateCountdownText();
+    var alias = document.getElementById('aliasDisplay').textContent.trim();
+    if (!alias || alias === 'generating...') return;
+    var result = await sb
+      .from('emails')
+      .select('*')
+      .eq('alias', alias)
+      .order('received_at', { ascending: false })
+      .limit(50);
+    if (result.error) {
+      console.error('Supabase error:', result.error);
+      showToast('Could not load emails');
+      return;
+    }
+    emails = (result.data || []).map(function(e) {
+      return {
+        id:          e.id,
+        sender:      e.sender || e.sender_email || 'Unknown',
+        senderEmail: e.sender_email || '',
+        subject:     e.subject || '(no subject)',
+        time:        new Date(e.received_at).toLocaleTimeString(),
+        body:        e.body || '',
+        unread:      true
+      };
+    });
+    renderEmails();
+  }
+
+  // ── REALTIME ──
+  function subscribeToAlias(alias) {
+    sb.removeAllChannels();
+    sb.channel('inbox-' + alias)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'emails',
+        filter: 'alias=eq.' + alias
+      }, function(payload) {
+        var e = payload.new;
+        emails.unshift({
+          id:          e.id,
+          sender:      e.sender || e.sender_email || 'Unknown',
+          senderEmail: e.sender_email || '',
+          subject:     e.subject || '(no subject)',
+          time:        new Date(e.received_at).toLocaleTimeString(),
+          body:        e.body || '',
+          unread:      true
+        });
+        renderEmails();
+        showToast('New email received!');
+      })
+      .subscribe();
+  }
+
+  // ── RENDER ──
+  function renderEmails() {
+    var list  = document.getElementById('emailList');
+    var empty = document.getElementById('emptyState');
+    var count = document.getElementById('emailCount');
+    count.textContent = emails.length;
+    if (emails.length === 0) {
+      empty.style.display = 'block';
+      list.innerHTML = '';
+      return;
+    }
+    empty.style.display = 'none';
+    list.innerHTML = emails.map(function(e, i) {
+      return '<div class="email-item ' + (e.unread ? 'unread' : '') + '" onclick="openEmail(' + i + ')" style="animation-delay:' + (i * 0.05) + 's">' +
+        '<div class="email-sender">' + escHtml(e.sender) + '</div>' +
+        '<div class="email-time">' + escHtml(e.time) + '</div>' +
+        '<div class="email-subject">' + escHtml(e.subject) + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function clearInbox() {
+    emails = [];
+    renderEmails();
+    showToast('Inbox cleared');
+  }
+
+  // ── MODAL ──
+  function openEmail(index) {
+    var e = emails[index];
+    emails[index].unread = false;
+    renderEmails();
+    document.getElementById('modalSubject').textContent = e.subject;
+    document.getElementById('modalFrom').textContent    = e.sender + ' <' + e.senderEmail + '>';
+    document.getElementById('modalTo').textContent      = currentAlias;
+    document.getElementById('modalDate').textContent    = e.time;
+    document.getElementById('modalBody').textContent    = e.body;
+    document.getElementById('modalOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // ── UTILS ──
+  function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── INIT — restore saved alias or generate new one ──
+  window.addEventListener('DOMContentLoaded', function() {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      setAlias(saved);
+    } else {
+      newAlias();
+    }
+  });
+</script>
+</body>
+</html>
