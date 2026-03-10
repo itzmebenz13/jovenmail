@@ -171,7 +171,14 @@
   .modal-meta{display:flex;flex-direction:column;gap:3px}
   .modal-meta span{font-family:var(--mono);font-size:.62rem;color:var(--muted)}
   .modal-meta span strong{color:#aaa;font-weight:400}
-  .modal-body{padding:18px 20px 28px;font-family:var(--mono);font-size:.72rem;line-height:1.8;color:#ccc;white-space:pre-wrap;word-break:break-word}
+  .modal-body{padding:18px 20px 28px;line-height:1.6;color:#ccc;word-break:break-word;font-size:.78rem}
+  .modal-body.is-html{font-family:sans-serif}
+  .modal-body.is-plain{font-family:var(--mono);font-size:.72rem;white-space:pre-wrap}
+  /* Scope HTML email styles safely */
+  .modal-body.is-html a{color:var(--accent)}
+  .modal-body.is-html img{max-width:100%;height:auto;display:block}
+  .modal-body.is-html table{width:100%!important;max-width:100%!important}
+  .modal-body iframe{display:block}
 
   /* TOAST */
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--accent);color:#0a0a0a;font-family:var(--mono);font-size:.65rem;font-weight:700;padding:9px 18px;border-radius:2px;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap}
@@ -497,7 +504,28 @@
     document.getElementById('modalFrom').textContent    = e.sender + ' <' + e.senderEmail + '>';
     document.getElementById('modalTo').textContent      = currentAlias;
     document.getElementById('modalDate').textContent    = e.time;
-    document.getElementById('modalBody').textContent    = e.body;
+    var bodyEl = document.getElementById('modalBody');
+    var body = e.body || '';
+    var isHtml = /<[a-z][\s\S]*>/i.test(body);
+    if (isHtml) {
+      bodyEl.classList.remove('is-plain');
+      bodyEl.classList.add('is-html');
+      // Render in sandboxed iframe to isolate styles
+      var iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:100%;border:none;min-height:200px;background:#fff;border-radius:2px;display:block';
+      iframe.setAttribute('sandbox', 'allow-same-origin');
+      bodyEl.innerHTML = '';
+      bodyEl.appendChild(iframe);
+      iframe.addEventListener('load', function() {
+        iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+      });
+      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:12px;font-family:sans-serif;font-size:13px;line-height:1.6;color:#222}img{max-width:100%;height:auto}a{color:#0066cc}table{max-width:100%!important}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
+    } else {
+      bodyEl.classList.remove('is-html');
+      bodyEl.classList.add('is-plain');
+      bodyEl.innerHTML = '';
+      bodyEl.textContent = body;
+    }
     document.getElementById('modalOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
