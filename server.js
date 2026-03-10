@@ -20,7 +20,7 @@ app.get('/auth/callback', async (req, res) => {
   res.send('Gmail connected! You can close this tab.');
 });
 
-cron.schedule('*/30 * * * * *', async () => {
+cron.schedule('*/5 * * * * *', async () => {
   try {
     const emails = await fetchEmails(20);
     if (!emails.length) return;
