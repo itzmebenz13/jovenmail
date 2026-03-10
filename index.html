@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>DotMail — Temporary Gmail Aliases</title>
+<title>joven.mail — Temporary Gmail Aliases</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -82,6 +82,9 @@
   .btn-blue:hover,.btn-blue:active{background:#4d9bff;color:#0a0a0a}
   .btn-ghost{background:transparent;color:var(--muted);border:1px solid #1e1e1e;font-size:.6rem;padding:8px 12px}
   .btn-ghost:hover,.btn-ghost:active{color:var(--text);border-color:var(--border)}
+  .btn-icon{display:inline-flex;align-items:center;gap:6px}
+  .btn-icon svg{flex-shrink:0;transition:transform .4s ease}
+  .btn-icon:hover svg,.btn-icon:active svg{transform:rotate(-180deg)}
 
   /* INBOX HEADER */
   .inbox-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -197,7 +200,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="logo">dot<span>.</span>mail</div>
+    <div class="logo">joven<span>.</span>mail</div>
     <div class="badge">Beta</div>
   </header>
 
@@ -216,7 +219,10 @@
     </div>
     <div class="alias-footer">
       <div class="alias-actions">
-        <button class="btn btn-ghost" onclick="refreshInbox(false)">&#8635; Refresh</button>
+        <button class="btn btn-ghost btn-icon" onclick="refreshInbox(false)" title="Refresh">
+          <svg id="refreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
       </div>
       <div class="countdown">
         <div class="dot-live"></div>
