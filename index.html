@@ -105,6 +105,14 @@
     background: var(--bg-hover); color: var(--text-dim); border: 1px solid var(--border);
   }
   
+  /* Header Navigation & Actions */
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .header-nav { display: flex; align-items: center; gap: 16px; }
+  .nav-link { display: flex; align-items: center; gap: 6px; color: var(--text-dim); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+  .nav-link:hover { color: var(--text-main); }
+  .header-divider { width: 1px; height: 16px; background: var(--border-strong); }
+  .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
   /* Theme Toggle Animation */
   .theme-switch {
     background: transparent; border: 1px solid var(--border); color: var(--text-dim); 
@@ -281,6 +289,14 @@
   .modal-body.is-plain { white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
   .modal-body iframe { display: block; border-radius: 8px; border: 1px solid var(--border); width: 100%; background: #fff;}
 
+  /* -- LOGIN MODAL EXTRAS -- */
+  .modal-sm { max-width: 360px; }
+  .login-subtitle { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5; }
+  .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+  .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+  .w-full { width: 100%; }
+  .mt-4 { margin-top: 16px; }
+
   /* -- TOAST -- */
   .toast { 
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
@@ -310,6 +326,8 @@
 
   /* -- MOBILE ADAPTATION -- */
   @media(max-width: 480px) {
+    .header-nav { display: none; }
+    .header-divider { display: none; }
     .actions-grid { grid-template-columns: 1fr; }
     .btn-pill { width: 100%; }
     .actions-secondary { display: grid; grid-template-columns: 1fr auto; }
@@ -326,10 +344,20 @@
       <div class="logo">joven.mail</div>
       <div class="badge">Beta</div>
     </div>
-    <button class="theme-switch" onclick="toggleTheme()" aria-label="Toggle Theme">
-      <i data-lucide="sun" class="icon-sun" width="16" height="16"></i>
-      <i data-lucide="moon" class="icon-moon" width="16" height="16"></i>
-    </button>
+    <div class="header-actions">
+      <nav class="header-nav">
+        <a href="#" class="nav-link" onclick="showToast('API is not yet available'); return false;"><i data-lucide="book-open" width="14" height="14"></i> API</a>
+        <a href="#" class="nav-link" onclick="openPrivacyModal(); return false;"><i data-lucide="shield-check" width="14" height="14"></i> Privacy</a>
+      </nav>
+      <div class="header-divider"></div>
+      <button class="btn-pill btn-outline btn-sm" onclick="openLoginModal()">
+        <i data-lucide="log-in" width="14" height="14"></i> Login
+      </button>
+      <button class="theme-switch" onclick="toggleTheme()" aria-label="Toggle Theme">
+        <i data-lucide="sun" class="icon-sun" width="16" height="16"></i>
+        <i data-lucide="moon" class="icon-moon" width="16" height="16"></i>
+      </button>
+    </div>
   </header>
 
   <main>
@@ -346,7 +374,7 @@
         </div>
         <div class="sync-status">
           <div class="sync-dot"></div>
-          <span id="countdownText">30s</span>
+          <span style="font-family: 'Inter', sans-serif;">Live sync</span>
         </div>
       </div>
       
@@ -403,7 +431,7 @@
 
   <footer>
     <p>Powered by native Gmail routing architecture.</p>
-    <p><a href="#">Terms</a> &nbsp;&middot;&nbsp; <a href="#">Privacy</a> &nbsp;&middot;&nbsp; <a href="#">GitHub</a></p>
+    <p><a href="#" onclick="openTermsModal(); return false;">Terms</a> &nbsp;&middot;&nbsp; <a href="#" onclick="openPrivacyModal(); return false;">Privacy</a> &nbsp;&middot;&nbsp; <a href="#">GitHub</a></p>
   </footer>
 </div>
 
@@ -428,6 +456,68 @@
       </div>
     </div>
     <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModalOverlay" onclick="closeLoginOutside(event)">
+  <div class="modal modal-sm" id="loginModal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeLoginModal()">
+        <i data-lucide="x" width="16" height="16"></i>
+      </button>
+      <div class="modal-subject" style="margin-bottom: 0;">Admin Login</div>
+    </div>
+    <div class="modal-body">
+      <p class="login-subtitle">Access is restricted to authorized administrators only. Registration is disabled.</p>
+      <div class="form-group">
+        <label><i data-lucide="user" width="12" height="12"></i> Username</label>
+        <input class="input-minimal w-full" id="loginUser" type="text" placeholder="admin" onkeydown="if(event.key==='Enter')handleLogin()"/>
+      </div>
+      <div class="form-group">
+        <label><i data-lucide="key" width="12" height="12"></i> Password</label>
+        <input class="input-minimal w-full" id="loginPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()"/>
+      </div>
+      <button class="btn-pill btn-primary w-full mt-4" onclick="handleLogin()">
+        <i data-lucide="unlock" width="16" height="16"></i> Authenticate
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY MODAL -->
+<div class="modal-overlay" id="privacyModalOverlay" onclick="closePrivacyOutside(event)">
+  <div class="modal" id="privacyModal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closePrivacyModal()">
+        <i data-lucide="x" width="16" height="16"></i>
+      </button>
+      <div class="modal-subject" style="margin-bottom: 0;">Privacy Policy</div>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 16px;"><strong>1. Absolute Anonymity</strong><br/>We do not log, store, or analyze the contents of your emails. The system acts solely as a real-time routing layer.</p>
+      <p style="margin-bottom: 16px;"><strong>2. No Database Persistence</strong><br/>Emails displayed in this dashboard are fetched directly through the secure realtime layer and are automatically cleared from the ephemeral cache. Once you close the session, the local view is permanently gone.</p>
+      <p style="margin-bottom: 16px;"><strong>3. Native Gmail Infrastructure</strong><br/>By leveraging Gmail's native dot-blindness feature, we ensure all routing relies entirely on Google's enterprise-grade infrastructure. Your actual Gmail address remains completely hidden from the sender.</p>
+      <p><strong>4. Third-Party Services</strong><br/>We use Supabase for realtime state synchronization. No personally identifiable information (PII) beyond the temporary dot-variant is transmitted.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TERMS MODAL -->
+<div class="modal-overlay" id="termsModalOverlay" onclick="closeTermsOutside(event)">
+  <div class="modal" id="termsModal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeTermsModal()">
+        <i data-lucide="x" width="16" height="16"></i>
+      </button>
+      <div class="modal-subject" style="margin-bottom: 0;">Terms of Service</div>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 16px;"><strong>1. Acceptance of Terms</strong><br/>By using joven.mail, you agree to these ephemeral routing terms. The service is provided "as is" without any warranties.</p>
+      <p style="margin-bottom: 16px;"><strong>2. Acceptable Use</strong><br/>You agree not to use this service for sending spam, phishing, or engaging in any illegal activities. The routing is strictly for personal privacy and inbox management.</p>
+      <p style="margin-bottom: 16px;"><strong>3. Ephemeral Nature</strong><br/>You acknowledge that aliases and routed emails are temporary. We hold no liability for missed, dropped, delayed, or unrouted emails.</p>
+      <p><strong>4. Termination</strong><br/>We reserve the right to restrict or terminate routing access to any specific alias or user without prior notice if abuse or excessive load is detected.</p>
+    </div>
   </div>
 </div>
 
@@ -467,7 +557,6 @@
   var currentAlias = '';
   var emails       = [];
   var refreshTimer = null;
-  var countdownVal = 30;
   var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
   /* ── ALIAS GENERATION ── */
@@ -574,19 +663,13 @@
     toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3000);
   }
 
-  /* ── COUNTDOWN ── */
+  /* ── COUNTDOWN & SYNC ── */
   function startCountdown() {
     clearInterval(refreshTimer);
-    countdownVal = 30; updateCountdownText();
+    // Refresh quietly in the background every 3 seconds
     refreshTimer = setInterval(function() {
-      countdownVal--;
-      if (countdownVal <= 0) { countdownVal = 30; refreshInbox(true); }
-      updateCountdownText();
-    }, 1000);
-  }
-
-  function updateCountdownText() {
-    document.getElementById('countdownText').textContent = countdownVal + 's';
+      refreshInbox(true);
+    }, 3000);
   }
 
   /* ── FETCH ── */
@@ -595,7 +678,6 @@
       showToast('Syncing...');
       showLoadingUI();
     }
-    countdownVal = 30; updateCountdownText();
     var alias = document.getElementById('aliasDisplay').textContent.trim();
     if (!alias || alias === 'Generating...') return;
     
@@ -715,7 +797,79 @@
   }
 
   function closeModalOutside(e) { if (e.target===document.getElementById('modalOverlay')) closeModal(); }
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+  document.addEventListener('keydown', function(e){ 
+    if(e.key==='Escape') {
+      closeModal();
+      if(typeof closeLoginModal === 'function') closeLoginModal();
+      if(typeof closePrivacyModal === 'function') closePrivacyModal();
+      if(typeof closeTermsModal === 'function') closeTermsModal();
+    }
+  });
+
+  /* ── LOGIN MODAL LOGIC ── */
+  function openLoginModal() {
+    const overlay = document.getElementById('loginModalOverlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => { 
+      overlay.classList.add('open'); 
+      document.getElementById('loginUser').focus(); 
+    }, 10);
+  }
+
+  function closeLoginModal() {
+    const overlay = document.getElementById('loginModalOverlay');
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.style.display = 'none'; }, 200);
+  }
+
+  function closeLoginOutside(e) { 
+    if (e.target === document.getElementById('loginModalOverlay')) closeLoginModal(); 
+  }
+
+  function handleLogin() {
+    const user = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+    if (!user || !pass) {
+      showToast('Please enter credentials');
+      return;
+    }
+    // Dummy validation logic
+    showToast('Authentication failed: Invalid credentials');
+  }
+
+  /* ── PRIVACY MODAL LOGIC ── */
+  function openPrivacyModal() {
+    const overlay = document.getElementById('privacyModalOverlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => { overlay.classList.add('open'); }, 10);
+  }
+
+  function closePrivacyModal() {
+    const overlay = document.getElementById('privacyModalOverlay');
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.style.display = 'none'; }, 200);
+  }
+
+  function closePrivacyOutside(e) { 
+    if (e.target === document.getElementById('privacyModalOverlay')) closePrivacyModal(); 
+  }
+
+  /* ── TERMS MODAL LOGIC ── */
+  function openTermsModal() {
+    const overlay = document.getElementById('termsModalOverlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => { overlay.classList.add('open'); }, 10);
+  }
+
+  function closeTermsModal() {
+    const overlay = document.getElementById('termsModalOverlay');
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.style.display = 'none'; }, 200);
+  }
+
+  function closeTermsOutside(e) { 
+    if (e.target === document.getElementById('termsModalOverlay')) closeTermsModal(); 
+  }
 
   /* ── UTILS ── */
   function escHtml(s) {
