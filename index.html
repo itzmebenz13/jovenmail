@@ -92,9 +92,7 @@
   /* EMPTY STATE */
   .inbox-empty{border:1px dashed #1e1e1e;border-radius:2px;padding:40px 24px;text-align:center}
   .inbox-empty .icon{font-size:2rem;margin-bottom:12px;filter:grayscale(1);opacity:.3}
-  .inbox-empty p{font-family:var(--mono);font-size:.65rem;color:var(--muted);line-height:1.8}
-  .scan-line{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:16px 0;animation:scan 2.5s ease-in-out infinite;opacity:.4}
-  @keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+  .inbox-empty p{font-family:var(--mono);font-size:.65rem;color:var(--muted);line-height:1.8}100%{transform:translateX(100%)}}
 
   /* EMAIL LIST */
   .email-list{display:flex;flex-direction:column;gap:6px}
@@ -212,7 +210,6 @@
   <div>
     <div class="inbox-empty" id="emptyState">
       <div class="icon">&#128587;</div>
-      <div class="scan-line"></div>
       <p>No emails yet.<br/>Share your alias and<br/>watch messages appear.</p>
     </div>
     <div class="email-list" id="emailList"></div>
