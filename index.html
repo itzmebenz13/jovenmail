@@ -91,8 +91,47 @@
 
   /* EMPTY STATE */
   .inbox-empty{border:1px dashed #1e1e1e;border-radius:2px;padding:40px 24px;text-align:center}
-  .inbox-empty .icon{font-size:2rem;margin-bottom:12px;filter:grayscale(1);opacity:.3}
-  .inbox-empty p{font-family:var(--mono);font-size:.65rem;color:var(--muted);line-height:1.8}100%{transform:translateX(100%)}}
+  .inbox-empty p{font-family:var(--mono);font-size:.65rem;color:var(--muted);line-height:1.8;margin-top:10px}
+  .empty-icon{font-size:2rem;margin-bottom:4px;filter:grayscale(1);opacity:.3}
+
+  /* ── EMPTY STATE LOADER ── */
+  .empty-loader{display:none;flex-direction:column;align-items:center;gap:14px;padding:8px 0}
+  .empty-loader.active{display:flex}
+  .empty-text{transition:opacity .5s}
+  .empty-text.hidden{opacity:0;pointer-events:none}
+
+  .loader-bars{display:flex;align-items:flex-end;gap:3px;height:28px}
+  .loader-bars span{
+    display:block;width:3px;background:var(--accent);border-radius:2px;
+    opacity:.15;transform-origin:bottom;
+  }
+  .loader-bars.animating span{animation:barUp 1.2s ease-in-out infinite}
+  .loader-bars span:nth-child(1){animation-delay:0s!important}
+  .loader-bars span:nth-child(2){animation-delay:.1s!important}
+  .loader-bars span:nth-child(3){animation-delay:.2s!important}
+  .loader-bars span:nth-child(4){animation-delay:.3s!important}
+  .loader-bars span:nth-child(5){animation-delay:.4s!important}
+  .loader-bars span:nth-child(6){animation-delay:.3s!important}
+  .loader-bars span:nth-child(7){animation-delay:.2s!important}
+  .loader-bars span:nth-child(8){animation-delay:.1s!important}
+  .loader-bars span:nth-child(9){animation-delay:.05s!important}
+  .loader-bars span:nth-child(10){animation-delay:0s!important}
+  @keyframes barUp{
+    0%,100%{height:4px;opacity:.15}
+    50%{height:28px;opacity:1}
+  }
+  .loader-label{
+    font-family:var(--mono);font-size:.6rem;color:var(--accent);
+    letter-spacing:.18em;text-transform:uppercase;
+    overflow:hidden;white-space:nowrap;
+    border-right:1px solid var(--accent);
+    width:0;
+  }
+  .loader-label.typing{animation:typeIn 1s steps(16,end) forwards, blink .6s step-end infinite .9s}
+  .loader-label.untyping{animation:typeOut .5s steps(16,end) forwards}
+  @keyframes typeIn{from{width:0}to{width:120px}}
+  @keyframes typeOut{from{width:120px}to{width:0}}
+  @keyframes blink{0%,100%{border-color:var(--accent)}50%{border-color:transparent}}100%{transform:translateX(100%)}}
 
   /* EMAIL LIST */
   .email-list{display:flex;flex-direction:column;gap:6px}
@@ -169,7 +208,7 @@
 
   <!-- ALIAS CARD -->
   <div class="card card-alias">
-    <div class="card-label">// Your temporary address</div>
+    <div class="card-label">Your temporary address</div>
     <div class="alias-row">
       <div class="alias-address" id="aliasDisplay" title="Click to select">generating...</div>
       <button class="btn btn-accent" onclick="copyAlias()">Copy</button>
@@ -188,7 +227,7 @@
 
   <!-- RECOVER CARD -->
   <div class="card card-recover">
-    <div class="card-label">// Recover a previous alias</div>
+    <div class="card-label">Recover a previous alias</div>
     <div class="recover-row">
       <input class="recover-input" id="recoverInput" type="email"
         placeholder="j.en.ze.nadwann@gmail.com"
@@ -209,8 +248,17 @@
 
   <div>
     <div class="inbox-empty" id="emptyState">
-      <div class="icon">&#128587;</div>
-      <p>No emails yet.<br/>Share your alias and<br/>watch messages appear.</p>
+      <div class="empty-loader" id="emptyLoader">
+        <div class="loader-bars">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="loader-label" id="loaderLabel">Waiting for mail</div>
+      </div>
+      <div class="empty-text" id="emptyText">
+        <div class="empty-icon">&#128587;</div>
+        <p>No emails yet.<br/>Share your alias and<br/>watch messages appear.</p>
+      </div>
     </div>
     <div class="email-list" id="emailList"></div>
   </div>
@@ -422,8 +470,9 @@
     var list  = document.getElementById('emailList');
     var empty = document.getElementById('emptyState');
     document.getElementById('emailCount').textContent = emails.length;
-    if (!emails.length) { empty.style.display='block'; list.innerHTML=''; return; }
+    if (!emails.length) { empty.style.display='block'; list.innerHTML=''; startLoader(); return; }
     empty.style.display = 'none';
+    stopLoader();
     list.innerHTML = emails.map(function(e,i) {
       return '<div class="email-item'+(e.unread?' unread':'')+'" onclick="openEmail('+i+')">'+
         '<div class="email-sender">'+escHtml(e.sender)+'</div>'+
@@ -461,10 +510,87 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  /* ── EMPTY STATE LOADER ── */
+  var loaderTimer = null;
+  var loaderPhase = 'text'; // 'text' | 'loading'
+
+  function runLoaderCycle() {
+    // Phase: show loading for 3s, then text for 5s, repeat
+    showLoading();
+    loaderTimer = setInterval(function() {
+      if (loaderPhase === 'loading') {
+        showText();
+      } else {
+        showLoading();
+      }
+    }, loaderPhase === 'loading' ? 3000 : 5000);
+  }
+
+  function showLoading() {
+    loaderPhase = 'loading';
+    clearInterval(loaderTimer);
+
+    var loader = document.getElementById('emptyLoader');
+    var text   = document.getElementById('emptyText');
+    var bars   = loader ? loader.querySelector('.loader-bars') : null;
+    var label  = document.getElementById('loaderLabel');
+    if (!loader) return;
+
+    // Fade out text, fade in loader
+    text.classList.add('hidden');
+    setTimeout(function() {
+      loader.classList.add('active');
+      if (bars) bars.classList.add('animating');
+      if (label) { label.classList.remove('untyping'); void label.offsetWidth; label.classList.add('typing'); }
+    }, 300);
+
+    loaderTimer = setTimeout(showText, 3000);
+  }
+
+  function showText() {
+    loaderPhase = 'text';
+    clearInterval(loaderTimer);
+
+    var loader = document.getElementById('emptyLoader');
+    var text   = document.getElementById('emptyText');
+    var bars   = loader ? loader.querySelector('.loader-bars') : null;
+    var label  = document.getElementById('loaderLabel');
+    if (!loader) return;
+
+    // Type out label, then hide loader, show text
+    if (label) { label.classList.remove('typing'); void label.offsetWidth; label.classList.add('untyping'); }
+    setTimeout(function() {
+      loader.classList.remove('active');
+      if (bars) bars.classList.remove('animating');
+      text.classList.remove('hidden');
+    }, 500);
+
+    loaderTimer = setTimeout(showLoading, 5000);
+  }
+
+  function startLoader() {
+    stopLoader();
+    showLoading();
+  }
+
+  function stopLoader() {
+    clearTimeout(loaderTimer);
+    clearInterval(loaderTimer);
+    loaderTimer = null;
+    var loader = document.getElementById('emptyLoader');
+    var text   = document.getElementById('emptyText');
+    var bars   = loader ? loader.querySelector('.loader-bars') : null;
+    if (loader) loader.classList.remove('active');
+    if (bars) bars.classList.remove('animating');
+    if (text) text.classList.remove('hidden');
+    loaderPhase = 'text';
+  }
+
   /* ── INIT ── */
   window.addEventListener('DOMContentLoaded', function() {
     var saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setAlias(saved); else newAlias();
+    startLoader();
   });
 </script>
 </body>
