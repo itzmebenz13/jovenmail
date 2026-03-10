@@ -258,24 +258,86 @@
   var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
   /* ── ALIAS GENERATION ── */
-  function generateDotVariants(username) {
+
+  /* Generate ALL dot-variants deterministically */
+  function generateAllVariants(username) {
     var letters = username.split('');
     var n = letters.length;
     var total = Math.pow(2, n - 1);
-    var picks = new Set();
-    while (picks.size < Math.min(80, total)) picks.add(Math.floor(Math.random() * total));
+    var limit = Math.min(total, 4096);
     var variants = [];
-    picks.forEach(function(mask) {
+    for (var mask = 0; mask < limit; mask++) {
       var r = letters[0];
       for (var i = 1; i < n; i++) { if (mask & (1 << (i-1))) r += '.'; r += letters[i]; }
       variants.push(r);
-    });
+    }
     return variants;
   }
 
-  function newAlias() {
-    var v = generateDotVariants(BASE);
-    setAlias(v[Math.floor(Math.random() * v.length)] + '@' + DOMAIN);
+  /* Fisher-Yates shuffle */
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+  }
+
+  /* Pick a new alias — never reuse one that already received email */
+  async function newAlias() {
+    document.getElementById('aliasDisplay').textContent = 'finding alias...';
+
+    // Step 1: fetch ALL aliases already in Supabase (have received email)
+    var usedResult = await sb.from('emails').select('alias');
+    var usedSet = new Set();
+    if (!usedResult.error && usedResult.data) {
+      usedResult.data.forEach(function(row) { usedSet.add(row.alias); });
+    }
+
+    // Step 2: also add locally remembered used aliases
+    var localUsed = JSON.parse(localStorage.getItem('dotmail_used') || '[]');
+    localUsed.forEach(function(a) { usedSet.add(a); });
+
+    // Step 3: generate all variants, shuffle, pick first unused
+    var allVariants = generateAllVariants(BASE);
+    shuffle(allVariants);
+
+    var chosen = null;
+    for (var i = 0; i < allVariants.length; i++) {
+      var candidate = allVariants[i] + '@' + DOMAIN;
+      if (!usedSet.has(candidate)) { chosen = candidate; break; }
+    }
+
+    if (!chosen) { showToast('No unused aliases available!'); return; }
+
+    // Step 4: triple-check with a direct Supabase count for this exact alias
+    var check = await sb.from('emails')
+      .select('id', { count: 'exact', head: true })
+      .eq('alias', chosen);
+    if (check.count && check.count > 0) {
+      // Used — mark it and try the next one
+      usedSet.add(chosen);
+      chosen = null;
+      for (var j = 0; j < allVariants.length; j++) {
+        var c2 = allVariants[j] + '@' + DOMAIN;
+        if (!usedSet.has(c2)) { chosen = c2; break; }
+      }
+      if (!chosen) { showToast('No unused aliases available!'); return; }
+      // Final safety check
+      var check2 = await sb.from('emails')
+        .select('id', { count: 'exact', head: true })
+        .eq('alias', chosen);
+      if (check2.count && check2.count > 0) {
+        showToast('Could not find clean alias, try again');
+        return;
+      }
+    }
+
+    // Step 5: save to local used history
+    var updated = JSON.parse(localStorage.getItem('dotmail_used') || '[]');
+    if (!updated.includes(chosen)) { updated.push(chosen); }
+    localStorage.setItem('dotmail_used', JSON.stringify(updated));
+
+    setAlias(chosen);
     showToast('New alias generated');
   }
 
