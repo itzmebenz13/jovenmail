@@ -3,521 +3,416 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>joven.mail — Unlimited Gmail Aliases</title>
+<title>joven.mail — Temporary Gmail Aliases</title>
 
-<!-- Premium Fonts: Plus Jakarta Sans & JetBrains Mono for the aliases -->
+<!-- Compact, crisp fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 
 <!-- Supabase & Lucide Icons -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 
-<!-- Pre-load theme -->
 <script>
-  const savedTheme = localStorage.getItem('theme') || 
-    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const savedTheme = localStorage.getItem('theme') || 'dark'; // Default to dark (Meiro style)
   document.documentElement.setAttribute('data-theme', savedTheme);
 </script>
 
 <style>
   :root {
-    /* -- LIGHT MODE (Default) -- */
-    --bg-base: #F8FAFC;
-    --bg-surface: rgba(255, 255, 255, 0.75);
-    --bg-surface-solid: #FFFFFF;
-    --bg-element: #F1F5F9;
-    --bg-element-hover: #E2E8F0;
+    /* -- LIGHT MODE -- */
+    --bg-app: #f4f4f5;
+    --bg-card: #ffffff;
+    --bg-input: #fafafa;
+    --bg-hover: #e4e4e7;
     
-    --text-primary: #0F172A;
-    --text-secondary: #64748B;
-    --text-tertiary: #94A3B8;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
     
-    --border-color: rgba(15, 23, 42, 0.06);
-    --border-strong: rgba(15, 23, 42, 0.12);
+    --accent: #d9f950;       /* Meiro Tea Green */
+    --accent-hover: #c4ec2a;
+    --accent-text: #09090b;
     
-    --accent: #000000;
-    --accent-hover: #333333;
-    --accent-text: #FFFFFF;
+    --text-main: #09090b;
+    --text-dim: #71717a;
+    --text-muted: #a1a1aa;
     
-    --orb-1: rgba(56, 189, 248, 0.15); /* Soft sky blue */
-    --orb-2: rgba(167, 139, 250, 0.15); /* Soft purple */
-    
-    --shadow-float: 0 4px 24px -4px rgba(15, 23, 42, 0.05), 0 1px 4px -1px rgba(15, 23, 42, 0.04);
-    --shadow-modal: 0 20px 40px -8px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(15, 23, 42, 0.02);
-
-    --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-    
-    --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.05);
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --shadow-card: 0 2px 8px -2px rgba(0,0,0,0.05);
   }
 
   [data-theme="dark"] {
-    /* -- DARK MODE -- */
-    --bg-base: #0B0D12;
-    --bg-surface: rgba(20, 23, 31, 0.6);
-    --bg-surface-solid: #14171F;
-    --bg-element: #1E232F;
-    --bg-element-hover: #2A303F;
+    /* -- DARK MODE (Meiro Aesthetic) -- */
+    --bg-app: #09090b;       /* Very deep background */
+    --bg-card: #18181b;      /* Card surface */
+    --bg-input: #121214;     /* Input background */
+    --bg-hover: #27272a;     /* Hover states */
     
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --text-tertiary: #475569;
+    --border: #27272a;
+    --border-strong: #3f3f46;
     
-    --border-color: rgba(255, 255, 255, 0.05);
-    --border-strong: rgba(255, 255, 255, 0.1);
+    --accent: #d9f950;       /* Meiro Tea Green */
+    --accent-hover: #bef222;
+    --accent-text: #09090b;
     
-    --accent: #FFFFFF;
-    --accent-hover: #E2E8F0;
-    --accent-text: #000000;
+    --text-main: #fafafa;
+    --text-dim: #a1a1aa;
+    --text-muted: #52525b;
     
-    --orb-1: rgba(56, 189, 248, 0.07);
-    --orb-2: rgba(167, 139, 250, 0.07);
-    
-    --shadow-float: 0 8px 32px -4px rgba(0, 0, 0, 0.4), 0 1px 4px -1px rgba(0, 0, 0, 0.2);
-    --shadow-modal: 0 32px 64px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --shadow-card: 0 8px 16px -4px rgba(0,0,0,0.4);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   
-  html { font-size: 15px; scroll-behavior: smooth; }
+  /* Compact Scaling: ~20% smaller than standard 16px */
+  html { font-size: 13px; scroll-behavior: smooth; }
   
   body { 
-    background-color: var(--bg-base); 
-    color: var(--text-primary); 
-    font-family: var(--font-sans); 
+    background-color: var(--bg-app); 
+    color: var(--text-main); 
+    font-family: 'Inter', sans-serif; 
     min-height: 100vh; 
     display: flex;
     flex-direction: column;
     overflow-x: hidden; 
     -webkit-tap-highlight-color: transparent;
-    transition: background-color 0.4s var(--ease-out), color 0.4s var(--ease-out);
-    position: relative;
-  }
-
-  /* -- AMBIENT BACKGROUND ORBS -- */
-  .bg-orbs {
-    position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
-  }
-  .orb {
-    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.8;
-    animation: float 20s ease-in-out infinite alternate;
-  }
-  .orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: var(--orb-1); }
-  .orb-2 { bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: var(--orb-2); animation-delay: -10s; }
-  
-  @keyframes float {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(5%, 10%) scale(1.1); }
+    transition: background-color 0.2s, color 0.2s;
   }
 
   /* -- LAYOUT -- */
   .wrap { 
-    width: 100%; max-width: 680px; margin: 0 auto; padding: 0 24px; 
-    display: flex; flex-direction: column; flex: 1; z-index: 1;
+    width: 100%; 
+    max-width: 580px; /* Tighter width for compact feel */
+    margin: 0 auto; 
+    padding: 0 16px; 
+    display: flex;
+    flex-direction: column;
+    flex: 1; 
   }
-  main { flex: 1; display: flex; flex-direction: column; padding-top: 24px; }
+  
+  main { flex: 1; display: flex; flex-direction: column; padding-bottom: 32px; }
 
   /* -- HEADER -- */
   header { 
     display: flex; align-items: center; justify-content: space-between; 
-    padding: 32px 0 16px; 
+    padding: 24px 0 16px; 
   }
-  .logo-wrap { display: flex; align-items: center; gap: 12px; }
-  .logo { 
-    font-size: 1.25rem; font-weight: 800; letter-spacing: -0.04em; 
-    color: var(--text-primary);
-  }
+  .logo-wrap { display: flex; align-items: center; gap: 8px; }
+  .logo { font-size: 1.15rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.02em; }
+  .logo-icon { color: var(--accent); }
   .badge { 
-    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 4px 10px; border-radius: 99px;
-    background: var(--bg-element); color: var(--text-secondary);
-    border: 1px solid var(--border-color);
+    font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+    background: var(--bg-hover); color: var(--text-dim); border: 1px solid var(--border);
   }
   
-  .theme-toggle {
-    width: 40px; height: 40px; border-radius: 50%;
-    border: 1px solid var(--border-color); background: var(--bg-surface);
-    color: var(--text-secondary); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.3s var(--ease-out); backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+  /* Theme Toggle Animation */
+  .theme-switch {
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim); 
+    cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; transition: all 0.2s; position: relative; overflow: hidden;
   }
-  .theme-toggle:hover { 
-    color: var(--text-primary); border-color: var(--border-strong); transform: scale(1.05);
-  }
-  .theme-toggle svg { position: absolute; width: 18px; height: 18px; transition: all 0.5s var(--ease-spring); }
-  .icon-sun { opacity: 1; transform: rotate(0) scale(1); }
-  .icon-moon { opacity: 0; transform: rotate(-90deg) scale(0.4); }
-  [data-theme="dark"] .icon-sun { opacity: 0; transform: rotate(90deg) scale(0.4); }
-  [data-theme="dark"] .icon-moon { opacity: 1; transform: rotate(0) scale(1); }
+  .theme-switch:hover { color: var(--text-main); background: var(--bg-hover); border-color: var(--border-strong); }
+  .theme-switch svg { position: absolute; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; }
+  .icon-sun { transform: translateY(0); opacity: 1; }
+  .icon-moon { transform: translateY(20px); opacity: 0; }
+  [data-theme="dark"] .icon-sun { transform: translateY(-20px); opacity: 0; }
+  [data-theme="dark"] .icon-moon { transform: translateY(0); opacity: 1; }
 
   /* -- HERO -- */
-  .hero { text-align: center; padding: 40px 0; animation: fadeUp 0.6s var(--ease-out) both; }
+  .hero { text-align: center; padding: 24px 0 32px; }
   .hero h1 { 
-    font-size: clamp(2rem, 6vw, 3rem); font-weight: 800; line-height: 1.1; 
-    letter-spacing: -0.04em; margin-bottom: 16px; color: var(--text-primary);
+    font-size: 1.8rem; font-weight: 700; line-height: 1.1; 
+    letter-spacing: -0.03em; margin-bottom: 8px; color: var(--text-main);
   }
-  .hero p { 
-    color: var(--text-secondary); font-size: 1.05rem; max-width: 460px; 
-    margin: 0 auto; line-height: 1.6; font-weight: 500;
-  }
+  .hero p { color: var(--text-dim); font-size: 0.95rem; max-width: 420px; margin: 0 auto; line-height: 1.5; }
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* -- CONTROL WIDGET -- */
-  .control-widget {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: var(--shadow-float);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    margin-bottom: 48px;
-    animation: fadeUp 0.6s var(--ease-out) 0.1s both;
-    position: relative;
-    overflow: hidden;
+  /* -- MAIN CONTROL CARD -- */
+  .control-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 32px;
   }
   
-  /* Widget Header */
-  .widget-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 20px;
-  }
-  .widget-title { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px;}
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .card-title { font-size: 0.85rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;}
   
   /* Sync Status */
-  .sync-status { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;}
-  .sync-dot {
-    width: 8px; height: 8px; border-radius: 50%; background: #10B981;
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-    animation: pulse-green 2s infinite;
-  }
+  .sync-status { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;}
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse-green 2s infinite; }
   @keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(217, 249, 80, 0.4); }
+    70% { box-shadow: 0 0 0 4px rgba(217, 249, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(217, 249, 80, 0); }
   }
 
-  /* Alias Display Box */
-  .alias-box {
-    background: var(--bg-element);
-    border: 1px solid var(--border-strong);
-    border-radius: 16px;
-    padding: 8px 8px 8px 20px;
+  /* Alias Display Field */
+  .alias-field {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 16px;
-    transition: border-color 0.3s var(--ease-out);
+    margin-bottom: 16px; transition: border-color 0.2s;
   }
-  .alias-box:hover { border-color: var(--text-tertiary); }
+  .alias-field:hover { border-color: var(--border-strong); }
   .alias-text {
-    font-family: var(--font-mono); font-size: 1.05rem; font-weight: 500;
-    color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 500;
+    color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     user-select: all; cursor: text;
   }
-  
-  /* Primary Button (Copy) */
-  .btn-copy {
-    background: var(--accent); color: var(--accent-text);
-    border: none; border-radius: 12px; padding: 12px 24px;
-    font-family: var(--font-sans); font-size: 0.9rem; font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; gap: 8px;
-    transition: all 0.2s var(--ease-out); flex-shrink: 0;
-  }
-  .btn-copy:hover { transform: translateY(-1px); background: var(--accent-hover); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-  .btn-copy:active { transform: translateY(1px); }
 
-  /* Widget Actions Grid */
-  .widget-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* Meiro Pill Buttons */
+  .actions-grid { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;}
+  .actions-secondary { display: flex; gap: 8px; }
   
-  .btn-secondary {
-    background: transparent; color: var(--text-primary);
-    border: 1px solid var(--border-strong); border-radius: 12px;
-    padding: 12px; font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: all 0.2s var(--ease-out);
+  .btn-pill {
+    border-radius: 999px; /* Core Meiro styling */
+    padding: 10px 18px; font-size: 0.9rem; font-weight: 600; font-family: 'Inter', sans-serif;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.2s ease; border: none; outline: none; white-space: nowrap;
   }
-  .btn-secondary:hover { background: var(--bg-element-hover); }
-
-  /* Recover Input Expansion */
-  .recover-wrapper { grid-column: 1 / -1; display: none; margin-top: 4px; animation: slideDown 0.3s var(--ease-out) forwards;}
-  .recover-wrapper.active { display: flex; gap: 8px; }
-  .input-recover {
-    flex: 1; background: var(--bg-element); border: 1px solid var(--border-strong);
-    border-radius: 12px; padding: 0 16px; font-family: var(--font-mono); font-size: 0.9rem;
-    color: var(--text-primary); outline: none; transition: all 0.2s var(--ease-out);
-  }
-  .input-recover:focus { border-color: var(--text-primary); }
+  .btn-primary { background: var(--accent); color: var(--accent-text); }
+  .btn-primary:hover { background: var(--accent-hover); transform: scale(1.02); }
   
-  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+  .btn-outline:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+  
+  .btn-icon-only { padding: 10px; border-radius: 50%; width: 38px; height: 38px; }
 
-  /* -- INBOX SECTION -- */
+  /* Recover Input (Hidden by default) */
+  .recover-box { 
+    display: none; align-items: center; gap: 8px; margin-top: 12px; 
+    padding-top: 12px; border-top: 1px dashed var(--border);
+    animation: fadeIn 0.2s ease;
+  }
+  .recover-box.active { display: flex; }
+  .input-minimal {
+    flex: 1; background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 999px; padding: 10px 16px; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: var(--text-main); outline: none; transition: border-color 0.2s;
+  }
+  .input-minimal:focus { border-color: var(--accent); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* -- INBOX -- */
   .inbox-header { 
     display: flex; align-items: center; justify-content: space-between; 
-    margin-bottom: 20px; padding: 0 4px;
-    animation: fadeUp 0.6s var(--ease-out) 0.2s both;
+    margin-bottom: 12px; padding: 0 4px;
   }
-  .inbox-title { 
-    font-size: 1.25rem; font-weight: 700; color: var(--text-primary); 
-    display: flex; align-items: center; gap: 10px; 
-  }
-  .inbox-count { 
-    background: var(--bg-element); color: var(--text-secondary); 
-    font-size: 0.8rem; font-weight: 700; padding: 2px 10px; border-radius: 99px; 
-  }
+  .inbox-title { font-size: 1.1rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+  .badge-count { background: var(--bg-card); border: 1px solid var(--border); padding: 2px 8px; border-radius: 999px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;}
+  
   .btn-text {
-    background: transparent; border: none; color: var(--text-secondary);
-    font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600;
-    cursor: pointer; transition: color 0.2s;
+    background: transparent; border: none; color: var(--text-dim);
+    font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: color 0.2s;
   }
-  .btn-text:hover { color: var(--text-primary); }
+  .btn-text:hover { color: var(--text-main); }
 
-  /* Empty State */
-  .inbox-empty { 
-    background: var(--bg-surface); border: 1px dashed var(--border-strong); 
-    border-radius: 20px; height: 260px; display: flex; flex-direction: column; 
-    align-items: center; justify-content: center; text-align: center;
-    animation: fadeUp 0.6s var(--ease-out) 0.3s both;
+  /* Empty State (Matched to Meiro Screenshot) */
+  .empty-state { 
+    background: transparent; border: 1px solid transparent; 
+    border-radius: 16px; height: 220px; display: flex; flex-direction: column; 
+    align-items: center; justify-content: center; text-align: center; gap: 8px;
   }
-  .empty-icon-wrapper {
-    width: 64px; height: 64px; border-radius: 20px; background: var(--bg-element);
-    display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
-    color: var(--text-tertiary);
-  }
-  .inbox-empty p { font-size: 0.95rem; color: var(--text-secondary); font-weight: 500; line-height: 1.5; }
+  .empty-state.bordered { background: var(--bg-card); border-color: var(--border); }
+  .empty-icon { color: var(--text-muted); margin-bottom: 4px; }
+  .empty-state h3 { font-size: 1.05rem; font-weight: 600; color: var(--text-main); }
+  .empty-state p { font-size: 0.85rem; color: var(--text-dim); max-width: 260px; line-height: 1.5; }
 
-  /* Loader */
-  .loader-spinner {
-    width: 28px; height: 28px; border: 3px solid var(--border-strong);
-    border-top-color: var(--text-primary); border-radius: 50%;
-    animation: spin 0.8s linear infinite; margin-bottom: 20px;
+  /* Loading Spinner */
+  .spinner {
+    width: 24px; height: 24px; border: 2px solid var(--border-strong);
+    border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .empty-loader, .empty-text {
-    position: absolute; inset: 0; display: flex; flex-direction: column; 
-    align-items: center; justify-content: center; transition: opacity 0.4s var(--ease-out);
-  }
-  .empty-loader { opacity: 0; pointer-events: none; }
-  .empty-loader.active { opacity: 1; pointer-events: auto; }
-  .empty-text.hidden { opacity: 0; pointer-events: none; }
-
   /* Email List */
-  .email-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 40px; animation: fadeUp 0.6s var(--ease-out) 0.3s both; }
+  .email-list { display: flex; flex-direction: column; gap: 8px; }
   .email-item {
-    background: var(--bg-surface-solid); border: 1px solid var(--border-color); 
-    border-radius: 16px; padding: 20px; cursor: pointer; 
-    transition: all 0.3s var(--ease-out); display: grid; 
-    grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center;
-    position: relative; overflow: hidden;
+    background: var(--bg-card); border: 1px solid var(--border); 
+    border-radius: 12px; padding: 14px 16px; cursor: pointer; 
+    transition: all 0.2s; display: grid; 
+    grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
   }
-  .email-item:hover { 
-    transform: translateY(-2px); border-color: var(--border-strong); 
-    box-shadow: var(--shadow-float); 
-  }
-  .email-item.unread .email-sender { font-weight: 700; color: var(--text-primary); }
-  .email-item.unread::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-    background: var(--accent);
-  }
-  .email-sender { font-weight: 600; font-size: 1rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .email-subject { font-size: 0.9rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; grid-column: 1; font-weight: 500;}
-  .email-time { font-size: 0.8rem; font-weight: 600; color: var(--text-tertiary); text-align: right; grid-row: 1; grid-column: 2; white-space: nowrap; }
-  .chevron-right { color: var(--text-tertiary); grid-row: 2; grid-column: 2; justify-self: end; opacity: 0; transition: all 0.3s var(--ease-out); transform: translateX(-10px); }
-  .email-item:hover .chevron-right { opacity: 1; transform: translateX(0); }
+  .email-item:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  
+  .email-dot { width: 8px; height: 8px; border-radius: 50%; background: transparent; }
+  .email-item.unread .email-dot { background: var(--accent); box-shadow: 0 0 6px rgba(217, 249, 80, 0.4); }
+  
+  .email-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .email-sender { font-weight: 600; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .email-subject { font-size: 0.85rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
+  .email-time { font-size: 0.8rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; white-space: nowrap;}
 
-  /* -- MODAL (Centered, Figma-style) -- */
+  /* -- MODAL -- */
   .modal-overlay { 
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); 
-    z-index: 100; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    align-items: center; justify-content: center; padding: 20px; 
-    opacity: 0; transition: opacity 0.3s var(--ease-out);
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); 
+    z-index: 100; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 16px; 
+    opacity: 0; transition: opacity 0.2s ease;
   }
   .modal-overlay.open { display: flex; opacity: 1; }
   .modal {
-    background: var(--bg-surface-solid); border: 1px solid var(--border-strong); 
-    border-radius: 24px; width: 100%; max-width: 640px; max-height: 85vh; 
-    display: flex; flex-direction: column; box-shadow: var(--shadow-modal);
-    transform: scale(0.95) translateY(20px); opacity: 0;
-    transition: all 0.4s var(--ease-spring);
+    background: var(--bg-card); border: 1px solid var(--border); 
+    border-radius: 16px; width: 100%; max-width: 560px; max-height: 85vh; 
+    display: flex; flex-direction: column; box-shadow: 0 24px 48px -12px rgba(0,0,0,0.5);
+    transform: scale(0.98); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .modal-overlay.open .modal { transform: scale(1) translateY(0); opacity: 1; }
+  .modal-overlay.open .modal { transform: scale(1); }
   
-  .modal-head { 
-    padding: 24px 32px; border-bottom: 1px solid var(--border-color); 
-    position: relative; flex-shrink: 0;
-  }
+  .modal-head { padding: 20px; border-bottom: 1px solid var(--border); position: relative; }
   .modal-close { 
-    position: absolute; top: 24px; right: 24px; background: var(--bg-element); 
-    border: none; color: var(--text-secondary); cursor: pointer; 
-    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; 
-    border-radius: 50%; transition: all 0.2s var(--ease-out);
+    position: absolute; top: 16px; right: 16px; background: var(--bg-hover); 
+    border: none; color: var(--text-dim); cursor: pointer; border-radius: 50%;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; 
+    transition: all 0.2s;
   }
-  .modal-close:hover { background: var(--border-strong); color: var(--text-primary); transform: rotate(90deg);}
+  .modal-close:hover { background: var(--border-strong); color: var(--text-main); }
   
-  .modal-subject { font-size: 1.4rem; font-weight: 800; margin-bottom: 16px; padding-right: 48px; line-height: 1.3; color: var(--text-primary); letter-spacing: -0.02em;}
-  .modal-meta { display: flex; flex-direction: column; gap: 6px; }
-  .modal-meta-row { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text-secondary); }
-  .modal-meta-row strong { color: var(--text-primary); font-weight: 600; width: 44px;}
-  .modal-badge { background: var(--bg-element); padding: 2px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.8rem; }
+  .modal-subject { font-size: 1.15rem; font-weight: 700; margin-bottom: 12px; padding-right: 32px; color: var(--text-main); }
+  .modal-meta { display: flex; flex-direction: column; gap: 4px; background: var(--bg-input); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);}
+  .modal-meta-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-dim); }
+  .modal-meta-row strong { color: var(--text-main); font-weight: 600; width: 40px; }
   
-  .modal-body { 
-    padding: 32px; line-height: 1.7; color: var(--text-primary); 
-    word-break: break-word; font-size: 0.95rem; overflow-y: auto;
-  }
-  .modal-body.is-plain { white-space: pre-wrap; font-family: var(--font-mono); font-size: 0.85rem;}
-  .modal-body iframe { display: block; border-radius: 12px; border: 1px solid var(--border-color); }
+  .modal-body { padding: 20px; color: var(--text-main); font-size: 0.9rem; overflow-y: auto; line-height: 1.6; }
+  .modal-body.is-plain { white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+  .modal-body iframe { display: block; border-radius: 8px; border: 1px solid var(--border); width: 100%; background: #fff;}
 
-  /* -- TOAST NOTIFICATION -- */
+  /* -- TOAST -- */
   .toast { 
-    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); 
-    background: var(--text-primary); color: var(--bg-base); font-size: 0.9rem; font-weight: 600; 
-    padding: 14px 24px; border-radius: 99px; box-shadow: var(--shadow-float); z-index: 999; 
-    transition: transform 0.5s var(--ease-spring); pointer-events: none; display: flex; align-items: center; gap: 10px;
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--bg-card); border: 1px solid var(--border-strong);
+    color: var(--text-main); font-size: 0.85rem; font-weight: 500; 
+    padding: 10px 16px; border-radius: 999px; box-shadow: var(--shadow-card); 
+    z-index: 999; opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
   }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast-icon { color: var(--accent); }
 
   /* -- FOOTER -- */
   footer { 
-    text-align: center; padding: 40px 0 32px; margin-top: auto; 
-    animation: fadeUp 0.6s var(--ease-out) 0.4s both;
+    text-align: center; padding: 24px 0; margin-top: auto; 
+    border-top: 1px dashed var(--border);
   }
-  footer p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.8; font-weight: 500;}
-  footer a { color: var(--text-primary); text-decoration: none; font-weight: 600; transition: opacity 0.2s;}
+  footer p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.8; font-weight: 500;}
+  footer a { color: var(--text-main); text-decoration: none; font-weight: 600; transition: opacity 0.2s;}
   footer a:hover { opacity: 0.7; }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 8px; }
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-  /* -- MOBILE ADAPTATIONS -- */
-  @media(max-width: 600px) {
-    .wrap { padding: 0 16px; }
-    .control-widget { padding: 20px; border-radius: 20px; }
-    .alias-box { flex-direction: column; align-items: stretch; padding: 8px; gap: 8px; background: transparent; border: none;}
-    .alias-text { background: var(--bg-element); padding: 16px; border-radius: 12px; text-align: center; border: 1px solid var(--border-strong);}
-    .btn-copy { width: 100%; justify-content: center; padding: 16px; }
-    .widget-actions { grid-template-columns: 1fr; }
-    .modal-head { padding: 20px; }
-    .modal-body { padding: 20px; }
-    .recover-wrapper.active { flex-direction: column; }
+  /* -- MOBILE ADAPTATION -- */
+  @media(max-width: 480px) {
+    .actions-grid { grid-template-columns: 1fr; }
+    .btn-pill { width: 100%; }
+    .actions-secondary { display: grid; grid-template-columns: 1fr auto; }
+    .recover-box { flex-direction: column; align-items: stretch; }
   }
 </style>
 </head>
 <body>
 
-<!-- Ambient Orbs -->
-<div class="bg-orbs">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-</div>
-
 <div class="wrap">
   <header>
     <div class="logo-wrap">
-      <i data-lucide="mail" style="color: var(--text-primary); width: 24px; height: 24px;"></i>
+      <i data-lucide="zap" class="logo-icon" width="20" height="20"></i>
       <div class="logo">joven.mail</div>
       <div class="badge">Beta</div>
     </div>
-    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Dark Mode">
-      <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-      <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-      </svg>
+    <button class="theme-switch" onclick="toggleTheme()" aria-label="Toggle Theme">
+      <i data-lucide="sun" class="icon-sun" width="16" height="16"></i>
+      <i data-lucide="moon" class="icon-moon" width="16" height="16"></i>
     </button>
   </header>
 
   <main>
     <section class="hero">
-      <h1>One Gmail.<br/>Infinite Privacy.</h1>
-      <p>Instantly generate temporary dot-variants of your Gmail. Messages route directly to your real inbox, keeping your actual address hidden.</p>
+      <h1>One Gmail. Infinite Aliases.</h1>
+      <p>Instantly generate temporary dot-variants. Messages route directly to your real inbox, keeping your actual address hidden.</p>
     </section>
 
-    <!-- PREMIUM CONTROL WIDGET -->
-    <div class="control-widget">
-      <div class="widget-header">
-        <div class="widget-title"><i data-lucide="shield-check" width="16" height="16"></i> Active Alias</div>
+    <!-- CONTROL CARD -->
+    <div class="control-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="fingerprint" width="14" height="14"></i> Active Identity
+        </div>
         <div class="sync-status">
           <div class="sync-dot"></div>
-          <span id="countdownText">Syncing...</span>
+          <span id="countdownText">30s</span>
         </div>
       </div>
       
-      <div class="alias-box">
-        <div class="alias-text" id="aliasDisplay" title="Click to copy text">generating...</div>
-        <button class="btn-copy" onclick="copyAlias()">
-          <i data-lucide="copy" width="18" height="18"></i> Copy
-        </button>
+      <div class="alias-field">
+        <div class="alias-text" id="aliasDisplay">generating...</div>
       </div>
 
-      <div class="widget-actions">
-        <button class="btn-secondary" onclick="newAlias()">
-          <i data-lucide="refresh-cw" width="16" height="16"></i> Regenerate
+      <div class="actions-grid">
+        <button class="btn-pill btn-primary" onclick="copyAlias()">
+          <i data-lucide="copy" width="16" height="16"></i> Copy address
         </button>
-        <button class="btn-secondary" onclick="toggleRecover()">
-          <i data-lucide="history" width="16" height="16"></i> Recover Old
-        </button>
-        
-        <!-- Hidden Recover Input -->
-        <div class="recover-wrapper" id="recoverWrapper">
-          <input class="input-recover" id="recoverInput" type="email" placeholder="j.en.zen...gmail.com" onkeydown="if(event.key==='Enter')recoverAlias()"/>
-          <button class="btn-copy" style="padding: 12px 16px;" onclick="recoverAlias()">
-            <i data-lucide="arrow-right" width="18" height="18"></i>
+        <div class="actions-secondary">
+          <button class="btn-pill btn-outline" onclick="newAlias()" title="Generate new">
+            <i data-lucide="refresh-cw" width="16" height="16"></i> New
+          </button>
+          <button class="btn-pill btn-outline btn-icon-only" onclick="toggleRecover()" title="Recover past alias">
+            <i data-lucide="history" width="16" height="16"></i>
           </button>
         </div>
+      </div>
+
+      <div class="recover-box" id="recoverBox">
+        <input class="input-minimal" id="recoverInput" type="email" placeholder="j.en.zen...gmail.com" onkeydown="if(event.key==='Enter')recoverAlias()"/>
+        <button class="btn-pill btn-primary" style="padding: 10px 16px;" onclick="recoverAlias()">
+          <i data-lucide="arrow-right" width="16" height="16"></i>
+        </button>
       </div>
     </div>
 
     <!-- INBOX SECTION -->
     <div class="inbox-header">
       <div class="inbox-title">
-        Inbox <span class="inbox-count" id="emailCount">0</span>
+        Completed <span class="badge-count" id="emailCount">0</span>
       </div>
-      <button class="btn-text" onclick="clearInbox()">Clear all</button>
+      <button class="btn-text" onclick="clearInbox()">Clear</button>
     </div>
 
-    <div style="position: relative;">
-      <!-- Empty State / Loader -->
-      <div class="inbox-empty" id="emptyState">
-        <div class="empty-loader" id="emptyLoader">
-          <div class="loader-spinner"></div>
-          <p style="color: var(--text-primary); font-weight: 600;">Securely checking...</p>
-        </div>
-        <div class="empty-text" id="emptyText">
-          <div class="empty-icon-wrapper">
-            <i data-lucide="inbox" width="32" height="32"></i>
-          </div>
-          <p>Your inbox is pristine.<br/>Share your alias to receive messages.</p>
-        </div>
-      </div>
-      
-      <!-- Email List -->
-      <div class="email-list" id="emailList"></div>
+    <!-- Empty State -->
+    <div class="empty-state bordered" id="emptyState">
+      <i data-lucide="table-2" class="empty-icon" width="28" height="28"></i>
+      <h3>Oops, nothing here yet!</h3>
+      <p>Once you receive the first completion, you'll see all the results here</p>
     </div>
+
+    <!-- Loading State (hidden initially) -->
+    <div class="empty-state" id="loadingState" style="display: none;">
+      <div class="spinner"></div>
+      <h3 style="margin-top: 8px; font-size: 1rem;">Syncing data...</h3>
+    </div>
+
+    <!-- Email List -->
+    <div class="email-list" id="emailList" style="display: none;"></div>
   </main>
 
   <footer>
-    <p>Powered by native Gmail dot-routing infrastructure.</p>
+    <p>Powered by native Gmail routing architecture.</p>
     <p><a href="#">Terms</a> &nbsp;&middot;&nbsp; <a href="#">Privacy</a> &nbsp;&middot;&nbsp; <a href="#">GitHub</a></p>
   </footer>
 </div>
 
-<!-- PREMIUM MODAL -->
+<!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
   <div class="modal" id="modal" onclick="event.stopPropagation()">
     <div class="modal-head">
       <button class="modal-close" onclick="closeModal()">
-        <i data-lucide="x" width="20" height="20"></i>
+        <i data-lucide="x" width="16" height="16"></i>
       </button>
       <div class="modal-subject" id="modalSubject"></div>
       <div class="modal-meta">
@@ -525,7 +420,7 @@
           <strong>From</strong> <span id="modalFrom"></span>
         </div>
         <div class="modal-meta-row">
-          <strong>To</strong> <span class="modal-badge" id="modalTo"></span>
+          <strong>To</strong> <span id="modalTo" style="font-family: 'JetBrains Mono', monospace;"></span>
         </div>
         <div class="modal-meta-row">
           <strong>Date</strong> <span id="modalDate"></span>
@@ -538,12 +433,12 @@
 
 <!-- TOAST -->
 <div class="toast" id="toast">
-  <i data-lucide="check-circle-2" width="18" height="18"></i>
-  <span id="toastMsg">Success</span>
+  <i data-lucide="check-circle-2" class="toast-icon" width="16" height="16"></i>
+  <span id="toastMsg">Action completed</span>
 </div>
 
 <script>
-  // Initialize Lucide Icons
+  // Initialize Icons
   lucide.createIcons();
 
   /* ── THEME TOGGLE ── */
@@ -554,11 +449,12 @@
     localStorage.setItem('theme', next);
   }
 
-  /* ── UI Toggles ── */
   function toggleRecover() {
-    const w = document.getElementById('recoverWrapper');
-    w.classList.toggle('active');
-    if(w.classList.contains('active')) document.getElementById('recoverInput').focus();
+    const box = document.getElementById('recoverBox');
+    box.classList.toggle('active');
+    if(box.classList.contains('active')) {
+      document.getElementById('recoverInput').focus();
+    }
   }
 
   /* ── CONFIG ── */
@@ -619,10 +515,7 @@
 
     if (!chosen) { showToast('No unused aliases available!'); return; }
 
-    var check = await sb.from('emails')
-      .select('id', { count: 'exact', head: true })
-      .eq('alias', chosen);
-      
+    var check = await sb.from('emails').select('id', { count: 'exact', head: true }).eq('alias', chosen);
     if (check.count && check.count > 0) {
       usedSet.add(chosen);
       chosen = null;
@@ -647,10 +540,10 @@
     currentAlias = alias;
     document.getElementById('aliasDisplay').textContent = alias;
     localStorage.setItem(STORAGE_KEY, alias);
+    document.getElementById('recoverBox').classList.remove('active');
     startCountdown();
     subscribeToAlias(alias);
     refreshInbox(true);
-    document.getElementById('recoverWrapper').classList.remove('active');
   }
 
   /* ── RECOVER ── */
@@ -693,23 +586,30 @@
   }
 
   function updateCountdownText() {
-    document.getElementById('countdownText').textContent = 'Sync in ' + countdownVal + 's';
+    document.getElementById('countdownText').textContent = countdownVal + 's';
   }
 
   /* ── FETCH ── */
   async function refreshInbox(auto) {
-    if (!auto) showToast('Inbox synced');
+    if (!auto) {
+      showToast('Syncing...');
+      showLoadingUI();
+    }
     countdownVal = 30; updateCountdownText();
     var alias = document.getElementById('aliasDisplay').textContent.trim();
     if (!alias || alias === 'Generating...') return;
-    var r = await sb.from('emails').select('*').eq('alias', alias)
-      .order('received_at', { ascending: false }).limit(50);
-    if (r.error) { showToast('Could not load emails'); return; }
+    
+    var r = await sb.from('emails').select('*').eq('alias', alias).order('received_at', { ascending: false }).limit(50);
+    
+    if (r.error) { showToast('Could not load emails'); hideLoadingUI(); return; }
+    
     emails = (r.data || []).map(function(e) {
       return { id:e.id, sender:e.sender||e.sender_email||'Unknown', senderEmail:e.sender_email||'',
         subject:e.subject||'(no subject)', time:new Date(e.received_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
         body:e.body||'', unread:true };
     });
+    
+    hideLoadingUI();
     renderEmails();
   }
 
@@ -731,25 +631,49 @@
   function renderEmails() {
     var list  = document.getElementById('emailList');
     var empty = document.getElementById('emptyState');
+    
     document.getElementById('emailCount').textContent = emails.length;
     
-    if (!emails.length) { empty.style.display='flex'; list.innerHTML=''; startLoader(); return; }
+    if (!emails.length) { 
+      empty.style.display = 'flex'; 
+      list.style.display = 'none';
+      return; 
+    }
+    
     empty.style.display = 'none';
-    stopLoader();
+    list.style.display = 'flex';
+    
     list.innerHTML = emails.map(function(e,i) {
-      return '<div class="email-item'+(e.unread?' unread':'')+'" onclick="openEmail('+i+')">'+
-        '<div class="email-sender">'+escHtml(e.sender)+'</div>'+
+      return '<div class="email-item '+(e.unread?'unread':'')+'" onclick="openEmail('+i+')">'+
+        '<div class="email-dot"></div>'+
+        '<div class="email-content">'+
+          '<div class="email-sender">'+escHtml(e.sender)+'</div>'+
+          '<div class="email-subject">'+escHtml(e.subject)+'</div>'+
+        '</div>'+
         '<div class="email-time">'+escHtml(e.time)+'</div>'+
-        '<div class="email-subject">'+escHtml(e.subject)+'</div>'+
-        '<i class="chevron-right" data-lucide="chevron-right" width="18" height="18"></i>'+
         '</div>';
     }).join('');
-    
-    // Re-initialize icons inside the dynamically injected list
-    lucide.createIcons();
   }
 
-  function clearInbox() { emails=[]; renderEmails(); showToast('Inbox cleared'); }
+  function clearInbox() { 
+    emails = []; 
+    renderEmails(); 
+    showToast('Inbox cleared'); 
+  }
+
+  function showLoadingUI() {
+    if(emails.length === 0) {
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('loadingState').style.display = 'flex';
+    }
+  }
+
+  function hideLoadingUI() {
+    document.getElementById('loadingState').style.display = 'none';
+    if(emails.length === 0) {
+      document.getElementById('emptyState').style.display = 'flex';
+    }
+  }
 
   /* ── MODAL ── */
   function openEmail(i) {
@@ -764,18 +688,16 @@
     
     if (isHtml) {
       bodyEl.classList.remove('is-plain');
-      bodyEl.classList.add('is-html');
       var iframe = document.createElement('iframe');
-      iframe.style.cssText = 'width:100%;border:none;min-height:300px;background:#ffffff;display:block';
+      iframe.style.cssText = 'width:100%;border:none;min-height:300px;background:#ffffff;border-radius:6px;display:block';
       iframe.setAttribute('sandbox', 'allow-same-origin');
       bodyEl.innerHTML = '';
       bodyEl.appendChild(iframe);
       iframe.addEventListener('load', function() {
         iframe.style.height = (iframe.contentDocument.body.scrollHeight + 30) + 'px';
       });
-      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.6;color:#0F172A}img{max-width:100%;height:auto}a{color:#2563EB}table{max-width:100%!important}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
+      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;color:#000}img{max-width:100%;height:auto}a{color:#0066cc}table{max-width:100%!important}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
     } else {
-      bodyEl.classList.remove('is-html');
       bodyEl.classList.add('is-plain');
       bodyEl.innerHTML = '';
       bodyEl.textContent = body;
@@ -783,16 +705,13 @@
     
     const overlay = document.getElementById('modalOverlay');
     overlay.style.display = 'flex';
-    // Small delay to allow display block to apply before adding the animation class
     setTimeout(() => { overlay.classList.add('open'); }, 10);
-    document.body.style.overflow = 'hidden';
   }
 
   function closeModal() {
     const overlay = document.getElementById('modalOverlay');
     overlay.classList.remove('open');
-    setTimeout(() => { overlay.style.display = 'none'; }, 300);
-    document.body.style.overflow = '';
+    setTimeout(() => { overlay.style.display = 'none'; }, 200);
   }
 
   function closeModalOutside(e) { if (e.target===document.getElementById('modalOverlay')) closeModal(); }
@@ -804,53 +723,10 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  /* ── EMPTY STATE LOADER ── */
-  var loaderTimer = null;
-  var loaderPhase = 'text';
-
-  function showLoading() {
-    loaderPhase = 'loading';
-    clearInterval(loaderTimer);
-    var loader = document.getElementById('emptyLoader');
-    var text   = document.getElementById('emptyText');
-    if (!loader) return;
-    text.classList.add('hidden');
-    setTimeout(function() { loader.classList.add('active'); }, 400);
-    loaderTimer = setTimeout(showText, 3500);
-  }
-
-  function showText() {
-    loaderPhase = 'text';
-    clearInterval(loaderTimer);
-    var loader = document.getElementById('emptyLoader');
-    var text   = document.getElementById('emptyText');
-    if (!loader) return;
-    loader.classList.remove('active');
-    setTimeout(function() { text.classList.remove('hidden'); }, 400);
-    loaderTimer = setTimeout(showLoading, 6000);
-  }
-
-  function startLoader() {
-    stopLoader();
-    showLoading();
-  }
-
-  function stopLoader() {
-    clearTimeout(loaderTimer);
-    clearInterval(loaderTimer);
-    loaderTimer = null;
-    var loader = document.getElementById('emptyLoader');
-    var text   = document.getElementById('emptyText');
-    if (loader) loader.classList.remove('active');
-    if (text) text.classList.remove('hidden');
-    loaderPhase = 'text';
-  }
-
   /* ── INIT ── */
   window.addEventListener('DOMContentLoaded', function() {
     var saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setAlias(saved); else newAlias();
-    startLoader();
   });
 </script>
 </body>
