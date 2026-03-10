@@ -326,10 +326,12 @@
 
   /* -- MOBILE ADAPTATION -- */
   @media(max-width: 480px) {
-    .header-nav { display: none; }
+    header { flex-wrap: wrap; gap: 16px; }
+    .header-actions { width: 100%; justify-content: space-between; }
     .header-divider { display: none; }
     .actions-grid { grid-template-columns: 1fr; }
     .btn-pill { width: 100%; }
+    header .btn-pill { width: auto; } /* Keeps the header login button from stretching */
     .actions-secondary { display: grid; grid-template-columns: 1fr auto; }
     .recover-box { flex-direction: column; align-items: stretch; }
   }
@@ -416,7 +418,7 @@
     <div class="empty-state bordered" id="emptyState" style="display: none;">
       <i data-lucide="table-2" class="empty-icon" width="28" height="28"></i>
       <h3>Oops, nothing here yet!</h3>
-      <p>Once you receive the first completion, you'll see all the results here</p>
+      <p>Once you receive the first email, you'll see all the results here</p>
     </div>
 
     <!-- Loading State -->
@@ -640,11 +642,12 @@
     var input = document.getElementById('recoverInput').value.trim().toLowerCase();
     if (!input) { showToast('Enter an alias to recover'); return; }
     if (!input.includes('@')) input = input + '@' + DOMAIN;
-    var userPart = input.split('@')[0].replace(/\./g, '');
-    if (userPart !== BASE) { showToast('Alias not from this Gmail'); return; }
+    
+    // Removed strict BASE format verification so you can load/recover ANY alias,
+    // even if it has absolutely zero emails recorded in the system.
     document.getElementById('recoverInput').value = '';
     setAlias(input);
-    showToast('Recovering alias...');
+    showToast('Alias successfully loaded');
   }
 
   /* ── COPY ── */
