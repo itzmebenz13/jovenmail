@@ -265,8 +265,8 @@
   .modal-overlay.open { display: flex; opacity: 1; }
   .modal {
     background: var(--bg-card); border: 1px solid var(--border); 
-    border-radius: 16px; width: 100%; max-width: 560px; max-height: 85vh; 
-    display: flex; flex-direction: column; box-shadow: 0 24px 48px -12px rgba(0,0,0,0.5);
+    border-radius: 16px; width: 100%; max-width: 680px; /* Widened for standard 600px emails */
+    max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 24px 48px -12px rgba(0,0,0,0.5);
     transform: scale(0.98); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .modal-overlay.open .modal { transform: scale(1); }
@@ -285,9 +285,9 @@
   .modal-meta-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-dim); }
   .modal-meta-row strong { color: var(--text-main); font-weight: 600; width: 40px; }
   
-  .modal-body { padding: 20px; color: var(--text-main); font-size: 0.9rem; overflow-y: auto; line-height: 1.6; }
-  .modal-body.is-plain { white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
-  .modal-body iframe { display: block; border-radius: 8px; border: 1px solid var(--border); width: 100%; background: #fff;}
+  .modal-body { padding: 0; color: var(--text-main); font-size: 0.9rem; overflow-y: auto; overflow-x: hidden; line-height: 1.6; }
+  .modal-body.is-plain { padding: 24px; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+  .modal-body iframe { display: block; border-radius: 0 0 16px 16px; border: none; width: 100%; background: #fff;}
 
   /* -- LOGIN MODAL EXTRAS -- */
   .modal-sm { max-width: 360px; }
@@ -413,14 +413,14 @@
     </div>
 
     <!-- Empty State -->
-    <div class="empty-state bordered" id="emptyState">
+    <div class="empty-state bordered" id="emptyState" style="display: none;">
       <i data-lucide="table-2" class="empty-icon" width="28" height="28"></i>
       <h3>Oops, nothing here yet!</h3>
       <p>Once you receive the first completion, you'll see all the results here</p>
     </div>
 
-    <!-- Loading State (hidden initially) -->
-    <div class="empty-state" id="loadingState" style="display: none;">
+    <!-- Loading State -->
+    <div class="empty-state" id="loadingState">
       <div class="spinner"></div>
       <h3 style="margin-top: 8px; font-size: 1rem;">Syncing data...</h3>
     </div>
@@ -746,15 +746,13 @@
   function showLoadingUI() {
     if(emails.length === 0) {
       document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('emailList').style.display = 'none';
       document.getElementById('loadingState').style.display = 'flex';
     }
   }
 
   function hideLoadingUI() {
     document.getElementById('loadingState').style.display = 'none';
-    if(emails.length === 0) {
-      document.getElementById('emptyState').style.display = 'flex';
-    }
   }
 
   /* ── MODAL ── */
@@ -771,14 +769,19 @@
     if (isHtml) {
       bodyEl.classList.remove('is-plain');
       var iframe = document.createElement('iframe');
-      iframe.style.cssText = 'width:100%;border:none;min-height:300px;background:#ffffff;border-radius:6px;display:block';
-      iframe.setAttribute('sandbox', 'allow-same-origin');
+      // Allowed popups so external links work when clicked
+      iframe.style.cssText = 'width:100%;border:none;min-height:400px;background:#ffffff;border-radius:0 0 16px 16px;display:block;';
+      iframe.setAttribute('sandbox', 'allow-same-origin allow-popups');
       bodyEl.innerHTML = '';
       bodyEl.appendChild(iframe);
+      
       iframe.addEventListener('load', function() {
-        iframe.style.height = (iframe.contentDocument.body.scrollHeight + 30) + 'px';
+        var h = iframe.contentDocument.body.scrollHeight;
+        iframe.style.height = (h > 400 ? h + 20 : 400) + 'px';
       });
-      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;color:#000}img{max-width:100%;height:auto}a{color:#0066cc}table{max-width:100%!important}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
+      
+      // Removed strict table sizing and padding so promotional emails can render natively
+      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;color:#000;background:#fff;}img{max-width:100%;height:auto;}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
     } else {
       bodyEl.classList.add('is-plain');
       bodyEl.innerHTML = '';
