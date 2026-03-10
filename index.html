@@ -126,6 +126,17 @@
   [data-theme="dark"] .icon-sun { transform: translateY(-20px); opacity: 0; }
   [data-theme="dark"] .icon-moon { transform: translateY(0); opacity: 1; }
 
+  /* Hamburger Menu Button */
+  .menu-btn {
+    display: none;
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim); 
+    cursor: pointer; width: 32px; height: 32px; align-items: center; justify-content: center;
+    border-radius: 8px; transition: all 0.2s;
+  }
+  .menu-btn:hover { color: var(--text-main); background: var(--bg-hover); border-color: var(--border-strong); }
+
+  .mobile-menu { display: none; }
+
   /* -- HERO -- */
   .hero { text-align: center; padding: 24px 0 32px; }
   .hero h1 { 
@@ -326,9 +337,32 @@
 
   /* -- MOBILE ADAPTATION -- */
   @media(max-width: 480px) {
-    header { flex-wrap: wrap; gap: 16px; }
-    .header-actions { width: 100%; justify-content: space-between; }
+    header { position: relative; }
+    .header-nav { display: none; }
     .header-divider { display: none; }
+    .menu-btn { display: flex; }
+    .header-actions { gap: 8px; }
+    
+    /* Mobile Dropdown Styling */
+    .mobile-menu {
+      display: flex; flex-direction: column; gap: 4px;
+      position: absolute; top: 68px; right: 0; z-index: 50;
+      background: var(--bg-card); border: 1px solid var(--border-strong);
+      border-radius: 12px; padding: 8px; box-shadow: var(--shadow-card);
+      min-width: 160px;
+      transform: translateY(-10px); opacity: 0; pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mobile-menu.open {
+      transform: translateY(0); opacity: 1; pointer-events: auto;
+    }
+    .mobile-link {
+      display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+      color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+      border-radius: 8px; transition: all 0.2s;
+    }
+    .mobile-link:hover { background: var(--bg-hover); color: var(--text-main); }
+    
     .actions-grid { grid-template-columns: 1fr; }
     .btn-pill { width: 100%; }
     header .btn-pill { width: auto; } /* Keeps the header login button from stretching */
@@ -359,6 +393,19 @@
         <i data-lucide="sun" class="icon-sun" width="16" height="16"></i>
         <i data-lucide="moon" class="icon-moon" width="16" height="16"></i>
       </button>
+      <button class="menu-btn" onclick="toggleMobileMenu(event)" aria-label="Menu">
+        <i data-lucide="menu" width="16" height="16"></i>
+      </button>
+    </div>
+    
+    <!-- Mobile Menu Dropdown -->
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#" class="mobile-link" onclick="toggleMobileMenu(); showToast('API is not yet available'); return false;">
+        <i data-lucide="book-open" width="14" height="14"></i> API
+      </a>
+      <a href="#" class="mobile-link" onclick="toggleMobileMenu(); openPrivacyModal(); return false;">
+        <i data-lucide="shield-check" width="14" height="14"></i> Privacy
+      </a>
     </div>
   </header>
 
@@ -540,6 +587,21 @@
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
   }
+
+  function toggleMobileMenu(e) {
+    if(e) e.stopPropagation();
+    const menu = document.getElementById('mobileMenu');
+    if(menu) menu.classList.toggle('open');
+  }
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('mobileMenu');
+    const btn = document.querySelector('.menu-btn');
+    if(menu && menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.classList.remove('open');
+    }
+  });
 
   function toggleRecover() {
     const box = document.getElementById('recoverBox');
