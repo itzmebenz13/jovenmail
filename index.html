@@ -103,7 +103,8 @@
     padding:13px 14px;cursor:pointer;transition:all .15s;
     display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;
     gap:3px 12px;align-items:start;position:relative;overflow:hidden;
-    animation:fadeIn .3s ease both
+    animation:fadeIn .3s ease both;
+    will-change:opacity;contain:layout style
   }
   .email-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:0;transition:opacity .15s}
   .email-item:hover,.email-item:active{border-color:#333;background:#161616}
@@ -119,9 +120,10 @@
   .modal{
     background:var(--surface);border:1px solid var(--border);border-radius:3px 3px 0 0;
     width:100%;max-width:620px;max-height:88vh;overflow-y:auto;
-    position:relative;animation:slideUp .25s ease
+    position:relative;animation:slideUp .25s ease;
+    will-change:transform,opacity
   }
-  @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+  @keyframes slideUp{from{transform:translate3d(0,30px,0);opacity:0}to{transform:translate3d(0,0,0);opacity:1}}
   .modal::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
   .modal-head{padding:18px 20px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}
   .modal-close{position:absolute;top:16px;right:16px;background:none;border:1px solid var(--border);color:var(--muted);font-size:.9rem;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:2px;transition:all .15s;font-family:var(--mono)}
@@ -140,7 +142,7 @@
   footer p{font-family:var(--mono);font-size:.58rem;color:var(--muted);line-height:2}
   footer a{color:var(--accent);text-decoration:none}
 
-  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   ::-webkit-scrollbar{width:4px}
   ::-webkit-scrollbar-track{background:#0a0a0a}
   ::-webkit-scrollbar-thumb{background:#333}
