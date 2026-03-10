@@ -510,19 +510,35 @@
     if (isHtml) {
       bodyEl.classList.remove('is-plain');
       bodyEl.classList.add('is-html');
-      // Render in sandboxed iframe to isolate styles
-      var iframe = document.createElement('iframe');
-      iframe.style.cssText = 'width:100%;border:none;min-height:200px;background:#fff;border-radius:2px;display:block';
-      iframe.setAttribute('sandbox', 'allow-same-origin');
       bodyEl.innerHTML = '';
+
+      // Sandboxed iframe — we scale it to fit the modal width
+      var iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', 'allow-same-origin');
+      iframe.style.cssText = 'border:none;display:block;width:600px;background:#fff;border-radius:2px;transform-origin:top left;';
       bodyEl.appendChild(iframe);
+
+      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:16px;font-family:sans-serif;font-size:14px;line-height:1.6;color:#222}img{max-width:100%;height:auto}a{color:#0066cc}table{max-width:100%!important}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
+
       iframe.addEventListener('load', function() {
-        iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+        try {
+          var iframeBody = iframe.contentDocument.body;
+          var contentH = iframeBody.scrollHeight;
+          // Scale iframe to fit modal body width
+          var containerW = bodyEl.clientWidth || 300;
+          var scale = containerW / 600;
+          iframe.style.transform = 'scale(' + scale + ')';
+          iframe.style.height = contentH + 'px';
+          // Set wrapper height so it doesn't overlap content below
+          bodyEl.style.height = Math.ceil(contentH * scale) + 'px';
+          bodyEl.style.overflow = 'hidden';
+        } catch(err) {}
       });
-      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:12px;font-family:sans-serif;font-size:13px;line-height:1.6;color:#222}img{max-width:100%;height:auto}a{color:#0066cc}table{max-width:100%!important}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
     } else {
       bodyEl.classList.remove('is-html');
       bodyEl.classList.add('is-plain');
+      bodyEl.style.height = '';
+      bodyEl.style.overflow = '';
       bodyEl.innerHTML = '';
       bodyEl.textContent = body;
     }
@@ -533,6 +549,11 @@
   function closeModal() {
     document.getElementById('modalOverlay').classList.remove('open');
     document.body.style.overflow = '';
+    var bodyEl = document.getElementById('modalBody');
+    bodyEl.innerHTML = '';
+    bodyEl.style.height = '';
+    bodyEl.style.overflow = '';
+    bodyEl.className = 'modal-body';
   }
 
   function closeModalOutside(e) { if (e.target===document.getElementById('modalOverlay')) closeModal(); }
