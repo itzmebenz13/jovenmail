@@ -167,17 +167,19 @@ async function fetchEmails(maxResults = 30) {
 }
 
 async function registerWatch() {
-  const { google } = require('googleapis');
+  const projectId = process.env.GOOGLE_PROJECT_ID || 'maildot';
+  const topicName = `projects/${projectId}/topics/gmail-push`;
   const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
-  const res = await gmail.users.watch({
-    userId: 'me',
-    requestBody: {
-      labelIds: ['INBOX'],
-      topicName: 'projects/maildot/topics/gmail-push'
-    }
-  });
-  console.log('Gmail watch registered, expires:', new Date(parseInt(res.data.expiration)).toISOString());
-  return res.data;
+  try {
+    const res = await gmail.users.watch({
+      userId: 'me',
+      requestBody: { labelIds: ['INBOX'], topicName }
+    });
+    console.log('Gmail watch registered, expires:', new Date(parseInt(res.data.expiration)).toISOString());
+    return res.data;
+  } catch(e) {
+    console.error('registerWatch failed (non-fatal):', e.message);
+  }
 }
 
 module.exports = { getAuthUrl, saveToken, fetchEmails, registerWatch };
