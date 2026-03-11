@@ -166,4 +166,18 @@ async function fetchEmails(maxResults = 30) {
   return emails;
 }
 
-module.exports = { getAuthUrl, saveToken, fetchEmails };
+async function registerWatch() {
+  const { google } = require('googleapis');
+  const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+  const res = await gmail.users.watch({
+    userId: 'me',
+    requestBody: {
+      labelIds: ['INBOX'],
+      topicName: 'projects/maildot/topics/gmail-push'
+    }
+  });
+  console.log('Gmail watch registered, expires:', new Date(parseInt(res.data.expiration)).toISOString());
+  return res.data;
+}
+
+module.exports = { getAuthUrl, saveToken, fetchEmails, registerWatch };
