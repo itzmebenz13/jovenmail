@@ -42,20 +42,20 @@ app.post('/gmail/push', async (req, res) => {
   }
 });
 
-// ── Polling every 5s as fallback ──
-cron.schedule('*/5 * * * * *', async () => {
-  try {
-    const emails = await fetchEmails(20);
-    if (!emails.length) return;
-    const { error } = await supabase
-      .from('emails')
-      .upsert(emails, { onConflict: 'gmail_id', ignoreDuplicates: true });
-    if (error) console.error('Supabase error:', JSON.stringify(error));
-    else console.log(`[${new Date().toISOString()}] Synced ${emails.length} email(s)`);
-  } catch (err) {
-    console.error('Poll error:', err.message);
-  }
-});
+// ── Polling disabled — push notifications handle real-time delivery ──
+// cron.schedule('*/5 * * * * *', async () => {
+//   try {
+//     const emails = await fetchEmails(20);
+//     if (!emails.length) return;
+//     const { error } = await supabase
+//       .from('emails')
+//       .upsert(emails, { onConflict: 'gmail_id', ignoreDuplicates: true });
+//     if (error) console.error('Supabase error:', JSON.stringify(error));
+//     else console.log(`[${new Date().toISOString()}] Synced ${emails.length} email(s)`);
+//   } catch (err) {
+//     console.error('Poll error:', err.message);
+//   }
+// });
 
 // ── Re-register Gmail watch every 6 days (expires every 7) ──
 cron.schedule('0 0 */6 * *', async () => {
