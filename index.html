@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>joven.mail — Temporary Gmail Aliases</title>
+
+<!-- Compact, crisp fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+<!-- Supabase & Lucide Icons -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+
+<script>
+  const savedTheme = localStorage.getItem('theme') || 'dark'; // Default to dark (Meiro style)
+  document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
+<style>
+  :root {
+    /* -- LIGHT MODE -- */
+    --bg-app: #f4f4f5;
+    --bg-card: #ffffff;
+    --bg-input: #fafafa;
+    --bg-hover: #e4e4e7;
+    
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    
+    --accent: #d9f950;       /* Meiro Tea Green */
+    --accent-hover: #c4ec2a;
+    --accent-text: #09090b;
+    --code-text: #3d7a00;    /* Dark green for code in light mode */
+    
+    --text-main: #09090b;
+    --text-dim: #71717a;
+    --text-muted: #a1a1aa;
+    
+    --shadow-card: 0 2px 8px -2px rgba(0,0,0,0.05);
+  }
+
+  [data-theme="dark"] {
+    /* -- DARK MODE (Meiro Aesthetic) -- */
+    --bg-app: #09090b;       /* Very deep background */
+    --bg-card: #18181b;      /* Card surface */
+    --bg-input: #121214;     /* Input background */
+    --bg-hover: #27272a;     /* Hover states */
+    
+    --border: #27272a;
+    --border-strong: #3f3f46;
+    
+    --accent: #d9f950;       /* Meiro Tea Green */
+    --accent-hover: #bef222;
+    --accent-text: #09090b;
+    --code-text: #d9f950;    /* Lime green for code in dark mode */
+    
+    --text-main: #fafafa;
+    --text-dim: #a1a1aa;
+    --text-muted: #52525b;
+    
+    --shadow-card: 0 8px 16px -4px rgba(0,0,0,0.4);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  /* Compact Scaling: ~20% smaller than standard 16px */
+  html { font-size: 13px; scroll-behavior: smooth; }
+  
+  body { 
+    background-color: var(--bg-app); 
+    color: var(--text-main); 
+    font-family: 'Inter', sans-serif; 
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden; 
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  /* -- LAYOUT -- */
+  .wrap { 
+    width: 100%; 
+    max-width: 580px; /* Tighter width for compact feel */
+    margin: 0 auto; 
+    padding: 0 16px; 
+    display: flex;
+    flex-direction: column;
+    flex: 1; 
+  }
+  
+  main { flex: 1; display: flex; flex-direction: column; padding-bottom: 32px; }
+
+  /* -- HEADER -- */
+  header { 
+    display: flex; align-items: center; justify-content: space-between; 
+    padding: 24px 0 16px; 
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 8px; }
+  .logo { font-size: 1.15rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.02em; }
+  .logo-icon { color: var(--accent); }
+  .badge { 
+    font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+    background: var(--bg-hover); color: var(--text-dim); border: 1px solid var(--border);
+  }
+  
+  /* Header Navigation & Actions */
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .header-nav { display: flex; align-items: center; gap: 16px; }
+  .nav-link { display: flex; align-items: center; gap: 6px; color: var(--text-dim); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+  .nav-link:hover { color: var(--text-main); }
+  .header-divider { width: 1px; height: 16px; background: var(--border-strong); }
+  .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+  /* Theme Toggle Animation */
+  .theme-switch {
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim); 
+    cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .theme-switch:hover { color: var(--text-main); background: var(--bg-hover); border-color: var(--border-strong); }
+  .theme-switch svg { position: absolute; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; }
+  .icon-sun { transform: translateY(0); opacity: 1; }
+  .icon-moon { transform: translateY(20px); opacity: 0; }
+  [data-theme="dark"] .icon-sun { transform: translateY(-20px); opacity: 0; }
+  [data-theme="dark"] .icon-moon { transform: translateY(0); opacity: 1; }
+
+  /* Hamburger Menu Button */
+  .menu-btn {
+    display: none;
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim); 
+    cursor: pointer; width: 32px; height: 32px; align-items: center; justify-content: center;
+    border-radius: 8px; transition: all 0.2s;
+  }
+  .menu-btn:hover { color: var(--text-main); background: var(--bg-hover); border-color: var(--border-strong); }
+
+  .mobile-menu { display: none; }
+
+  /* -- HERO -- */
+  .hero { text-align: center; padding: 24px 0 32px; }
+  .hero h1 { 
+    font-size: 1.8rem; font-weight: 700; line-height: 1.1; 
+    letter-spacing: -0.03em; margin-bottom: 8px; color: var(--text-main);
+  }
+  .hero p { color: var(--text-dim); font-size: 0.95rem; max-width: 420px; margin: 0 auto; line-height: 1.5; }
+
+  /* -- MAIN CONTROL CARD -- */
+  .control-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 32px;
+  }
+  
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .card-title { font-size: 0.85rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;}
+  
+  /* Sync Status */
+  .sync-status { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;}
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse-green 2s infinite; }
+  @keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(217, 249, 80, 0.4); }
+    70% { box-shadow: 0 0 0 4px rgba(217, 249, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(217, 249, 80, 0); }
+  }
+
+  /* Alias Display Field */
+  .alias-field {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; transition: border-color 0.2s;
+  }
+  .alias-field:hover { border-color: var(--border-strong); }
+  .alias-text {
+    font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 500;
+    color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    user-select: all; cursor: text;
+  }
+
+  /* Meiro Pill Buttons */
+  .actions-grid { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;}
+  .actions-secondary { display: flex; gap: 8px; }
+  
+  .btn-pill {
+    border-radius: 999px; /* Core Meiro styling */
+    padding: 10px 18px; font-size: 0.9rem; font-weight: 600; font-family: 'Inter', sans-serif;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.2s ease; border: none; outline: none; white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: var(--accent-text); }
+  .btn-primary:hover { background: var(--accent-hover); transform: scale(1.02); }
+  
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+  .btn-outline:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+  
+  .btn-icon-only { padding: 10px; border-radius: 50%; width: 38px; height: 38px; }
+
+  /* Recover Input (Hidden by default) */
+  .recover-box { 
+    display: none; align-items: center; gap: 8px; margin-top: 12px; 
+    padding-top: 12px; border-top: 1px dashed var(--border);
+    animation: fadeIn 0.2s ease;
+  }
+  .recover-box.active { display: flex; }
+  .input-minimal {
+    flex: 1; background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 999px; padding: 10px 16px; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: var(--text-main); outline: none; transition: border-color 0.2s;
+  }
+  .input-minimal:focus { border-color: var(--accent); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* -- INBOX -- */
+  .inbox-header { 
+    display: flex; align-items: center; justify-content: space-between; 
+    margin-bottom: 12px; padding: 0 4px;
+  }
+  .inbox-title { font-size: 1.1rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+  .badge-count { background: var(--bg-card); border: 1px solid var(--border); padding: 2px 8px; border-radius: 999px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;}
+  
+  .btn-text {
+    background: transparent; border: none; color: var(--text-dim);
+    font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: color 0.2s;
+  }
+  .btn-text:hover { color: var(--text-main); }
+
+  /* -- REFRESH BUTTON -- */
+  .inbox-actions { display: flex; align-items: center; gap: 8px; }
+
+  .btn-refresh {
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    cursor: pointer; height: 30px; padding: 0 10px; display: flex; align-items: center; gap: 5px;
+    border-radius: 999px; font-size: 0.8rem; font-weight: 500; font-family: 'Inter', sans-serif;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-refresh:hover { color: var(--accent); border-color: var(--accent); background: rgba(217,249,80,0.06); }
+  .btn-refresh:active { transform: scale(0.95); }
+  .btn-refresh.spinning svg { animation: spin 0.6s linear infinite; }
+  .btn-refresh.spinning { pointer-events: none; color: var(--accent); border-color: var(--accent); }
+
+  /* -- LIVE SYNC BAR -- */
+  .live-bar {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+    padding: 0 4px; margin-bottom: 8px;
+    transition: color 0.3s;
+  }
+  .live-bar.active { color: var(--accent); }
+  .live-pulse {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted);
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .live-bar.active .live-pulse { background: var(--accent); animation: pulse-green 1.5s infinite; }
+  .live-bar.offline .live-pulse { background: #ef4444; }
+  .live-bar.offline { color: #ef4444; }
+
+  /* Empty State (Matched to Meiro Screenshot) */
+  .empty-state { 
+    background: transparent; border: 1px solid transparent; 
+    border-radius: 16px; height: 220px; display: flex; flex-direction: column; 
+    align-items: center; justify-content: center; text-align: center; gap: 8px;
+  }
+  .empty-state.bordered { background: var(--bg-card); border-color: var(--border); }
+  .empty-icon { color: var(--text-muted); margin-bottom: 4px; }
+  .empty-state h3 { font-size: 1.05rem; font-weight: 600; color: var(--text-main); }
+  .empty-state p { font-size: 0.85rem; color: var(--text-dim); max-width: 260px; line-height: 1.5; }
+
+  /* Loading Spinner */
+  .spinner {
+    width: 24px; height: 24px; border: 2px solid var(--border-strong);
+    border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Email List */
+  .email-list { display: flex; flex-direction: column; gap: 8px; }
+  .email-item {
+    background: var(--bg-card); border: 1px solid var(--border); 
+    border-radius: 12px; padding: 14px 16px; cursor: pointer; 
+    transition: all 0.2s; display: grid; 
+    grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
+  }
+  .email-item:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  
+  .email-dot { width: 8px; height: 8px; border-radius: 50%; background: transparent; }
+  .email-item.unread .email-dot { background: var(--accent); box-shadow: 0 0 6px rgba(217, 249, 80, 0.4); }
+  
+  .email-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .email-sender { font-weight: 600; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .email-subject { font-size: 0.85rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;}
+  .email-time { font-size: 0.8rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; white-space: nowrap;}
+
+  /* OTP chip on email list */
+  .otp-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #d9f950; border: 1px solid #b8d930;
+    color: #1a2000; border-radius: 6px; padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s; margin-top: 4px; width: fit-content;
+  }
+  [data-theme="dark"] .otp-chip { background: rgba(217,249,80,0.15); border-color: rgba(217,249,80,0.4); color: #d9f950; }
+  .otp-chip:hover { opacity: 0.85; transform: scale(1.03); }
+  .otp-chip svg { flex-shrink: 0; }
+
+  /* Newest email flash animation */
+  @keyframes newEmailSlide {
+    0%   { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    60%  { opacity: 1; transform: translateY(2px) scale(1.01); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes newEmailGlow {
+    0%   { box-shadow: 0 0 0 0 rgba(217,249,80,0.5); border-color: var(--accent); }
+    60%  { box-shadow: 0 0 16px 4px rgba(217,249,80,0.25); }
+    100% { box-shadow: none; border-color: var(--border); }
+  }
+
+
+  /* OTP banner inside modal */
+  .otp-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(217,249,80,0.08); border: 1px solid rgba(217,249,80,0.3);
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; gap: 12px;
+  }
+  .otp-banner-left { display: flex; align-items: center; gap: 10px; }
+  .otp-banner-label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+  .otp-banner-code { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 800; color: #4a6000; letter-spacing: 0.15em; }
+  [data-theme="dark"] .otp-banner-code { color: var(--accent); }
+  .otp-copy-btn {
+    background: var(--accent); color: #000; border: none; border-radius: 8px;
+    padding: 8px 16px; font-size: 0.82rem; font-weight: 700; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .otp-copy-btn:hover { opacity: 0.85; transform: scale(1.03); }
+  .otp-copy-btn.copied { background: #4ade80; }
+
+  /* -- MODAL -- */
+  .modal-overlay { 
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); 
+    z-index: 100; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 16px; 
+    opacity: 0; transition: opacity 0.2s ease;
+  }
+  .modal-overlay.open { display: flex; opacity: 1; }
+  .modal {
+    background: var(--bg-card); border: 1px solid var(--border); 
+    border-radius: 16px; width: 100%; max-width: 680px; /* Widened for standard 600px emails */
+    max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 24px 48px -12px rgba(0,0,0,0.5);
+    transform: scale(0.98); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .modal-overlay.open .modal { transform: scale(1); }
+  
+  .modal-head { padding: 20px; border-bottom: 1px solid var(--border); position: relative; }
+  .modal-close { 
+    position: absolute; top: 16px; right: 16px; background: var(--bg-hover); 
+    border: none; color: var(--text-dim); cursor: pointer; border-radius: 50%;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; 
+    transition: all 0.2s;
+  }
+  .modal-close:hover { background: var(--border-strong); color: var(--text-main); }
+  
+  .modal-subject { font-size: 1.15rem; font-weight: 700; margin-bottom: 12px; padding-right: 32px; color: var(--text-main); }
+  .modal-meta { display: flex; flex-direction: column; gap: 4px; background: var(--bg-input); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);}
+  .modal-meta-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-dim); }
+  .modal-meta-row strong { color: var(--text-main); font-weight: 600; width: 40px; }
+  
+  /* Restored default padding for all modals */
+  .modal-body { padding: 20px; color: var(--text-main); font-size: 0.9rem; overflow-y: auto; overflow-x: hidden; line-height: 1.6; }
+  .modal-body.is-plain { white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+  /* Created specific zero-padding class for HTML email iframes */
+  .modal-body.is-iframe { padding: 0; }
+  .modal-body iframe { display: block; border-radius: 0 0 16px 16px; border: none; width: 100%; background: #fff;}
+
+  /* -- LOGIN MODAL EXTRAS -- */
+  .modal-sm { max-width: 360px; }
+  .login-subtitle { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5; }
+  .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+  .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+  .w-full { width: 100%; }
+  .mt-4 { margin-top: 16px; }
+
+  /* -- TOAST -- */
+  .toast { 
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--bg-card); border: 1px solid var(--border-strong);
+    color: var(--text-main); font-size: 0.85rem; font-weight: 500; 
+    padding: 10px 16px; border-radius: 999px; box-shadow: var(--shadow-card); 
+    z-index: 999; opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast-icon { color: var(--accent); }
+
+  /* -- FOOTER -- */
+  footer { 
+    text-align: center; padding: 24px 0; margin-top: auto; 
+    border-top: 1px dashed var(--border);
+  }
+  footer p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.8; font-weight: 500;}
+  footer a { color: var(--text-main); text-decoration: none; font-weight: 600; transition: opacity 0.2s;}
+  footer a:hover { opacity: 0.7; }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* -- MOBILE ADAPTATION -- */
+  @media(max-width: 480px) {
+    header { position: relative; }
+    .header-nav { display: none; }
+    .header-divider { display: none; }
+    .menu-btn { display: flex; }
+    .header-actions { gap: 8px; }
+    
+    /* Mobile Dropdown Styling */
+    .mobile-menu {
+      display: flex; flex-direction: column; gap: 4px;
+      position: absolute; top: 68px; right: 0; z-index: 50;
+      background: var(--bg-card); border: 1px solid var(--border-strong);
+      border-radius: 12px; padding: 8px; box-shadow: var(--shadow-card);
+      min-width: 160px;
+      transform: translateY(-10px); opacity: 0; pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mobile-menu.open {
+      transform: translateY(0); opacity: 1; pointer-events: auto;
+    }
+    .mobile-link {
+      display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+      color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+      border-radius: 8px; transition: all 0.2s;
+    }
+    .mobile-link:hover { background: var(--bg-hover); color: var(--text-main); }
+    
+    .actions-grid { grid-template-columns: 1fr; }
+    .btn-pill { width: 100%; }
+    header .btn-pill { width: auto; } /* Keeps the header login button from stretching */
+    .actions-secondary { display: grid; grid-template-columns: 1fr auto; }
+    .recover-box { flex-direction: column; align-items: stretch; }
+  }
+
+  #latestCodeBar.pop {
+    animation: newEmailSlide 0.4s cubic-bezier(0.16,1,0.3,1) forwards,
+               newEmailGlow 1.5s ease forwards;
+  }
+  .show-more-btn {
+    width: 100%; margin-top: 4px; padding: 9px;
+    background: none; border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text-muted); font-size: 0.78rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: inherit; transition: border-color 0.15s, color 0.15s;
+  }
+  .show-more-btn:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="logo-wrap">
+      <i data-lucide="zap" class="logo-icon" width="20" height="20"></i>
+      <div class="logo">joven.mail</div>
+      <div class="badge">Beta</div>
+    </div>
+    <div class="header-actions">
+      <nav class="header-nav">
+        <a href="#" class="nav-link" onclick="showToast('API is not yet available'); return false;"><i data-lucide="book-open" width="14" height="14"></i> API</a>
+        <a href="#" class="nav-link" onclick="openPrivacyModal(); return false;"><i data-lucide="shield-check" width="14" height="14"></i> Privacy</a>
+      </nav>
+      <div class="header-divider"></div>
+      <button class="btn-pill btn-outline btn-sm" onclick="openLoginModal()">
+        <i data-lucide="log-in" width="14" height="14"></i> Login
+      </button>
+      <button class="theme-switch" onclick="toggleTheme()" aria-label="Toggle Theme">
+        <i data-lucide="sun" class="icon-sun" width="16" height="16"></i>
+        <i data-lucide="moon" class="icon-moon" width="16" height="16"></i>
+      </button>
+      <button class="menu-btn" onclick="toggleMobileMenu(event)" aria-label="Menu">
+        <i data-lucide="menu" width="16" height="16"></i>
+      </button>
+    </div>
+    
+    <!-- Mobile Menu Dropdown -->
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#" class="mobile-link" onclick="toggleMobileMenu(); showToast('API is not yet available'); return false;">
+        <i data-lucide="book-open" width="14" height="14"></i> API
+      </a>
+      <a href="#" class="mobile-link" onclick="toggleMobileMenu(); openPrivacyModal(); return false;">
+        <i data-lucide="shield-check" width="14" height="14"></i> Privacy
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>One Gmail. Infinite Aliases.</h1>
+      <p>Instantly generate temporary dot-variants. Messages route directly to your real inbox, keeping your actual address hidden.</p>
+    </section>
+
+    <!-- CONTROL CARD -->
+    <div class="control-card">
+      <div class="card-header">
+        <div class="card-title">
+          <i data-lucide="fingerprint" width="14" height="14"></i> Active Identity
+        </div>
+
+      </div>
+      
+      <div class="alias-field">
+        <div class="alias-text" id="aliasDisplay">generating...</div>
+      </div>
+
+      <div class="actions-grid">
+        <button class="btn-pill btn-primary" onclick="copyAlias()">
+          <i data-lucide="copy" width="16" height="16"></i> Copy address
+        </button>
+        <div class="actions-secondary">
+          <button class="btn-pill btn-outline" onclick="newAlias()" title="Generate new">
+            <i data-lucide="refresh-cw" width="16" height="16"></i> New
+          </button>
+          <button class="btn-pill btn-outline" onclick="toggleRecover()" title="Recover past alias">
+            <i data-lucide="history" width="16" height="16"></i> Recover
+          </button>
+        </div>
+      </div>
+
+      <!-- hCaptcha inline box — shown when user clicks NEW too soon -->
+      <!-- Cooldown banner -->
+      <div id="cooldownBanner" style="display:none;margin-top:14px;">
+        <div style="border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px;background:rgba(245,158,11,0.06);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="flex-shrink:0;width:36px;height:36px;border-radius:8px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.78rem;font-weight:600;color:#f59e0b;margin-bottom:2px;letter-spacing:0.01em;">Rate limit reached</div>
+              <div style="font-size:0.72rem;color:var(--text-secondary,#888);line-height:1.45;">Please wait before generating a new alias.</div>
+            </div>
+            <div style="flex-shrink:0;text-align:center;">
+              <div id="cooldownTimer" style="font-size:1.4rem;font-weight:700;color:#f59e0b;line-height:1;font-variant-numeric:tabular-nums;">30</div>
+              <div style="font-size:0.6rem;color:var(--text-secondary,#888);letter-spacing:0.05em;text-transform:uppercase;margin-top:2px;">seconds</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;height:3px;border-radius:99px;background:rgba(245,158,11,0.12);overflow:hidden;">
+            <div id="cooldownBar" style="height:100%;border-radius:99px;background:#f59e0b;width:100%;transition:width 1s linear;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- hCaptcha inline box — shown every 3rd alias generation -->
+      <div id="hcaptchaInlineBox" style="display:none;margin-top:14px;">
+        <div style="border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:14px 16px;background:rgba(99,102,241,0.06);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <div style="flex-shrink:0;width:36px;height:36px;border-radius:8px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.78rem;font-weight:600;color:#6366f1;margin-bottom:2px;letter-spacing:0.01em;">Security check</div>
+              <div style="font-size:0.72rem;color:var(--text-secondary,#888);line-height:1.45;">Complete the challenge below to generate another alias.</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;">
+            <div id="hcaptchaWidget"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recover-box" id="recoverBox">
+        <p style="font-size:0.72rem;color:#888;margin:0 0 8px 0;display:flex;align-items:center;gap:5px;"><i data-lucide="mail-search" width="13" height="13"></i> Enter a previous alias to load its inbox</p>
+        <input class="input-minimal" id="recoverInput" type="email" placeholder="your.previous.alias@gmail.com" onkeydown="if(event.key==='Enter')recoverAlias()"/>
+        <button class="btn-pill btn-primary" style="padding: 10px 20px;" onclick="recoverAlias()">
+          RECOVER
+        </button>
+      </div>
+    </div>
+
+    <!-- INBOX SECTION -->
+    <div class="inbox-header">
+      <div class="inbox-title">
+        Inbox <span class="badge-count" id="emailCount">0</span>
+      </div>
+      <div class="inbox-actions">
+        <button class="btn-refresh" id="refreshBtn" onclick="manualRefresh()" title="Refresh inbox">
+          <i data-lucide="refresh-cw" width="13" height="13"></i> Refresh
+        </button>
+        <button class="btn-text" onclick="clearInbox()">Clear</button>
+      </div>
+    </div>
+
+
+    <!-- Latest Code Bar -->
+    <div id="latestCodeBar" style="display:none;margin-bottom:12px;border-radius:10px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(217,249,80,0.06);border:1px solid rgba(217,249,80,0.2);border-radius:10px;padding:8px 12px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a3c900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>
+        <div style="flex:1;min-width:0;">
+          <span style="font-size:0.67rem;color:var(--text-muted);">Your latest code &mdash; tap to copy</span>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:1px;">
+            <span id="latestCodeValue" style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--code-text);letter-spacing:0.1em;"></span>
+            <span id="latestCodeSender" style="font-size:0.67rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;"></span>
+          </div>
+        </div>
+        <button id="latestCodeCopyBtn" onclick="copyLatestCode()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:var(--accent);color:#111;border:none;border-radius:7px;padding:5px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all 0.15s;font-family:'Inter',sans-serif;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state bordered" id="emptyState" style="display: flex;">
+      <i data-lucide="table-2" class="empty-icon" width="28" height="28"></i>
+      <h3>Oops, nothing here yet!</h3>
+      <p>Once you receive the first email, you'll see all the results here</p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="empty-state" id="loadingState">
+      <div class="spinner"></div>
+      <h3 style="margin-top: 8px; font-size: 1rem;">Syncing data...</h3>
+    </div>
+
+    <!-- Email List -->
+    <div class="email-list" id="emailList" style="display: none;"></div>
+  </main>
+
+  <footer>
+    <p>Powered by native Gmail routing architecture.</p>
+    <p><a href="#" onclick="openTermsModal(); return false;">Terms</a> &nbsp;&middot;&nbsp; <a href="#" onclick="openPrivacyModal(); return false;">Privacy</a> &nbsp;&middot;&nbsp; <a href="#">GitHub</a></p>
+  </footer>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeModal()">
+        <i data-lucide="x" width="16" height="16"></i>
+      </button>
+      <div class="modal-subject" id="modalSubject"></div>
+      <div class="modal-meta">
+        <div class="modal-meta-row">
+          <strong>From</strong> <span id="modalFrom"></span>
+        </div>
+        <div class="modal-meta-row">
+          <strong>To</strong> <span id="modalTo" style="font-family: 'JetBrains Mono', monospace;"></span>
+        </div>
+        <div class="modal-meta-row">
+          <strong>Date</strong> <span id="modalDate"></span>
+        </div>
+      </div>
+    </div>
+    <div id="modalOtpBanner" style="display:none;padding:12px 20px 0;"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModalOverlay" onclick="closeLoginOutside(event)">
+  <div class="modal modal-sm" id="loginModal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeLoginModal()">
+        <i data-lucide="x" width="16" height="16"></i>
+      </button>
+      <div class="modal-subject" style="margin-bottom: 0;">Admin Login</div>
+    </div>
+    <div class="modal-body">
+      <p class="login-subtitle">Access is restricted to authorized administrators only. Registration is disabled.</p>
+      <div class="form-group">
+        <label><i data-lucide="user" width="12" height="12"></i> Username</label>
+        <input class="input-minimal w-full" id="loginUser" type="text" placeholder="admin" onkeydown="if(event.key==='Enter')handleLogin()"/>
+      </div>
+      <div class="form-group">
+        <label><i data-lucide="key" width="12" height="12"></i> Password</label>
+        <input class="input-minimal w-full" id="loginPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()"/>
+      </div>
+      <button class="btn-pill btn-primary w-full mt-4" onclick="handleLogin()">
+        <i data-lucide="unlock" width="16" height="16"></i> Authenticate
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY MODAL -->
+<div class="modal-overlay" id="privacyModalOverlay" onclick="closePrivacyOutside(event)">
+  <div class="modal" id="privacyModal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closePrivacyModal()">
+        <i data-lucide="x" width="16" height="16"></i>
+      </button>
+      <div class="modal-subject" style="margin-bottom: 0;">Privacy Policy</div>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 16px;"><strong>1. Absolute Anonymity</strong><br/>We do not log, store, or analyze the contents of your emails. The system acts solely as a real-time routing layer.</p>
+      <p style="margin-bottom: 16px;"><strong>2. No Database Persistence</strong><br/>Emails displayed in this dashboard are fetched directly through the secure realtime layer and are automatically cleared from the ephemeral cache. Once you close the session, the local view is permanently gone.</p>
+      <p style="margin-bottom: 16px;"><strong>3. Native Gmail Infrastructure</strong><br/>By leveraging Gmail's native dot-blindness feature, we ensure all routing relies entirely on Google's enterprise-grade infrastructure. Your actual Gmail address remains completely hidden from the sender.</p>
+      <p><strong>4. Third-Party Services</strong><br/>We use Supabase for realtime state synchronization. No personally identifiable information (PII) beyond the temporary dot-variant is transmitted.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TERMS MODAL -->
+<div class="modal-overlay" id="termsModalOverlay" onclick="closeTermsOutside(event)">
+  <div class="modal" id="termsModal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeTermsModal()">
+        <i data-lucide="x" width="16" height="16"></i>
+      </button>
+      <div class="modal-subject" style="margin-bottom: 0;">Terms of Service</div>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 16px;"><strong>1. Acceptance of Terms</strong><br/>By using joven.mail, you agree to these ephemeral routing terms. The service is provided "as is" without any warranties.</p>
+      <p style="margin-bottom: 16px;"><strong>2. Acceptable Use</strong><br/>You agree not to use this service for sending spam, phishing, or engaging in any illegal activities. The routing is strictly for personal privacy and inbox management.</p>
+      <p style="margin-bottom: 16px;"><strong>3. Ephemeral Nature</strong><br/>You acknowledge that aliases and routed emails are temporary. We hold no liability for missed, dropped, delayed, or unrouted emails.</p>
+      <p><strong>4. Termination</strong><br/>We reserve the right to restrict or terminate routing access to any specific alias or user without prior notice if abuse or excessive load is detected.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i data-lucide="check-circle-2" class="toast-icon" width="16" height="16"></i>
+  <span id="toastMsg">Action completed</span>
+</div>
+
+<script>
+  // Initialize Icons
+  lucide.createIcons();
+
+  /* ── THEME TOGGLE ── */
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  }
+
+  function toggleMobileMenu(e) {
+    if(e) e.stopPropagation();
+    const menu = document.getElementById('mobileMenu');
+    if(menu) menu.classList.toggle('open');
+  }
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('mobileMenu');
+    const btn = document.querySelector('.menu-btn');
+    if(menu && menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.classList.remove('open');
+    }
+  });
+
+  function toggleRecover() {
+    const box = document.getElementById('recoverBox');
+    box.classList.toggle('active');
+    if(box.classList.contains('active')) {
+      document.getElementById('recoverInput').focus();
+    }
+  }
+
+  /* ── CONFIG ── */
+  var BASE        = 'rizamartinez875';
+  var DOMAIN      = 'gmail.com';
+  var STORAGE_KEY = 'dotmail_alias';
+  var SUPABASE_URL  = 'https://rjecgkfrwitvcrpodriw.supabase.co';
+  var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqZWNna2Zyd2l0dmNycG9kcml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzg3OTgsImV4cCI6MjA4ODcxNDc5OH0.a26LLka39iM_9cFf2vdXY3ljd4rkw0PS2C2ERm74OyE';
+
+  var currentAlias  = '';
+  var emails        = [];
+  var silentTimer   = null;   // background polling interval
+  var realtimeChan  = null;   // supabase realtime channel
+  var isOnline      = true;
+  var lastFetchedAt = 0;
+  var POLL_INTERVAL = 8000;   // silent background poll every 8 s
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  /* ── READ-STATE PERSISTENCE ──
+     Saves read email IDs to localStorage keyed by alias.
+     Survives page refresh, background sync, and manual refresh. */
+  function readKey(alias) { return 'dotmail_read:' + (alias || currentAlias); }
+
+  function getReadIds(alias) {
+    try { return new Set(JSON.parse(localStorage.getItem(readKey(alias)) || '[]')); }
+    catch(e) { return new Set(); }
+  }
+
+  function markRead(id) {
+    var ids = getReadIds();
+    ids.add(id);
+    localStorage.setItem(readKey(), JSON.stringify(Array.from(ids)));
+  }
+
+  function clearReadIds(alias) {
+    localStorage.removeItem(readKey(alias));
+  }
+
+  /* ── ALIAS GENERATION ── */
+  function generateAllVariants(username) {
+    var letters = username.split('');
+    var n = letters.length;
+    var total = Math.pow(2, n - 1);
+    var limit = Math.min(total, 4096);
+    var variants = [];
+    for (var mask = 0; mask < limit; mask++) {
+      var r = letters[0];
+      for (var i = 1; i < n; i++) { if (mask & (1 << (i-1))) r += '.'; r += letters[i]; }
+      variants.push(r);
+    }
+    return variants;
+  }
+
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  async function newAlias() {
+    document.getElementById('aliasDisplay').textContent = 'Generating...';
+
+    var usedResult = await sb.from('emails').select('alias');
+    var usedSet = new Set();
+    if (!usedResult.error && usedResult.data) {
+      usedResult.data.forEach(function(row) { usedSet.add(row.alias); });
+    }
+
+    var localUsed = JSON.parse(localStorage.getItem('dotmail_used') || '[]');
+    localUsed.forEach(function(a) { usedSet.add(a); });
+
+    var allVariants = generateAllVariants(BASE);
+    shuffle(allVariants);
+
+    var chosen = null;
+    for (var i = 0; i < allVariants.length; i++) {
+      var candidate = allVariants[i] + '@' + DOMAIN;
+      if (!usedSet.has(candidate)) { chosen = candidate; break; }
+    }
+
+    if (!chosen) { showToast('No unused aliases available!'); return; }
+
+    var check = await sb.from('emails').select('id', { count: 'exact', head: true }).eq('alias', chosen);
+    if (check.count && check.count > 0) {
+      usedSet.add(chosen);
+      chosen = null;
+      for (var j = 0; j < allVariants.length; j++) {
+        var c2 = allVariants[j] + '@' + DOMAIN;
+        if (!usedSet.has(c2)) { chosen = c2; break; }
+      }
+      if (!chosen) { showToast('No unused aliases available!'); return; }
+      var check2 = await sb.from('emails').select('id', { count: 'exact', head: true }).eq('alias', chosen);
+      if (check2.count && check2.count > 0) { showToast('Could not find clean alias'); return; }
+    }
+
+    var updated = JSON.parse(localStorage.getItem('dotmail_used') || '[]');
+    if (!updated.includes(chosen)) { updated.push(chosen); }
+    localStorage.setItem('dotmail_used', JSON.stringify(updated));
+
+    setAlias(chosen);
+    showToast('New alias generated');
+  }
+
+  function setAlias(alias) {
+    currentAlias = alias;
+    document.getElementById('aliasDisplay').textContent = alias;
+    localStorage.setItem(STORAGE_KEY, alias);
+    document.getElementById('recoverBox').classList.remove('active');
+    subscribeToAlias(alias);
+    startSilentRefresh();
+    refreshInbox(true);
+  }
+
+  /* ── RECOVER ── */
+  function recoverAlias() {
+    var input = document.getElementById('recoverInput').value.trim().toLowerCase();
+    if (!input) { showToast('Enter an alias to recover'); return; }
+    if (!input.includes('@')) input = input + '@' + DOMAIN;
+    document.getElementById('recoverInput').value = '';
+    setAlias(input);
+    showToast('Alias successfully loaded');
+  }
+
+  /* ── COPY ── */
+  function copyAlias() {
+    navigator.clipboard.writeText(document.getElementById('aliasDisplay').textContent)
+      .then(function(){ showToast('Copied to clipboard'); });
+  }
+
+  /* ── TOAST ── */
+  var toastTimer;
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3000);
+  }
+
+  /* ══════════════════════════════════════════════
+     ── MANUAL REFRESH ──
+     Full re-fetch from Supabase. Animates button.
+  ══════════════════════════════════════════════ */
+  async function manualRefresh() {
+    var btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+    setLiveBar('syncing');
+
+    var alias = currentAlias || document.getElementById('aliasDisplay').textContent.trim();
+    if (!alias || alias === 'Generating...') { btn.classList.remove('spinning'); return; }
+
+    try {
+      var r = await sb.from('emails').select('*').eq('alias', alias).order('received_at', { ascending: false }).limit(50);
+      if (r.error) throw r.error;
+
+      var fetched = mapEmails(r.data || []);
+      var newCount = mergeEmails(fetched);
+      lastFetchedAt = Date.now();
+      setLiveBar('live');
+      showToast(newCount > 0 ? newCount + ' new email' + (newCount>1?'s':'') + ' found' : 'Inbox is up to date');
+    } catch(err) {
+      console.error('Manual refresh error:', err);
+      setLiveBar('offline');
+      showToast('Refresh failed — check connection');
+    } finally {
+      btn.classList.remove('spinning');
+      lucide.createIcons();
+    }
+  }
+
+  /* ══════════════════════════════════════════════
+     ── SILENT BACKGROUND REFRESH ──
+     Polls every POLL_INTERVAL ms. Works even when
+     tab is hidden / browser minimized on mobile.
+       • setInterval keeps running in background
+       • Page Visibility API catches up on tab show
+       • online/offline events handle connectivity
+  ══════════════════════════════════════════════ */
+  function startSilentRefresh() {
+    clearInterval(silentTimer);
+    silentTimer = setInterval(silentFetch, POLL_INTERVAL);
+  }
+
+  async function silentFetch() {
+    if (!currentAlias) return;
+    try {
+      var r = await sb.from('emails').select('*').eq('alias', currentAlias).order('received_at', { ascending: false }).limit(50);
+      if (r.error) throw r.error;
+
+      var incoming = mapEmails(r.data || []);
+      var newCount = mergeEmails(incoming);
+      lastFetchedAt = Date.now();
+      isOnline = true;
+      setLiveBar('live');
+
+      if (newCount > 0) {
+        showToast(newCount === 1 ? 'New email received' : newCount + ' new emails received');
+        tryNotify(newCount);
+      }
+    } catch(err) {
+      console.error('Silent fetch error:', err);
+      isOnline = false;
+      setLiveBar('offline');
+    }
+  }
+
+  /* Page Visibility API — instant re-sync when user returns to tab / app */
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && currentAlias) {
+      if (Date.now() - lastFetchedAt > 5000) silentFetch();
+    }
+  });
+
+  /* Online / Offline events */
+  window.addEventListener('online',  function() { isOnline = true;  setLiveBar('live');    if (currentAlias) silentFetch(); });
+  window.addEventListener('offline', function() { isOnline = false; setLiveBar('offline'); });
+
+  /* ── LIVE BAR UI ── */
+  function setLiveBar(state) {
+    var bar  = document.getElementById('liveBar');
+    var text = document.getElementById('liveBarText');
+    if (!bar || !text) return;
+    bar.className = 'live-bar';
+    if (state === 'live') {
+      bar.classList.add('active');
+      var t = new Date();
+      text.textContent = 'Live · last synced ' + t.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    } else if (state === 'syncing') {
+      bar.classList.add('active');
+      text.textContent = 'Syncing…';
+    } else if (state === 'offline') {
+      bar.classList.add('offline');
+      text.textContent = 'Offline — retrying…';
+    } else {
+      text.textContent = 'Connecting…';
+    }
+  }
+
+  /* ── BROWSER NOTIFICATIONS (optional, best-effort) ── */
+  function tryNotify(count) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+      new Notification('joven.mail', { body: count + ' new email' + (count > 1 ? 's' : '') + ' received' });
+    } else if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }
+
+  /* ── FETCH (initial load) ── */
+  async function refreshInbox(isInitial) {
+    if (isInitial) showLoadingUI();
+    var alias = currentAlias || document.getElementById('aliasDisplay').textContent.trim();
+    if (!alias || alias === 'Generating...') { hideLoadingUI(); return; }
+
+    try {
+      var r = await sb.from('emails').select('*').eq('alias', alias).order('received_at', { ascending: false }).limit(50);
+      if (r.error) throw r.error;
+      emails = mapEmails(r.data || []);
+      lastFetchedAt = Date.now();
+      setLiveBar('live');
+    } catch(err) {
+      console.error('Initial fetch error:', err);
+      setLiveBar('offline');
+      showToast('Could not load emails');
+    } finally {
+      hideLoadingUI();
+      renderEmails();
+    }
+  }
+
+  /* ── EMAIL HELPERS ── */
+  function mapEmails(rows) {
+    var readIds = getReadIds();
+    return rows.map(function(e) {
+      return { id:e.id, sender:e.sender||e.sender_email||'Unknown', senderEmail:e.sender_email||'',
+        subject:e.subject||'(no subject)',
+        time: new Date(e.received_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+        body:e.body||'', unread: !readIds.has(e.id) };
+    });
+  }
+
+  /* Merge freshly fetched list into local array. Returns count of brand-new emails (by id). */
+  function mergeEmails(incoming) {
+    var existingIds = new Set(emails.map(function(e){ return e.id; }));
+    var readIds = getReadIds();
+    var added = 0;
+    incoming.forEach(function(e) {
+      if (!existingIds.has(e.id)) {
+        e.unread = !readIds.has(e.id);
+        emails.unshift(e);
+        added++;
+      }
+    });
+    if (added > 0) renderEmails();
+    document.getElementById('emailCount').textContent = emails.length;
+    return added;
+  }
+
+  /* ── REALTIME (Supabase channel — pushes INSERTs instantly) ── */
+  function subscribeToAlias(alias) {
+    if (realtimeChan) { sb.removeChannel(realtimeChan); realtimeChan = null; }
+    realtimeChan = sb.channel('inbox-' + alias)
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'emails', filter:'alias=eq.'+alias },
+        function(payload) {
+          var e = payload.new;
+          var mapped = { id:e.id, sender:e.sender||e.sender_email||'Unknown', senderEmail:e.sender_email||'',
+            subject:e.subject||'(no subject)', time:new Date(e.received_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+            body:e.body||'', unread:true };
+          if (!emails.find(function(x){ return x.id === mapped.id; })) {
+            emails.unshift(mapped);
+            renderEmails();
+            setLiveBar('live');
+            showToast('New email received');
+            tryNotify(1);
+          }
+        })
+      .subscribe(function(status) {
+        if (status === 'SUBSCRIBED') setLiveBar('live');
+        if (status === 'CLOSED' || status === 'CHANNEL_ERROR') setLiveBar('offline');
+      });
+  }
+
+  /* ── RENDER ── */
+  // ── OTP Detection ──
+  // Only trigger if subject/body strongly suggests a verification email
+  function isVerificationEmail(subject, body) {
+    var s = (subject || '').toLowerCase();
+    var b = stripHtml(body || '').toLowerCase().substring(0, 500);
+    var triggers = ['verify', 'verification', 'otp', 'one-time', 'one time password',
+                    'confirmation code', 'security code', 'your code', 'enter code',
+                    'login code', 'sign-in code', 'access code', 'passcode', 'pin code',
+                    '2-step', 'two-step', 'two step', 'authenticate', 'authentication code'];
+    return triggers.some(function(t) { return s.indexOf(t) !== -1 || b.indexOf(t) !== -1; });
+  }
+
+  function detectOTP(subject, body) {
+    if (!isVerificationEmail(subject, body)) return null;
+    var text = (subject || '') + ' ' + stripHtml(body || '');
+    // Look for code near OTP-specific keywords
+    var keywordPattern = /(?:code|otp|pin|passcode|one.time|security code|verification code|your code|enter)[^\d]{0,30}(\d{4,8})/gi;
+    var m = keywordPattern.exec(text);
+    if (m) return m[1];
+    // Fallback: standalone 4-8 digit number
+    var standalonePattern = /(?:^|\s)(\d{4,8})(?:\s|$)/gm;
+    var match;
+    while ((match = standalonePattern.exec(text)) !== null) {
+      var num = match[1];
+      if (num.length === 4 && num >= '1900' && num <= '2100') continue;
+      return num;
+    }
+    return null;
+  }
+
+  function stripHtml(html) {
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function copyOTP(code) {
+    navigator.clipboard.writeText(code).then(function() {
+      showToast('\uD83D\uDD11 Code ' + code + ' copied!');
+    });
+  }
+
+  function copyOTPModal(code) {
+    navigator.clipboard.writeText(code).then(function() {
+      var btn = document.getElementById('otpCopyBtn');
+      if (btn) { btn.textContent = 'Copied!'; btn.classList.add('copied'); setTimeout(function(){ btn.textContent = 'Copy Code'; btn.classList.remove('copied'); }, 2000); }
+      showToast('\uD83D\uDD11 Code ' + code + ' copied!');
+    });
+  }
+
+  var _latestCode = null;
+
+  function updateLatestCodeBar() {
+    var bar = document.getElementById('latestCodeBar');
+    if (!bar) return;
+    _latestCode = null;
+    for (var i = 0; i < emails.length; i++) {
+      var otp = detectOTP(emails[i].subject, emails[i].body);
+      if (otp) {
+        _latestCode = otp;
+        var sender = emails[i].sender || emails[i].senderEmail || '';
+        document.getElementById('latestCodeValue').textContent = otp;
+        document.getElementById('latestCodeSender').textContent = 'from ' + sender;
+        break;
+      }
+    }
+    if (_latestCode) {
+      bar.style.display = 'block';
+      bar.classList.remove('pop');
+      void bar.offsetWidth;
+      bar.classList.add('pop');
+    } else {
+      bar.style.display = 'none';
+    }
+  }
+
+  function copyLatestCode() {
+    if (!_latestCode) return;
+    navigator.clipboard.writeText(_latestCode).then(function() {
+      var btn = document.getElementById('latestCodeCopyBtn');
+      var orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+      btn.style.background = '#4ade80';
+      setTimeout(function() { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
+      showToast('Code ' + _latestCode + ' copied!');
+    });
+  }
+
+  var _showAllEmails = false;
+  var EMAIL_PREVIEW_LIMIT = 4;
+
+  function toggleShowAll() {
+    _showAllEmails = !_showAllEmails;
+    renderEmails();
+  }
+
+  function renderEmails() {
+    var list  = document.getElementById('emailList');
+    var empty = document.getElementById('emptyState');
+
+    document.getElementById('emailCount').textContent = emails.length;
+
+    if (!emails.length) {
+      empty.style.display = 'flex';
+      list.style.display = 'none';
+      var _bar = document.getElementById('latestCodeBar');
+      if (_bar) _bar.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    list.style.display = 'flex';
+
+    var visible = _showAllEmails ? emails : emails.slice(0, EMAIL_PREVIEW_LIMIT);
+    var hasMore = emails.length > EMAIL_PREVIEW_LIMIT;
+
+    list.innerHTML = visible.map(function(e,i) {
+      var otp = detectOTP(e.subject, e.body);
+      var otpChip = otp
+        ? '<div class="otp-chip" onclick="event.stopPropagation();copyOTP(\'' + otp + '\')" title="Click to copy code">' +
+            '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+            otp + '</div>'
+        : '';
+      var isNewest = (i === 0);
+      return '<div class="email-item ' + (e.unread ? 'unread' : '') + '" onclick="openEmail(' + i + ')">'  +
+        '<div class="email-dot"></div>' +
+        '<div class="email-content">' +
+          '<div class="email-sender">' + escHtml(e.sender) + '</div>' +
+          '<div class="email-subject">' + escHtml(e.subject) + '</div>' +
+          otpChip +
+        '</div>' +
+        '<div class="email-time">' + escHtml(e.time) + '</div>' +
+        '</div>';
+    }).join('');
+
+    if (hasMore) {
+      var remaining = emails.length - EMAIL_PREVIEW_LIMIT;
+      var btnLabel = _showAllEmails
+        ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg> Show less'
+        : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> Show ' + remaining + ' more email' + (remaining > 1 ? 's' : '');
+      list.innerHTML += '<button onclick="toggleShowAll()" class="show-more-btn">' + btnLabel + '</button>';
+    }
+
+    updateLatestCodeBar();
+  }
+
+  function clearInbox() {
+    clearReadIds(currentAlias);
+    emails = [];
+    renderEmails();
+    showToast('Inbox cleared');
+  }
+
+  function showLoadingUI() {
+    if (emails.length === 0) {
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('emailList').style.display = 'none';
+      document.getElementById('loadingState').style.display = 'flex';
+    }
+  }
+
+  function hideLoadingUI() {
+    document.getElementById('loadingState').style.display = 'none';
+  }
+
+  /* ── MODAL ── */
+  function openEmail(i) {
+    var e = emails[i];
+    emails[i].unread = false;
+    markRead(e.id);   // persist to localStorage — survives refresh
+    renderEmails();
+    document.getElementById('modalSubject').textContent = e.subject;
+    document.getElementById('modalFrom').textContent    = e.sender + ' <' + e.senderEmail + '>';
+    document.getElementById('modalTo').textContent      = currentAlias;
+    document.getElementById('modalDate').textContent    = e.time;
+
+    // OTP Banner
+    var otpBannerEl = document.getElementById('modalOtpBanner');
+    var otp = detectOTP(e.subject, e.body);
+    if (otp) {
+      otpBannerEl.innerHTML =
+        '<div class="otp-banner">' +
+          '<div class="otp-banner-left">' +
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d9f950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
+            '<div>' +
+              '<div class="otp-banner-label">Verification Code</div>' +
+              '<div class="otp-banner-code">' + otp + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<button class="otp-copy-btn" id="otpCopyBtn" onclick="copyOTPModal(\'' + otp + '\')">Copy Code</button>' +
+        '</div>';
+      otpBannerEl.style.display = 'block';
+    } else {
+      otpBannerEl.innerHTML = '';
+      otpBannerEl.style.display = 'none';
+    }
+
+    var bodyEl = document.getElementById('modalBody');
+    var body = e.body || '';
+    var isHtml = /<[a-z][\s\S]*>/i.test(body);
+    
+    if (isHtml) {
+      bodyEl.classList.remove('is-plain');
+      bodyEl.classList.add('is-iframe'); // Trigger zero padding
+      var iframe = document.createElement('iframe');
+      // Allowed popups so external links work when clicked
+      iframe.style.cssText = 'width:100%;border:none;min-height:400px;background:#ffffff;border-radius:0 0 16px 16px;display:block;';
+      iframe.setAttribute('sandbox', 'allow-same-origin allow-popups');
+      bodyEl.innerHTML = '';
+      bodyEl.appendChild(iframe);
+      
+      iframe.addEventListener('load', function() {
+        var h = iframe.contentDocument.body.scrollHeight;
+        iframe.style.height = (h > 400 ? h + 20 : 400) + 'px';
+      });
+      
+      // Removed strict table sizing and padding so promotional emails can render natively
+      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;color:#000;background:#fff;}img{max-width:100%;height:auto;}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
+    } else {
+      bodyEl.classList.remove('is-iframe'); // Remove zero padding
+      bodyEl.classList.add('is-plain');     // Add monospace styling
+      bodyEl.innerHTML = '';
+      bodyEl.textContent = body;
+    }
+    
+    const overlay = document.getElementById('modalOverlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => { overlay.classList.add('open'); }, 10);
+  }
+
+  function closeModal() {
+    const overlay = document.getElementById('modalOverlay');
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.style.display = 'none'; }, 200);
+  }
+
+  function closeModalOutside(e) { if (e.target===document.getElementById('modalOverlay')) closeModal(); }
+  document.addEventListener('keydown', function(e){ 
+    if(e.key==='Escape') {
+      closeModal();
+      if(typeof closeLoginModal === 'function') closeLoginModal();
+      if(typeof closePrivacyModal === 'function') closePrivacyModal();
+      if(typeof closeTermsModal === 'function') closeTermsModal();
+    }
+  });
+
+  /* ── LOGIN MODAL LOGIC ── */
+  function openLoginModal() {
+    const overlay = document.getElementById('loginModalOverlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => { 
+      overlay.classList.add('open'); 
+      document.getElementById('loginUser').focus(); 
+    }, 10);
+  }
+
+  function closeLoginModal() {
+    const overlay = document.getElementById('loginModalOverlay');
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.style.display = 'none'; }, 200);
+  }
+
+  function closeLoginOutside(e) { 
+    if (e.target === document.getElementById('loginModalOverlay')) closeLoginModal(); 
+  }
+
+  function handleLogin() {
+    const user = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+    if (!user || !pass) {
+      showToast('Please enter credentials');
+      return;
+    }
+    // Dummy validation logic
+    showToast('Authentication failed: Invalid credentials');
+  }
+
+  /* ── PRIVACY MODAL LOGIC ── */
+  function openPrivacyModal() {
+    const overlay = document.getElementById('privacyModalOverlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => { overlay.classList.add('open'); }, 10);
+  }
+
+  function closePrivacyModal() {
+    const overlay = document.getElementById('privacyModalOverlay');
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.style.display = 'none'; }, 200);
+  }
+
+  function closePrivacyOutside(e) { 
+    if (e.target === document.getElementById('privacyModalOverlay')) closePrivacyModal(); 
+  }
+
+  /* ── TERMS MODAL LOGIC ── */
+  function openTermsModal() {
+    const overlay = document.getElementById('termsModalOverlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => { overlay.classList.add('open'); }, 10);
+  }
+
+  function closeTermsModal() {
+    const overlay = document.getElementById('termsModalOverlay');
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.style.display = 'none'; }, 200);
+  }
+
+  function closeTermsOutside(e) { 
+    if (e.target === document.getElementById('termsModalOverlay')) closeTermsModal(); 
+  }
+
+  /* ── UTILS ── */
+  function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── INIT ── */
+  window.addEventListener('DOMContentLoaded', function() {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) setAlias(saved); else newAlias();
+  });
+
+  // ── 30-second cooldown + hCaptcha every 3rd alias ──
+  var COOLDOWN_MS = 30000;
+  var HCAPTCHA_SITE_KEY = '172ad0f8-50c4-414e-96a0-843ec08a5076';
+  var _lastNewClick = parseInt(localStorage.getItem('dotmail_last_new') || '0', 10);
+  var _generateCount = parseInt(localStorage.getItem('dotmail_gen_count') || '0', 10);
+  var _cooldownInterval = null;
+  var _isCoolingDown = false;
+  var _hcaptchaWidgetId = null;
+  var _pendingGenerate = false;
+
+  var _realNewAlias = newAlias;
+  newAlias = function() {
+    var now = Date.now();
+    var elapsed = now - _lastNewClick;
+
+    // First ever click — allow freely
+    if (_lastNewClick === 0) {
+      _lastNewClick = now;
+      localStorage.setItem('dotmail_last_new', now);
+      doGenerate();
+      return;
+    }
+
+    // Still in cooldown — show banner, block
+    if (elapsed < COOLDOWN_MS) {
+      if (!_isCoolingDown) startCooldownUI(Math.ceil((COOLDOWN_MS - elapsed) / 1000));
+      return;
+    }
+
+    // Every 3rd generation — require hCaptcha
+    if (_generateCount > 0 && (_generateCount + 1) % 3 === 0) {
+      _pendingGenerate = true;
+      showHCaptcha();
+      return;
+    }
+
+    doGenerate();
+  };
+
+  function doGenerate() {
+    _lastNewClick = Date.now();
+    _generateCount++;
+    localStorage.setItem('dotmail_last_new', _lastNewClick);
+    localStorage.setItem('dotmail_gen_count', _generateCount);
+    _realNewAlias();
+  }
+
+  // On page load: restore cooldown if still active
+  (function() {
+    var now = Date.now();
+    var elapsed = now - _lastNewClick;
+    if (_lastNewClick > 0 && elapsed < COOLDOWN_MS) {
+      startCooldownUI(Math.ceil((COOLDOWN_MS - elapsed) / 1000));
+    }
+  })();
+
+  function startCooldownUI(seconds) {
+    if (_isCoolingDown) return;
+    _isCoolingDown = true;
+    var banner = document.getElementById('cooldownBanner');
+    var timerEl = document.getElementById('cooldownTimer');
+    var barEl = document.getElementById('cooldownBar');
+    banner.style.display = 'block';
+    timerEl.textContent = seconds;
+    barEl.style.transition = 'none';
+    barEl.style.width = (seconds / 30 * 100) + '%';
+    barEl.getBoundingClientRect();
+    barEl.style.transition = 'width 1s linear';
+    var remaining = seconds;
+    _cooldownInterval = setInterval(function() {
+      remaining--;
+      timerEl.textContent = remaining;
+      barEl.style.width = (remaining / 30 * 100) + '%';
+      if (remaining <= 0) {
+        clearInterval(_cooldownInterval);
+        _cooldownInterval = null;
+        _isCoolingDown = false;
+        banner.style.display = 'none';
+      }
+    }, 1000);
+  }
+
+  function showHCaptcha() {
+    var box = document.getElementById('hcaptchaInlineBox');
+    box.style.display = 'block';
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    var container = document.getElementById('hcaptchaWidget');
+    container.innerHTML = '';
+    _hcaptchaWidgetId = hcaptcha.render(container, {
+      sitekey: HCAPTCHA_SITE_KEY,
+      theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
+      size: 'normal',
+      callback: function(token) {
+        hideHCaptcha();
+        if (_pendingGenerate) {
+          _pendingGenerate = false;
+          _generateCount = -1;
+          localStorage.setItem('dotmail_gen_count', '-1');
+          doGenerate();
+        }
+      },
+      'error-callback': function() {
+        showToast('Verification failed. Please try again.');
+        hideHCaptcha();
+      },
+      'expired-callback': function() {
+        showToast('Verification expired. Please try again.');
+        hideHCaptcha();
+      }
+    });
+  }
+
+  function hideHCaptcha() {
+    document.getElementById('hcaptchaInlineBox').style.display = 'none';
+    if (_hcaptchaWidgetId !== null) {
+      try { hcaptcha.reset(_hcaptchaWidgetId); } catch(e) {}
+      _hcaptchaWidgetId = null;
+    }
+    _pendingGenerate = false;
+  }
+</script>
+</body>
+</html>
