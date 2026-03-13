@@ -49,20 +49,6 @@ app.post('/gmail/push', async (req, res) => {
   }
 });
 
-// ── POLLING every 10 minutes as fallback ──
-cron.schedule('*/10 * * * *', async () => {
-  try {
-    const emails = await fetchEmails(20);
-    if (!emails.length) return;
-    const { error } = await supabase
-      .from('emails')
-      .upsert(emails, { onConflict: 'gmail_id', ignoreDuplicates: true });
-    if (error) console.error('Supabase error:', JSON.stringify(error));
-    else console.log(`[POLL] Synced ${emails.length} email(s)`);
-  } catch (err) {
-    console.error('Poll error:', err.message);
-  }
-});
 
 // ── RE-REGISTER GMAIL WATCH every 6 days ──
 cron.schedule('0 0 */6 * *', async () => {
