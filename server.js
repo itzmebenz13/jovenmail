@@ -49,8 +49,8 @@ app.post('/gmail/push', async (req, res) => {
   }
 });
 
-// ── POLLING every 5s as fallback ──
-cron.schedule('*/5 * * * * *', async () => {
+// ── POLLING every 10 minutes as fallback ──
+cron.schedule('*/10 * * * *', async () => {
   try {
     const emails = await fetchEmails(20);
     if (!emails.length) return;
