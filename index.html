@@ -935,18 +935,34 @@
   }
 
   // ── Validate that the email has records in Supabase ──
+  // Validate that the email has records in Supabase.
+  // Queries Supabase directly using the existing sb client.
+  // Checks both exact alias and dot-normalised form.
+  // Fail CLOSED on any error — invalid emails never slip through.
   async function validateEmailExists(email) {
     try {
-      var r = await fetch(RAILWAY_URL + '/api/validate-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email })
-      });
-      var data = await r.json();
-      return data.valid === true;
+      // Build dot-normalised alias (Gmail treats dots as invisible)
+      var atIdx = email.indexOf('@');
+      var normalised = email;
+      if (atIdx !== -1) {
+        var localPart = email.slice(0, atIdx).replace(/\./g, '');
+        normalised = localPart + '@' + email.slice(atIdx + 1);
+      }
+
+      // Query emails table for any matching alias row
+      var r = await sb.from('emails')
+        .select('id', { count: 'exact', head: true })
+        .or('alias.eq.' + email + ',alias.eq.' + normalised);
+
+      if (r.error) {
+        console.error('validateEmailExists error:', r.error);
+        return false;
+      }
+
+      return (r.count !== null && r.count > 0);
     } catch(e) {
-      // On network error, fail open (don't block the user unfairly)
-      return true;
+      console.error('validateEmailExists exception:', e);
+      return false;
     }
   }
 
@@ -972,15 +988,16 @@
       // 2️⃣ Validate: does this email have any records in Supabase?
       var emailValid = await validateEmailExists(input);
       if (!emailValid) {
-        // Count this as a failed attempt
+        // Record the failed attempt server-side
         var result = await recordFailedAttempt();
-        var attemptsMade = result.attempts || (blockStatus.attempts + 1);
+        // result.attempts = total attempts so far (including this one)
+        var attemptsMade = (result && result.attempts) ? result.attempts : MAX_RECOVER_ATTEMPTS;
         var remaining    = Math.max(0, MAX_RECOVER_ATTEMPTS - attemptsMade);
 
-        if (result.banned) {
+        if (result && result.banned) {
           showRecoverError('Too many failed attempts. Your access has been blocked for 12 hours.');
-        } else if (remaining === 0) {
-          showRecoverError('Invalid alias. No more attempts — you will be blocked on next try.');
+        } else if (remaining <= 0) {
+          showRecoverError('Invalid alias — no inbox found. You have no attempts remaining and will be blocked shortly.');
         } else {
           showRecoverError(
             'Invalid alias — no inbox found for this address. ' +
