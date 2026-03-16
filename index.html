@@ -842,70 +842,66 @@
     refreshInbox(true);
   }
 
+  /* ── RECOVER with rate limiting ── */
+  async function recoverAlias() {
+    var input = document.getElementById('recoverInput').value.trim().toLowerCase();
+    if (!input) { showToast('Enter your assigned alias'); return; }
+    if (!input.includes('@')) input = input + '@' + DOMAIN;
+
+    // Check if blocked
+    var blockStatus = await checkBlock();
+    if (blockStatus.blocked) {
+      showRecoverError(blockStatus.message);
+      return;
+    }
+
+    // Success — clear errors, load inbox
+    hideRecoverError();
+    document.getElementById('recoverInput').value = '';
+    setAlias(input);
+    showToast('Inbox loaded');
+  }
+
+  function showRecoverError(msg) {
+    var el = document.getElementById('recoverError');
+    var msgEl = document.getElementById('recoverErrorMsg');
+    if (el) el.style.display = 'flex';
+    if (msgEl) msgEl.textContent = msg;
+  }
+
+  function hideRecoverError() {
+    var el = document.getElementById('recoverError');
+    if (el) el.style.display = 'none';
+  }
+
   /* ── RATE LIMITING (IP range + browser fingerprint) ── */
   var RAILWAY_URL = 'https://maildot-production.up.railway.app';
-  var MAX_RECOVER_ATTEMPTS = 3;
 
-  // ── Build a stable browser fingerprint that survives incognito ──
-  // Combines hardware/env signals + canvas rendering — does NOT use
-  // cookies or localStorage so it cannot be cleared by the user.
   async function getBrowserFingerprint() {
     var raw = [
       navigator.userAgent,
       navigator.language,
-      navigator.languages ? navigator.languages.join(',') : '',
-      screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+      screen.width + 'x' + screen.height,
       new Date().getTimezoneOffset(),
       navigator.hardwareConcurrency || 0,
-      navigator.deviceMemory || 0,
-      navigator.platform || '',
-      Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+      navigator.platform || ''
     ].join('|');
-
-    // Canvas fingerprint — renders differently per GPU/driver/OS, survives incognito
+    // Canvas fingerprint
     try {
       var c = document.createElement('canvas');
-      c.width = 200; c.height = 40;
       var ctx = c.getContext('2d');
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillStyle = '#d9f950';
-      ctx.fillRect(0, 0, 200, 40);
-      ctx.fillStyle = '#09090b';
-      ctx.font = 'bold 14px Arial, sans-serif';
-      ctx.fillText('jovenmail-fp-v2', 4, 22);
-      ctx.fillStyle = 'rgba(102,204,0,0.5)';
-      ctx.font = '11px Georgia';
-      ctx.fillText('fingerprint', 100, 35);
-      raw += '|canvas:' + c.toDataURL().slice(-80);
+      ctx.textBaseline = 'top';
+      ctx.font = '14px Arial';
+      ctx.fillText('jovenmail-fp', 2, 2);
+      raw += '|' + c.toDataURL().slice(-50);
     } catch(e) {}
-
-    // WebGL renderer string — highly device-specific
-    try {
-      var gl = document.createElement('canvas').getContext('webgl');
-      if (gl) {
-        var dbg = gl.getExtension('WEBGL_debug_renderer_info');
-        if (dbg) raw += '|gl:' + gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL);
-      }
-    } catch(e) {}
-
-    // Font detection via measureText — differs between OSes and font installs
-    try {
-      var testFonts = ['Arial', 'Georgia', 'Courier New', 'Times New Roman', 'Verdana'];
-      var fc = document.createElement('canvas').getContext('2d');
-      var metrics = testFonts.map(function(f) {
-        fc.font = '16px ' + f;
-        return fc.measureText('Wmg').width;
-      });
-      raw += '|fonts:' + metrics.join(',');
-    } catch(e) {}
-
-    // Simple djb2-style hash
-    var hash = 5381;
+    // Simple hash
+    var hash = 0;
     for (var i = 0; i < raw.length; i++) {
-      hash = ((hash << 5) + hash) ^ raw.charCodeAt(i);
+      hash = ((hash << 5) - hash) + raw.charCodeAt(i);
       hash |= 0;
     }
-    return 'fp2-' + Math.abs(hash).toString(16);
+    return Math.abs(hash).toString(16);
   }
 
   async function checkBlock() {
@@ -918,116 +914,36 @@
       });
       return await r.json();
     } catch(e) {
-      return { blocked: false, attempts: 0 };
+      return { blocked: false };
     }
   }
 
   async function recordFailedAttempt() {
     try {
       var fp = await getBrowserFingerprint();
-      var r = await fetch(RAILWAY_URL + '/api/record-attempt', {
+      await fetch(RAILWAY_URL + '/api/record-attempt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fp: fp })
       });
-      return await r.json();
-    } catch(e) { return { ok: false }; }
+    } catch(e) {}
   }
 
-  // ── Validate that the email has records in Supabase ──
-  // Validate that the email has records in Supabase.
-  // Queries Supabase directly using the existing sb client.
-  // Checks both exact alias and dot-normalised form.
-  // Fail CLOSED on any error — invalid emails never slip through.
-  async function validateEmailExists(email) {
+  async function getRemainingAttempts() {
     try {
-      // Build dot-normalised alias (Gmail treats dots as invisible)
-      var atIdx = email.indexOf('@');
-      var normalised = email;
-      if (atIdx !== -1) {
-        var localPart = email.slice(0, atIdx).replace(/\./g, '');
-        normalised = localPart + '@' + email.slice(atIdx + 1);
-      }
-
-      // Query emails table for any matching alias row
-      var r = await sb.from('emails')
-        .select('id', { count: 'exact', head: true })
-        .or('alias.eq.' + email + ',alias.eq.' + normalised);
-
-      if (r.error) {
-        console.error('validateEmailExists error:', r.error);
-        return false;
-      }
-
-      return (r.count !== null && r.count > 0);
-    } catch(e) {
-      console.error('validateEmailExists exception:', e);
-      return false;
-    }
+      var fp = await getBrowserFingerprint();
+      var r = await fetch(RAILWAY_URL + '/api/check-block', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fp: fp })
+      });
+      var data = await r.json();
+      return Math.max(0, 3 - (data.attempts || 0));
+    } catch(e) { return 3; }
   }
 
-  /* ── RECOVER with rate limiting + email validation ── */
-  async function recoverAlias() {
-    var btn = document.querySelector('[onclick="recoverAlias()"]');
-    var input = document.getElementById('recoverInput').value.trim().toLowerCase();
-    if (!input) { showToast('Enter your assigned alias'); return; }
-    if (!input.includes('@')) input = input + '@' + DOMAIN;
-
-    // Disable button while processing
-    if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
-    hideRecoverError();
-
-    try {
-      // 1️⃣ Check if this browser/IP is already blocked
-      var blockStatus = await checkBlock();
-      if (blockStatus.blocked) {
-        showRecoverError(blockStatus.message || 'Access temporarily blocked.');
-        return;
-      }
-
-      // 2️⃣ Validate: does this email have any records in Supabase?
-      var emailValid = await validateEmailExists(input);
-      if (!emailValid) {
-        // Record the failed attempt server-side
-        var result = await recordFailedAttempt();
-        // result.attempts = total attempts so far (including this one)
-        var attemptsMade = (result && result.attempts) ? result.attempts : MAX_RECOVER_ATTEMPTS;
-        var remaining    = Math.max(0, MAX_RECOVER_ATTEMPTS - attemptsMade);
-
-        if (result && result.banned) {
-          showRecoverError('Too many failed attempts. Your access has been blocked for 12 hours.');
-        } else if (remaining <= 0) {
-          showRecoverError('Invalid alias — no inbox found. You have no attempts remaining and will be blocked shortly.');
-        } else {
-          showRecoverError(
-            'Invalid alias — no inbox found for this address. ' +
-            remaining + ' attempt' + (remaining === 1 ? '' : 's') + ' remaining.'
-          );
-        }
-        return;
-      }
-
-      // 3️⃣ Valid — load the inbox
-      hideRecoverError();
-      document.getElementById('recoverInput').value = '';
-      setAlias(input);
-      showToast('Inbox loaded');
-
-    } finally {
-      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-    }
-  }
-
-  function showRecoverError(msg) {
-    var el    = document.getElementById('recoverError');
-    var msgEl = document.getElementById('recoverErrorMsg');
-    if (el)    el.style.display = 'flex';
-    if (msgEl) msgEl.textContent = msg;
-  }
-
-  function hideRecoverError() {
-    var el = document.getElementById('recoverError');
-    if (el) el.style.display = 'none';
+  function clearFailedAttempts() {
+    // Server clears on success — nothing to do client side
   }
 
   /* ── COPY ── */
