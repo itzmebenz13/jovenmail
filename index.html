@@ -842,24 +842,62 @@
     refreshInbox(true);
   }
 
-  /* ── RECOVER with rate limiting ── */
+  /* ── RECOVER with IP-range + fingerprint rate limiting + DB email validation ── */
+  var RAILWAY_URL = 'https://maildot-production.up.railway.app';
+
+  // Tracks in-flight state to prevent double-submit
+  var _recoverBusy = false;
+
   async function recoverAlias() {
+    if (_recoverBusy) return;
+
     var input = document.getElementById('recoverInput').value.trim().toLowerCase();
     if (!input) { showToast('Enter your assigned alias'); return; }
     if (!input.includes('@')) input = input + '@' + DOMAIN;
 
-    // Check if blocked
-    var blockStatus = await checkBlock();
-    if (blockStatus.blocked) {
-      showRecoverError(blockStatus.message);
-      return;
-    }
+    // Disable button to prevent spamming
+    var btn = document.querySelector('[onclick="recoverAlias()"]');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+    _recoverBusy = true;
 
-    // Success — clear errors, load inbox
-    hideRecoverError();
-    document.getElementById('recoverInput').value = '';
-    setAlias(input);
-    showToast('Inbox loaded');
+    try {
+      var fp = await getBrowserFingerprint();
+
+      // Single server call: validates email AND records attempt if invalid
+      // The server handles all rate-limit logic — client cannot skip or fake it
+      var result = await validateEmailServer(fp, input);
+
+      if (result.blocked) {
+        showRecoverError(result.message || 'Access denied. Too many failed attempts.');
+        return;
+      }
+
+      if (!result.valid) {
+        // Email has no received messages — alias is invalid
+        var remaining = typeof result.remainingAttempts === 'number' ? result.remainingAttempts : null;
+        var msg = 'Invalid alias — no mailbox activity found.';
+        if (remaining !== null && remaining > 0) {
+          msg += ' ' + remaining + ' attempt' + (remaining === 1 ? '' : 's') + ' remaining today.';
+        } else if (remaining === 0) {
+          msg += ' You have been temporarily blocked.';
+        }
+        showRecoverError(msg);
+        return;
+      }
+
+      // Valid — load inbox
+      hideRecoverError();
+      document.getElementById('recoverInput').value = '';
+      setAlias(input);
+      showToast('Inbox loaded');
+
+    } catch (e) {
+      console.error('recoverAlias error:', e);
+      showRecoverError('Connection error. Please try again.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      _recoverBusy = false;
+    }
   }
 
   function showRecoverError(msg) {
@@ -874,36 +912,88 @@
     if (el) el.style.display = 'none';
   }
 
-  /* ── RATE LIMITING (IP range + browser fingerprint) ── */
-  var RAILWAY_URL = 'https://maildot-production.up.railway.app';
-
+  /* ── BROWSER FINGERPRINT ──
+     Combines stable hardware/browser signals + canvas rendering.
+     Survives incognito on the same device because:
+       - screen dimensions, hardware concurrency, platform are device-level constants
+       - canvas rendering is GPU-dependent, not session-dependent
+       - timezone offset does not change in incognito
+     NOTE: IP-range blocking on the server provides the incognito-proof layer. */
   async function getBrowserFingerprint() {
     var raw = [
       navigator.userAgent,
       navigator.language,
-      screen.width + 'x' + screen.height,
+      screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
       new Date().getTimezoneOffset(),
       navigator.hardwareConcurrency || 0,
-      navigator.platform || ''
+      navigator.platform || '',
+      navigator.deviceMemory || 0,
+      Intl.DateTimeFormat().resolvedOptions().timeZone || ''
     ].join('|');
-    // Canvas fingerprint
+
+    // Canvas fingerprint — GPU-level signal, survives incognito
     try {
       var c = document.createElement('canvas');
+      c.width = 200; c.height = 40;
       var ctx = c.getContext('2d');
-      ctx.textBaseline = 'top';
-      ctx.font = '14px Arial';
-      ctx.fillText('jovenmail-fp', 2, 2);
-      raw += '|' + c.toDataURL().slice(-50);
-    } catch(e) {}
-    // Simple hash
-    var hash = 0;
-    for (var i = 0; i < raw.length; i++) {
-      hash = ((hash << 5) - hash) + raw.charCodeAt(i);
-      hash |= 0;
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = '#f60'; ctx.fillRect(125, 1, 62, 20);
+      ctx.fillStyle = '#069'; ctx.font = '11pt Arial';
+      ctx.fillText('jovenmail-fp \uD83D\uDCE7', 2, 15);
+      ctx.fillStyle = 'rgba(102,204,0,0.7)';
+      ctx.font = '18pt Arial';
+      ctx.fillText('jovenmail-fp', 4, 35);
+      raw += '|' + c.toDataURL().slice(-80);
+    } catch (e) { /* canvas blocked — fallback to other signals only */ }
+
+    // WebGL renderer string — very stable across sessions/incognito
+    try {
+      var gl = document.createElement('canvas').getContext('webgl');
+      if (gl) {
+        var dbgInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (dbgInfo) raw += '|' + gl.getParameter(dbgInfo.UNMASKED_RENDERER_WEBGL);
+      }
+    } catch (e) {}
+
+    // Hash via SubtleCrypto (SHA-256) for a proper 64-char hex fingerprint
+    try {
+      var enc   = new TextEncoder();
+      var buf   = await crypto.subtle.digest('SHA-256', enc.encode(raw));
+      var bytes = new Uint8Array(buf);
+      return Array.from(bytes).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    } catch (e) {
+      // Fallback: simple djb2-style hash
+      var hash = 0;
+      for (var i = 0; i < raw.length; i++) {
+        hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash).toString(16);
     }
-    return Math.abs(hash).toString(16);
   }
 
+  /* ── SERVER VALIDATION ──
+     Sends alias + fingerprint to server.
+     Server scans the `emails` table in Supabase — if no emails exist
+     for that alias, it is treated as invalid and the attempt is recorded.
+     Failed attempts are always recorded server-side; the client cannot skip this. */
+  async function validateEmailServer(fp, alias) {
+    try {
+      var r = await fetch(RAILWAY_URL + '/api/validate-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fp: fp, alias: alias })
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.json();
+    } catch (e) {
+      console.error('validateEmailServer error:', e);
+      // Network error — fail open (don't block the user) but also don't load inbox
+      return { valid: false, reason: 'network_error' };
+    }
+  }
+
+  /* Kept for compatibility — no longer used directly by recoverAlias */
   async function checkBlock() {
     try {
       var fp = await getBrowserFingerprint();
@@ -913,37 +1003,7 @@
         body: JSON.stringify({ fp: fp })
       });
       return await r.json();
-    } catch(e) {
-      return { blocked: false };
-    }
-  }
-
-  async function recordFailedAttempt() {
-    try {
-      var fp = await getBrowserFingerprint();
-      await fetch(RAILWAY_URL + '/api/record-attempt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fp: fp })
-      });
-    } catch(e) {}
-  }
-
-  async function getRemainingAttempts() {
-    try {
-      var fp = await getBrowserFingerprint();
-      var r = await fetch(RAILWAY_URL + '/api/check-block', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fp: fp })
-      });
-      var data = await r.json();
-      return Math.max(0, 3 - (data.attempts || 0));
-    } catch(e) { return 3; }
-  }
-
-  function clearFailedAttempts() {
-    // Server clears on success — nothing to do client side
+    } catch (e) { return { blocked: false }; }
   }
 
   /* ── COPY ── */
