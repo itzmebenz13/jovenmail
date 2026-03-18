@@ -291,12 +291,51 @@ app.post('/api/validate-email', async function(req, res) {
       return res.json({ valid: false, blocked: true, message: blockEval.message, permanent: blockEval.permanent });
     }
 
-    // Scan the emails table: does this alias have at least one email received?
-    const { data: emailRows, error: emailErr } = await supabase
-      .from('emails')
-      .select('id')
-      .eq('alias', alias)
-      .limit(1);
+    // ── Gmail dot-blindness normalisation ──
+    // Gmail treats all dot-variants of a username as identical.
+    // rizamartinez875@gmail.com and r.iza.m.a.rti.nez875@gmail.com are the same inbox.
+    // Emails in Supabase may be stored under any dot-variant depending on what the
+    // sender addressed. We normalise by stripping dots from the username and matching
+    // any stored alias that resolves to the same base username.
+    const atIdx       = alias.indexOf('@');
+    const inputUser   = alias.slice(0, atIdx);
+    const inputDomain = alias.slice(atIdx + 1);
+    const baseUser    = inputUser.replace(/\./g, ''); // e.g. "rizamartinez875"
+
+    const dotBlindDomains = ['gmail.com', 'googlemail.com'];
+    const isDotBlind = dotBlindDomains.includes(inputDomain);
+
+    let emailRows, emailErr;
+
+    if (isDotBlind) {
+      // Fetch stored aliases for this domain, filter in JS for matching base username.
+      // ilike on domain suffix avoids a full-table scan.
+      const { data: candidates, error: candErr } = await supabase
+        .from('emails')
+        .select('id, alias')
+        .ilike('alias', '%@' + inputDomain)
+        .limit(500); // safety cap
+
+      emailErr  = candErr;
+      emailRows = candidates
+        ? candidates.filter(function(row) {
+            if (!row.alias) return false;
+            const parts = row.alias.toLowerCase().split('@');
+            return parts.length === 2
+              && parts[1] === inputDomain
+              && parts[0].replace(/\./g, '') === baseUser;
+          })
+        : [];
+    } else {
+      // Non-dot-blind domain — exact match only
+      const result = await supabase
+        .from('emails')
+        .select('id')
+        .eq('alias', alias)
+        .limit(1);
+      emailRows = result.data;
+      emailErr  = result.error;
+    }
 
     if (emailErr) {
       console.error('validate-email DB error:', JSON.stringify(emailErr));
