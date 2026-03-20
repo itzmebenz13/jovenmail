@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<!-- Redirect back to index.html at 8:00 AM PHT -->
+<script>
+  (function() {
+    function checkAndRedirect() {
+      const phtHour = (new Date().getUTCHours() + 8) % 24;
+      if (phtHour >= 8) {
+        window.location.replace('index.html');
+      }
+    }
+    checkAndRedirect();
+    setInterval(checkAndRedirect, 1000);
+  })();
+</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>joven.mail — Maintenance</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+<style>
+  :root {
+    --bg-app:        #09090b;
+    --bg-card:       #18181b;
+    --bg-input:      #121214;
+    --bg-hover:      #27272a;
+    --border:        #27272a;
+    --border-strong: #3f3f46;
+    --accent:        #d9f950;
+    --accent-hover:  #bef222;
+    --accent-text:   #09090b;
+    --text-main:     #fafafa;
+    --text-dim:      #a1a1aa;
+    --text-muted:    #52525b;
+    --shadow-card:   0 8px 32px -4px rgba(0,0,0,0.6);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 13px; }
+
+  body {
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(217,249,80,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(217,249,80,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── RADIAL GLOW ── */
+  .glow {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(217,249,80,0.06) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    pointer-events: none;
+    z-index: 0;
+    animation: glow-pulse 4s ease-in-out infinite;
+  }
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.6; transform: translate(-50%, -60%) scale(1); }
+    50%       { opacity: 1;   transform: translate(-50%, -60%) scale(1.08); }
+  }
+
+  /* ── LAYOUT ── */
+  .wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 540px;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  /* ── HEADER LOGO ── */
+  .logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fade-down 0.5s ease both;
+  }
+  .logo-icon { color: var(--accent); }
+  .logo {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+  }
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--bg-hover);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  /* ── MAIN CARD ── */
+  .card {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px 28px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: fade-up 0.5s 0.1s ease both;
+  }
+
+  /* ── ICON CLUSTER ── */
+  .icon-cluster {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    animation: spin-slow 12s linear infinite;
+  }
+  .icon-ring::before {
+    content: '';
+    position: absolute;
+    top: -3px; left: 50%;
+    transform: translateX(-50%);
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .icon-bg {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center;
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* ── TITLE BLOCK ── */
+  .text-block { text-align: center; }
+  .text-block h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 8px;
+    color: var(--text-main);
+  }
+  .text-block h1 span { color: var(--accent); }
+  .text-block p {
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  /* ── STATUS ITEMS ── */
+  .status-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--border);
+  }
+  .status-item {
+    background: var(--bg-input);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    gap: 12px;
+  }
+  .status-item:first-child { border-radius: 12px 12px 0 0; }
+  .status-item:last-child  { border-radius: 0 0 12px 12px; }
+  .status-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .status-left svg { flex-shrink: 0; }
+  .status-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .status-badge.down {
+    background: rgba(217,249,80,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(217,249,80,0.25);
+  }
+  .status-badge.ok {
+    background: rgba(161,161,170,0.08);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ── COUNTDOWN ── */
+  .eta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(217,249,80,0.08);
+    border: 1px solid rgba(217,249,80,0.2);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  .countdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 14px;
+  }
+  .cd-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--bg-input);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 10px 16px 8px;
+    min-width: 62px;
+  }
+  .cd-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .cd-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .cd-sep {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--border-strong);
+    margin-bottom: 14px;
+    user-select: none;
+  }
+  .progress-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { width: 100%; }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .progress-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .progress-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .progress-track {
+    height: 4px;
+    background: var(--bg-hover);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    box-shadow: 0 0 8px rgba(217,249,80,0.5);
+  }
+
+  /* ── NOTIFY BUTTON ── */
+  .btn-pill {
+    border-radius: 999px;
+    padding: 11px 22px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: all 0.2s ease;
+    border: none;
+    outline: none;
+    white-space: nowrap;
+    background: var(--accent);
+    color: var(--accent-text);
+    width: 100%;
+  }
+  .btn-pill:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(217,249,80,0.3);
+  }
+  .btn-pill:active { transform: translateY(0); }
+  .btn-pill.sent {
+    background: var(--bg-hover);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* ── FOOTER LINKS ── */
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: fade-up 0.5s 0.3s ease both;
+  }
+  .footer-link {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .footer-link:hover { color: var(--text-dim); }
+  .footer-dot { color: var(--text-muted); font-size: 0.6rem; }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background: var(--bg-card);
+    animation: fade-up 0.5s 0.4s ease both;
+  }
+  .ticker-inner {
+    display: flex;
+    gap: 0;
+    animation: ticker-scroll 30s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .ticker-item span.accent { color: var(--accent); }
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-down {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── PULSE DOT ── */
+  .pulse-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+    animation: pulse-green 2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse-green {
+    0%   { box-shadow: 0 0 0 0 rgba(217,249,80,0.4); }
+    70%  { box-shadow: 0 0 0 5px rgba(217,249,80,0); }
+    100% { box-shadow: 0 0 0 0 rgba(217,249,80,0); }
+  }
+
+  /* ── LIVE CLOCK ── */
+  #live-clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="glow"></div>
+
+<div class="wrap">
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <!-- Envelope + at-sign icon -->
+    <svg class="logo-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+    </svg>
+    <span class="logo">joven.mail</span>
+    <span class="badge">maintenance</span>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+
+    <!-- Spinning icon cluster -->
+    <div class="icon-cluster">
+      <div class="icon-ring"></div>
+      <div class="icon-bg">
+        <!-- Wrench + gear maintenance icon -->
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="#d9f950" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="text-block">
+      <h1>We'll be back <span>shortly.</span></h1>
+      <p>joven.mail is undergoing scheduled maintenance. Your aliases and inbox data are safe — we're just upgrading the infrastructure.</p>
+    </div>
+
+    <!-- Countdown + progress toward 8 AM PHT -->
+    <div class="progress-wrap">
+      <div class="progress-header">
+        <span class="progress-label">Back online at</span>
+        <span class="eta-chip">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          8:00 AM PHT
+        </span>
+      </div>
+      <!-- Countdown digits -->
+      <div class="countdown-row">
+        <div class="cd-block"><span class="cd-num" id="cd-h">--</span><span class="cd-label">hrs</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-block"><span class="cd-num" id="cd-m">--</span><span class="cd-label">min</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-block"><span class="cd-num" id="cd-s">--</span><span class="cd-label">sec</span></div>
+      </div>
+      <!-- Progress track -->
+      <div class="progress-track" style="margin-top:14px;">
+        <div class="progress-fill" id="progress-fill" style="width:0%;transition:width 1s linear;"></div>
+      </div>
+      <div class="progress-footer">
+        <span id="pct-label" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-muted);">0%</span>
+        <span style="font-size:0.75rem;color:var(--text-muted);">Philippine Time (UTC+8)</span>
+      </div>
+    </div>
+
+    <!-- Service status list -->
+    <div class="status-list">
+
+      <div class="status-item">
+        <div class="status-left">
+          <!-- Shield check icon -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+          Alias storage
+        </div>
+        <span class="status-badge ok">operational</span>
+      </div>
+
+      <div class="status-item">
+        <div class="status-left">
+          <!-- Mail delivery icon -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          Email forwarding
+        </div>
+        <span class="status-badge ok">operational</span>
+      </div>
+
+      <div class="status-item">
+        <div class="status-left">
+          <!-- Refresh / sync icon -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          Real-time sync
+        </div>
+        <span class="status-badge down">updating</span>
+      </div>
+
+      <div class="status-item">
+        <div class="status-left">
+          <!-- Database icon -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+          </svg>
+          Supabase backend
+        </div>
+        <span class="status-badge down">migrating</span>
+      </div>
+
+    </div>
+
+    <!-- Notify button -->
+    <button class="btn-pill" id="notify-btn" onclick="handleNotify()">
+      <!-- Bell icon -->
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      Notify me when it's back
+    </button>
+
+  </div>
+
+  <!-- Footer links -->
+  <div class="footer-links">
+    <span id="live-clock">--:--:-- UTC</span>
+    <span class="footer-dot">·</span>
+    <a class="footer-link" href="#">
+      <!-- Twitter/X icon -->
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+      @jovenmail
+    </a>
+    <span class="footer-dot">·</span>
+    <a class="footer-link" href="#">
+      <!-- External link icon -->
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="16"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      Status page
+    </a>
+  </div>
+
+</div>
+
+<!-- Bottom ticker -->
+<div class="ticker-wrap">
+  <div class="ticker-inner" id="ticker">
+    <!-- items duplicated for seamless loop -->
+  </div>
+</div>
+
+<script>
+  /* ── AUTO-REDIRECT AT 8:00 AM PHT ── */
+  // PHT = UTC+8, so 8:00 AM PHT = 00:00 UTC
+  function checkAndRedirect() {
+    const now = new Date();
+    const phtHour = (now.getUTCHours() + 8) % 24;
+    const phtMin  = now.getUTCMinutes();
+    const phtSec  = now.getUTCSeconds();
+    if (phtHour >= 8) {
+      window.location.replace('index.html');
+    }
+  }
+  // Check immediately on page load — if it's already past 8 AM PHT, redirect before anything renders
+  checkAndRedirect();
+  // Keep checking every second to catch the exact moment
+  setInterval(checkAndRedirect, 1000);
+
+  /* ── LIVE UTC CLOCK ── */
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getUTCHours()).padStart(2,'0');
+    const m = String(now.getUTCMinutes()).padStart(2,'0');
+    const s = String(now.getUTCSeconds()).padStart(2,'0');
+    document.getElementById('live-clock').textContent = `${h}:${m}:${s} UTC`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* ── COUNTDOWN TO 8:00 AM PHT (UTC+8) ── */
+  // Maintenance window: assumed to have started some fixed time before 8 AM PHT.
+  // We use a 6-hour maintenance window (started at 2:00 AM PHT) for the progress bar.
+  const WINDOW_HOURS = 6;
+
+  function getTarget8AMPHT() {
+    const now = new Date();
+    // PHT is UTC+8
+    const phtOffsetMs = 8 * 60 * 60 * 1000;
+    const nowPHT = new Date(now.getTime() + phtOffsetMs);
+    // Build today's 8 AM PHT as a UTC timestamp
+    const target = new Date(Date.UTC(
+      nowPHT.getUTCFullYear(),
+      nowPHT.getUTCMonth(),
+      nowPHT.getUTCDate(),
+      0, 0, 0 // midnight UTC = 8 AM PHT
+    ));
+    // If we're already past 8 AM PHT today, target tomorrow's 8 AM PHT
+    if (now >= target) {
+      target.setUTCDate(target.getUTCDate() + 1);
+    }
+    return target;
+  }
+
+  function updateCountdown() {
+    const now = new Date();
+    const target = getTarget8AMPHT();
+    const diffMs = target - now;
+
+    if (diffMs <= 0) {
+      document.getElementById('cd-h').textContent = '00';
+      document.getElementById('cd-m').textContent = '00';
+      document.getElementById('cd-s').textContent = '00';
+      document.getElementById('progress-fill').style.width = '100%';
+      document.getElementById('pct-label').textContent = '100%';
+      return;
+    }
+
+    const totalSec = Math.floor(diffMs / 1000);
+    const hh = Math.floor(totalSec / 3600);
+    const mm = Math.floor((totalSec % 3600) / 60);
+    const ss = totalSec % 60;
+
+    document.getElementById('cd-h').textContent = String(hh).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(mm).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(ss).padStart(2,'0');
+
+    // Progress = elapsed fraction of WINDOW_HOURS
+    const windowMs = WINDOW_HOURS * 60 * 60 * 1000;
+    const startMs = target.getTime() - windowMs;
+    const elapsed = now.getTime() - startMs;
+    const pct = Math.min(100, Math.max(0, Math.round((elapsed / windowMs) * 100)));
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('pct-label').textContent = pct + '%';
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  /* ── NOTIFY BUTTON ── */
+  function handleNotify() {
+    const btn = document.getElementById('notify-btn');
+    if (btn.classList.contains('sent')) return;
+    btn.classList.add('sent');
+    btn.innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      You'll be notified
+    `;
+  }
+
+  /* ── TICKER ── */
+  const tickerItems = [
+    { icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d9f950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`, label: 'Scheduled maintenance in progress', accent: true },
+    { icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`, label: 'All aliases remain active' },
+    { icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`, label: 'No data loss — your inbox is safe' },
+    { icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`, label: 'Back online at 8:00 AM PHT' },
+    { icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`, label: 'Real-time sync temporarily paused' },
+    { icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`, label: 'Database migration underway' },
+  ];
+
+  const ticker = document.getElementById('ticker');
+  [...tickerItems, ...tickerItems].forEach(item => {
+    const el = document.createElement('span');
+    el.className = 'ticker-item';
+    el.innerHTML = `${item.icon}<span${item.accent ? ' class="accent"' : ''}>${item.label}</span><span style="color:var(--border-strong);margin-left:32px;">—</span>`;
+    ticker.appendChild(el);
+  });
+</script>
+
+</body>
+</html>
