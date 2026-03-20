@@ -355,38 +355,8 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     animation: fade-up 0.5s 0.4s ease both;
-  }
-  .notify-btn {
-    border-radius: 999px;
-    padding: 8px 18px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-    border: none;
-    outline: none;
-    background: var(--accent);
-    color: var(--accent-text);
-  }
-  .notify-btn:hover {
-    background: var(--accent-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(217,249,80,0.25);
-  }
-  .notify-btn:active { transform: none; }
-  .notify-btn.sent {
-    background: var(--bg-hover);
-    color: var(--text-dim);
-    border: 1px solid var(--border);
-    cursor: default;
-    transform: none;
-    box-shadow: none;
   }
   .footer-links {
     display: flex;
@@ -550,14 +520,6 @@
 
   <!-- Footer -->
   <footer>
-    <button class="notify-btn" id="notify-btn" onclick="handleNotify()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
-      Notify me when it's back
-    </button>
     <div class="footer-links">
       <a class="footer-link" href="#">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -637,19 +599,7 @@
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  /* ── NOTIFY BUTTON ── */
-  function handleNotify() {
-    const btn = document.getElementById('notify-btn');
-    if (btn.classList.contains('sent')) return;
-    btn.classList.add('sent');
-    btn.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"/>
-      </svg>
-      You'll be notified
-    `;
-  }
+
 </script>
 
 </body>
