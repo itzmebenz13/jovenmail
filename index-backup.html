@@ -1686,7 +1686,7 @@
     if (!alias || alias === 'Generating...') { btn.classList.remove('spinning'); return; }
 
     try {
-      var r = await sb.from('emails').select('*').eq('alias', alias).order('received_at', { ascending: false }).limit(50);
+      var r = await fetchEmailsForAlias(alias, 50);
       if (r.error) throw r.error;
 
       var fetched = mapEmails(r.data || []);
@@ -1720,7 +1720,7 @@
   async function silentFetch() {
     if (!currentAlias) return;
     try {
-      var r = await sb.from('emails').select('*').eq('alias', currentAlias).order('received_at', { ascending: false }).limit(50);
+      var r = await fetchEmailsForAlias(currentAlias, 50);
       if (r.error) throw r.error;
 
       var incoming = mapEmails(r.data || []);
@@ -1782,6 +1782,53 @@
     }
   }
 
+  /* ── DOT-BLIND ALIAS FETCH HELPER ──
+     Gmail treats dots in usernames as invisible, so r.iza@gmail.com and
+     rizamartinez875@gmail.com are the same inbox. Emails may be stored under
+     any dot-variant. This helper fetches ALL emails for the normalised base
+     username across all variants, then returns them sorted by received_at. */
+  async function fetchEmailsForAlias(alias, limitCount) {
+    var atIdx = (alias || '').indexOf('@');
+    if (atIdx === -1) return { data: [], error: null };
+
+    var user   = alias.slice(0, atIdx).toLowerCase();
+    var domain = alias.slice(atIdx + 1).toLowerCase();
+    var dotBlindDomains = ['gmail.com', 'googlemail.com'];
+
+    if (!dotBlindDomains.includes(domain)) {
+      // Non-dot-blind domain: exact query
+      return sb.from('emails')
+        .select('*')
+        .eq('alias', alias)
+        .order('received_at', { ascending: false })
+        .limit(limitCount || 50);
+    }
+
+    // Dot-blind: fetch all aliases for this domain and filter client-side
+    var baseUser = user.replace(/\./g, '');
+    var result = await sb.from('emails')
+      .select('*')
+      .ilike('alias', '%@' + domain)
+      .order('received_at', { ascending: false })
+      .limit(500); // safety cap across all variants
+
+    if (result.error) return result;
+
+    var filtered = (result.data || []).filter(function(row) {
+      if (!row.alias) return false;
+      var parts = row.alias.toLowerCase().split('@');
+      return parts.length === 2
+        && parts[1] === domain
+        && parts[0].replace(/\./g, '') === baseUser;
+    });
+
+    // Re-sort and re-limit after client-side filter
+    filtered.sort(function(a, b) {
+      return new Date(b.received_at) - new Date(a.received_at);
+    });
+    return { data: filtered.slice(0, limitCount || 50), error: null };
+  }
+
   /* ── FETCH (initial load) ── */
   async function refreshInbox(isInitial) {
     var alias = currentAlias || document.getElementById('aliasDisplay').textContent.trim();
@@ -1789,7 +1836,7 @@
     if (isInitial) showLoadingUI();
 
     try {
-      var r = await sb.from('emails').select('*').eq('alias', alias).order('received_at', { ascending: false }).limit(50);
+      var r = await fetchEmailsForAlias(alias, 50);
       if (r.error) throw r.error;
       emails = mapEmails(r.data || []);
       lastFetchedAt = Date.now();
@@ -2271,14 +2318,36 @@
   }
 
   /* ── INIT ── */
-  window.addEventListener('DOMContentLoaded', function() {
+  window.addEventListener('DOMContentLoaded', async function() {
     // Apply saved UI theme
     var savedUi = localStorage.getItem('ui-theme') || 'meiro';
     setUiTheme(savedUi);
 
     var saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      setAlias(saved);
+      // Re-validate the cached alias against the server on every page load.
+      // This prevents someone from loading an inbox that has since been emptied,
+      // or from bypassing recoverAlias() by having a stale localStorage entry.
+      try {
+        var fp = await getBrowserFingerprint();
+        var result = await validateEmailServer(fp, saved);
+        if (result.valid) {
+          setAlias(saved);
+        } else {
+          // Cached alias is no longer valid — clear it and show recover prompt
+          localStorage.removeItem(STORAGE_KEY);
+          var nas = document.getElementById('noAliasState');
+          var es = document.getElementById('emptyState');
+          if (nas) nas.style.display = 'flex';
+          if (es) es.style.display = 'none';
+          // Don't show an error message here — silently clear, they just need to re-enter
+        }
+      } catch (e) {
+        // On network error, fall back to trusting the cached alias
+        // (fail open — better UX than locking out valid users due to connectivity)
+        console.warn('Init validation failed, using cached alias:', e);
+        setAlias(saved);
+      }
     } else {
       // First time — show recover-first message
       var nas = document.getElementById('noAliasState');
