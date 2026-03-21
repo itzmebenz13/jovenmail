@@ -262,187 +262,170 @@ app.post('/api/record-attempt', async function(req, res) {
   }
 });
 
-// ── VALIDATE EMAIL: checks Supabase `emails` table for at least 1 received mail ──
-// An alias is only considered valid if it has received at least one email.
-// This prevents enumeration / guessing of unused aliases.
+// ── VALIDATE EMAIL ──
+// Checks whether the alias has at least 1 email in Supabase.
+// Empty mailbox = invalid. Records the failed attempt against both
+// the browser fingerprint AND the IP range so incognito is also blocked.
 app.post('/api/validate-email', async function(req, res) {
   try {
     const fp      = (req.body.fp || '').trim();
     const alias   = (req.body.alias || '').trim().toLowerCase();
     const ipRange = getIPRange(req);
+    const ipKey   = 'ip:' + ipRange; // sentinel key for the IP-range row
 
     if (!fp)    return res.status(400).json({ valid: false, error: 'Missing fingerprint' });
     if (!alias) return res.status(400).json({ valid: false, error: 'Missing alias' });
 
-    // Basic email format guard — no point hitting DB for garbage input
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(alias)) {
       return res.json({ valid: false, reason: 'invalid_format' });
     }
 
-    // Pre-check: is this IP/FP already blocked before we even query?
-    const [{ data: fpRow }, { data: ipRows }] = await Promise.all([
+    // Fetch both tracking rows up front — one per fingerprint, one per IP sentinel
+    const [{ data: fpRow }, { data: ipRow }] = await Promise.all([
       supabase.from('recovery_attempts').select('*').eq('fingerprint', fp).maybeSingle(),
-      supabase.from('recovery_attempts').select('*').eq('ip_range', ipRange).order('block_level', { ascending: false }).limit(1)
+      supabase.from('recovery_attempts').select('*').eq('fingerprint', ipKey).maybeSingle()
     ]);
-    const ipRow = ipRows && ipRows.length ? ipRows[0] : null;
-    // Pick the stricter of the two rows (permanent > higher block_level > lower)
-    let rowToUse = null;
-    if (fpRow && ipRow) {
-      if (fpRow.permanent || (!ipRow.permanent && (fpRow.block_level || 0) >= (ipRow.block_level || 0))) {
-        rowToUse = fpRow;
-      } else {
-        rowToUse = ipRow;
-      }
-    } else {
-      rowToUse = fpRow || ipRow;
-    }
-    const blockEval = evaluateRow(rowToUse);
+
+    // Block check: pick whichever row is stricter
+    const stricterRow = (function() {
+      if (!fpRow && !ipRow) return null;
+      if (!fpRow) return ipRow;
+      if (!ipRow) return fpRow;
+      if (fpRow.permanent) return fpRow;
+      if (ipRow.permanent) return ipRow;
+      return (fpRow.block_level || 0) >= (ipRow.block_level || 0) ? fpRow : ipRow;
+    })();
+
+    const blockEval = evaluateRow(stricterRow);
     if (blockEval.blocked) {
       return res.json({ valid: false, blocked: true, message: blockEval.message, permanent: blockEval.permanent });
     }
 
-    // ── Gmail dot-blindness normalisation ──
-    // Gmail treats all dot-variants of a username as identical.
-    // rizamartinez875@gmail.com and r.iza.m.a.rti.nez875@gmail.com are the same inbox.
-    // Emails in Supabase may be stored under any dot-variant depending on what the
-    // sender addressed. We normalise by stripping dots from the username and matching
-    // any stored alias that resolves to the same base username.
-    const atIdx       = alias.indexOf('@');
-    const inputUser   = alias.slice(0, atIdx);
-    const inputDomain = alias.slice(atIdx + 1);
-    const baseUser    = inputUser.replace(/\./g, ''); // e.g. "rizamartinez875"
+    // Check mailbox: does this alias (or any dot-variant for Gmail) have emails?
+    const atIdx      = alias.indexOf('@');
+    const inputUser  = alias.slice(0, atIdx);
+    const domain     = alias.slice(atIdx + 1);
+    const baseUser   = inputUser.replace(/\./g, '');
+    const isGmail    = domain === 'gmail.com' || domain === 'googlemail.com';
 
-    const dotBlindDomains = ['gmail.com', 'googlemail.com'];
-    const isDotBlind = dotBlindDomains.includes(inputDomain);
+    let hasEmails = false;
 
-    let emailRows, emailErr;
-
-    if (isDotBlind) {
-      // Fetch stored aliases for this domain, filter in JS for matching base username.
-      // ilike on domain suffix avoids a full-table scan.
+    if (isGmail) {
       const { data: candidates, error: candErr } = await supabase
-        .from('emails')
-        .select('id, alias')
-        .ilike('alias', '%@' + inputDomain)
-        .limit(500); // safety cap
-
-      emailErr  = candErr;
-      emailRows = candidates
-        ? candidates.filter(function(row) {
-            if (!row.alias) return false;
-            const parts = row.alias.toLowerCase().split('@');
-            return parts.length === 2
-              && parts[1] === inputDomain
-              && parts[0].replace(/\./g, '') === baseUser;
-          })
-        : [];
+        .from('emails').select('id, alias')
+        .ilike('alias', '%@' + domain)
+        .limit(500);
+      if (candErr) {
+        console.error('validate-email DB error:', JSON.stringify(candErr));
+        return res.status(500).json({ valid: false, error: 'Database error' });
+      }
+      hasEmails = (candidates || []).some(function(row) {
+        if (!row.alias) return false;
+        const p = row.alias.toLowerCase().split('@');
+        return p.length === 2 && p[1] === domain && p[0].replace(/\./g, '') === baseUser;
+      });
     } else {
-      // Non-dot-blind domain — exact match only
-      const result = await supabase
-        .from('emails')
-        .select('id')
-        .eq('alias', alias)
-        .limit(1);
-      emailRows = result.data;
-      emailErr  = result.error;
+      const { data: rows, error: rowErr } = await supabase
+        .from('emails').select('id').eq('alias', alias).limit(1);
+      if (rowErr) {
+        console.error('validate-email DB error:', JSON.stringify(rowErr));
+        return res.status(500).json({ valid: false, error: 'Database error' });
+      }
+      hasEmails = !!(rows && rows.length > 0);
     }
-
-    if (emailErr) {
-      console.error('validate-email DB error:', JSON.stringify(emailErr));
-      return res.status(500).json({ valid: false, error: 'Database error' });
-    }
-
-    const hasEmails = emailRows && emailRows.length > 0;
 
     if (!hasEmails) {
-      // Invalid alias — record this failed attempt
-      // (We do it server-side so it cannot be skipped by a modified client)
-      const ipSentinel = 'ip:' + ipRange;
-      const now        = new Date();
+      // Record failed attempt for both FP row and IP row
+      const now = new Date();
 
-      async function recordOne(sentinelKey, existingRow) {
-        let newAttempts  = (existingRow?.attempts || 0) + 1;
-        let newLevel     = existingRow?.block_level || 0;
+      async function recordAttempt(key, existingRow) {
+        const attempts   = (existingRow ? existingRow.attempts : 0) + 1;
+        const blockLevel = existingRow ? existingRow.block_level : 0;
+        let newAttempts  = attempts;
+        let newLevel     = blockLevel;
         let blockedUntil = null;
-        let permanent    = existingRow?.permanent || false;
+        let permanent    = existingRow ? existingRow.permanent : false;
 
-        if (permanent) return { newAttempts, newLevel, blockedUntil, permanent };
+        if (permanent) return existingRow; // already permanently blocked, no change
 
         if (newAttempts >= MAX_ATTEMPTS) {
-          newLevel    = (existingRow?.block_level || 0) + 1;
-          newAttempts = 0;
+          newLevel     = blockLevel + 1;
+          newAttempts  = 0;
           if (newLevel > BLOCK_DURATIONS.length) {
             permanent    = true;
             blockedUntil = null;
           } else {
-            const durationMins = BLOCK_DURATIONS[newLevel - 1] || BLOCK_DURATIONS[BLOCK_DURATIONS.length - 1];
-            blockedUntil = new Date(now.getTime() + durationMins * 60000).toISOString();
+            blockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[newLevel - 1] * 60000).toISOString();
           }
         }
 
         const payload = {
           attempts: newAttempts, block_level: newLevel,
-          blocked_until: blockedUntil, permanent,
+          blocked_until: blockedUntil, permanent: permanent,
           last_attempt: now.toISOString(), ip_range: ipRange
         };
 
         if (existingRow) {
-          await supabase.from('recovery_attempts').update(payload).eq('fingerprint', sentinelKey);
+          await supabase.from('recovery_attempts').update(payload).eq('fingerprint', key);
         } else {
-          await supabase.from('recovery_attempts').insert({
-            fingerprint: sentinelKey, ip_range: ipRange,
-            attempts: 1, block_level: 0,
-            blocked_until: null, permanent: false,
-            last_attempt: now.toISOString()
-          });
+          await supabase.from('recovery_attempts').insert(
+            Object.assign({ fingerprint: key }, payload)
+          );
         }
-        return { newAttempts, newLevel, blockedUntil, permanent };
+
+        return { attempts: newAttempts, block_level: newLevel, blocked_until: blockedUntil, permanent: permanent };
       }
 
-      const [fpResult, ipResult] = await Promise.all([
-        recordOne(fp, fpRow),
-        recordOne(ipSentinel, ipRow)
+      const [updatedFp, updatedIp] = await Promise.all([
+        recordAttempt(fp,    fpRow),
+        recordAttempt(ipKey, ipRow)
       ]);
 
-      // Determine the stricter result to inform the client
-      const resultRow = (fpResult.permanent || (fpResult.block_level || 0) >= (ipResult?.block_level || 0))
-        ? fpResult : ipResult;
+      // Pick the stricter updated row to tell the client what their status is
+      const updated = (function() {
+        if (!updatedFp && !updatedIp) return null;
+        if (!updatedFp) return updatedIp;
+        if (!updatedIp) return updatedFp;
+        if (updatedFp.permanent) return updatedFp;
+        if (updatedIp.permanent) return updatedIp;
+        return (updatedFp.block_level || 0) >= (updatedIp.block_level || 0) ? updatedFp : updatedIp;
+      })();
 
-      let remainingAttempts = Math.max(0, MAX_ATTEMPTS - ((resultRow.newAttempts || 0)));
-      let responseBlockEval = null;
+      const nowBlocked   = updated && evaluateRow(updated).blocked;
+      const nowPermanent = updated && updated.permanent;
+      const remaining    = nowBlocked ? 0 : Math.max(0, MAX_ATTEMPTS - (updated ? updated.attempts : 1));
 
-      if (resultRow.permanent) {
-        responseBlockEval = { blocked: true, message: 'Access permanently denied.', permanent: true };
-      } else if (resultRow.blockedUntil) {
-        const until = new Date(resultRow.blockedUntil);
-        const mins  = Math.ceil((until - now) / 60000);
-        const timeStr = mins >= 60 ? Math.ceil(mins / 60) + ' hour(s)' : mins + ' minute(s)';
-        responseBlockEval = { blocked: true, message: 'Too many failed attempts. Try again in ' + timeStr + '.' };
+      let message = null;
+      if (nowPermanent) {
+        message = 'Access permanently denied.';
+      } else if (nowBlocked && updated && updated.blocked_until) {
+        const mins = Math.ceil((new Date(updated.blocked_until) - now) / 60000);
+        message = 'Too many failed attempts. Try again in ' + (mins >= 60 ? Math.ceil(mins/60) + ' hour(s)' : mins + ' minute(s)') + '.';
       }
 
       return res.json({
         valid: false,
         reason: 'no_emails',
-        blocked: !!(responseBlockEval?.blocked),
-        message: responseBlockEval?.message || null,
-        permanent: responseBlockEval?.permanent || false,
-        remainingAttempts: responseBlockEval?.blocked ? 0 : remainingAttempts
+        blocked: nowBlocked,
+        permanent: nowPermanent,
+        message: message,
+        remainingAttempts: remaining
       });
     }
 
-    // Valid alias — clear fingerprint attempts (successful recovery resets the counter)
+    // Valid — reset the FP row attempt counter on success
     if (fpRow && !fpRow.permanent) {
       await supabase.from('recovery_attempts').update({
-        attempts: 0, block_level: 0,
-        blocked_until: null, permanent: false,
+        attempts: 0, block_level: 0, blocked_until: null, permanent: false,
         last_attempt: new Date().toISOString()
       }).eq('fingerprint', fp);
     }
 
     return res.json({ valid: true });
+
   } catch (e) {
     console.error('validate-email error:', e);
-    res.status(500).json({ valid: false, error: 'Server error' });
+    return res.status(500).json({ valid: false, error: 'Server error' });
   }
 });
 
