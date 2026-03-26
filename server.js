@@ -363,10 +363,11 @@ app.post('/api/check-block', async function(req, res) {
 
     // Return real block status — client uses this to show a warning
     return res.json({
-      blocked:         eval_.blocked,
-      permanent:       eval_.permanent || false,
-      message:         eval_.message || null,
-      attemptsUsed:    eval_.attemptsUsed || 0
+      blocked:      eval_.blocked,
+      permanent:    eval_.permanent || false,
+      message:      eval_.message || null,
+      attemptsUsed: eval_.attemptsUsed || 0,
+      blockedUntil: row ? row.blocked_until || null : null
     });
 
   } catch (e) {
