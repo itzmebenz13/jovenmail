@@ -1262,6 +1262,98 @@
     .adm-email-row { gap: 7px; }
     .adm-email-date { display: none; }
   }
+
+  /* ══════════════════════════════════════
+     PIN / OWNERSHIP SYSTEM
+  ══════════════════════════════════════ */
+
+  /* PIN input dots */
+  .pin-input-row {
+    display: flex; gap: 10px; justify-content: center; margin: 20px 0;
+  }
+  .pin-digit {
+    width: 46px; height: 54px;
+    background: var(--bg-input); border: 1.5px solid var(--border-strong);
+    border-radius: 10px; font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem; font-weight: 700; color: var(--text-main);
+    text-align: center; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    caret-color: var(--accent);
+  }
+  .pin-digit:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(217,249,80,0.12);
+  }
+  .pin-digit.filled { border-color: var(--border-strong); }
+  .pin-digit.error  { border-color: #f87171 !important; box-shadow: 0 0 0 3px rgba(248,113,113,0.12) !important; }
+
+  /* Ownership badge on control card */
+  .owner-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(217,249,80,0.1); border: 1px solid rgba(217,249,80,0.3);
+    color: var(--code-text); border-radius: 6px;
+    padding: 3px 9px; font-size: 0.7rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  [data-theme="light"] .owner-badge { background: #d9f950; color: #1a2000; border-color: #b8d930; }
+
+  /* Transfer button */
+  .btn-transfer {
+    display: flex; align-items: center; gap: 6px;
+    background: transparent; border: 1px solid var(--border-strong);
+    color: var(--text-dim); border-radius: var(--radius-btn);
+    padding: 8px 14px; font-size: 0.8rem; font-weight: 600;
+    cursor: pointer; transition: all 0.18s; font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+  }
+  .btn-transfer:hover { border-color: #fb923c; color: #fb923c; background: rgba(251,146,60,0.06); }
+
+  /* "Email taken" block */
+  .email-taken-block {
+    display: none;
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.25);
+    border-radius: 12px; padding: 18px 16px;
+    margin-top: 14px; text-align: center;
+  }
+  .email-taken-block.visible { display: block; }
+  .email-taken-icon { color: #f87171; margin-bottom: 8px; }
+  .email-taken-title { font-size: 0.9rem; font-weight: 700; color: #f87171; margin-bottom: 4px; }
+  .email-taken-msg { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+
+  /* PIN modal subtitle */
+  .pin-modal-context {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 12px; margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+    color: var(--text-dim); word-break: break-all;
+  }
+  .pin-error-msg {
+    text-align: center; font-size: 0.75rem; color: #f87171;
+    margin-top: -8px; margin-bottom: 8px; min-height: 18px;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .pin-hint {
+    text-align: center; font-size: 0.72rem; color: var(--text-muted);
+    line-height: 1.5; margin-bottom: 16px;
+  }
+
+  /* Shake animation for wrong PIN */
+  @keyframes pinShake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+  .pin-input-row.shake { animation: pinShake 0.35s ease; }
+
+  /* Transfer confirm block */
+  .transfer-confirm-row {
+    background: rgba(251,146,60,0.06); border: 1px solid rgba(251,146,60,0.2);
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;
+    font-size: 0.78rem; color: var(--text-dim); line-height: 1.6;
+  }
+  .transfer-confirm-row strong { color: #fb923c; }
 </style>
 </head>
 <body>
@@ -1354,10 +1446,31 @@
         <div class="alias-text" id="aliasDisplay">—</div>
       </div>
 
+      <!-- Ownership badge — shown when this session owns the alias -->
+      <div id="ownershipBar" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;">
+        <span class="owner-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          You own this alias
+        </span>
+        <button class="btn-transfer" onclick="openTransferModal()" title="Transfer ownership to another user">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          Transfer Alias
+        </button>
+      </div>
+
       <div class="actions-grid">
         <button class="btn-pill btn-primary" onclick="copyAlias()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></i> Copy address
         </button>
+      </div>
+
+      <!-- Email already taken block -->
+      <div class="email-taken-block" id="emailTakenBlock">
+        <div class="email-taken-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="email-taken-title">This alias is already in use</div>
+        <div class="email-taken-msg">This email alias has already been recovered and is owned by another user. You cannot access it until the current owner transfers it.</div>
       </div>
 
       <div style="margin-top:14px;">
@@ -2574,113 +2687,345 @@
   async function populateSecurityNotice() {
     try {
       var ua = navigator.userAgent;
+      // Parse device/OS/browser
       var os = 'Unknown OS';
-      var browser = 'Unknown Browser';
-      var deviceType = /Mobi|Android|iPhone|iPad/.test(ua) ? 'Mobile' : 'Desktop';
+      if (/Windows NT 10/.test(ua)) os = 'Windows 10/11';
+      else if (/Windows NT/.test(ua)) os = 'Windows';
+      else if (/Mac OS X/.test(ua)) os = 'macOS';
+      else if (/Android/.test(ua)) { var av = ua.match(/Android ([0-9.]+)/); os = 'Android' + (av ? ' ' + av[1] : ''); }
+      else if (/iPhone|iPad/.test(ua)) { var iv = ua.match(/OS ([0-9_]+)/); os = 'iOS' + (iv ? ' ' + iv[1].replace(/_/g,'.') : ''); }
+      else if (/Linux/.test(ua)) os = 'Linux';
 
-      // ── Browser detection (UA string is reliable for browser) ──
+      var browser = 'Unknown Browser';
       if (/Edg\//.test(ua)) browser = 'Edge';
       else if (/OPR\/|Opera/.test(ua)) browser = 'Opera';
-      else if (/SamsungBrowser\//.test(ua)) browser = 'Samsung Internet';
       else if (/Chrome\//.test(ua)) browser = 'Chrome';
       else if (/Firefox\//.test(ua)) browser = 'Firefox';
       else if (/Safari\//.test(ua)) browser = 'Safari';
 
-      // ── OS detection: prefer UA Client Hints (accurate Android version) ──
-      var uaDataOS = null;
-      if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-        try {
-          var uaHints = await navigator.userAgentData.getHighEntropyValues(['platform', 'platformVersion']);
-          var platform = uaHints.platform || '';
-          var platformVersion = uaHints.platformVersion || '';
-          if (platform === 'Android') {
-            // platformVersion on Android is the full OS version (e.g. "14", "13")
-            uaDataOS = 'Android' + (platformVersion ? ' ' + platformVersion.split('.')[0] : '');
-          } else if (platform === 'Windows') {
-            // Windows platformVersion: major >= 13 = Win 11, else Win 10
-            var winMajor = parseInt(platformVersion.split('.')[0], 10);
-            uaDataOS = winMajor >= 13 ? 'Windows 11' : 'Windows 10';
-          } else if (platform === 'macOS') {
-            uaDataOS = 'macOS' + (platformVersion ? ' ' + platformVersion : '');
-          } else if (platform === 'Linux') {
-            uaDataOS = 'Linux';
-          } else if (platform === 'iOS') {
-            uaDataOS = 'iOS' + (platformVersion ? ' ' + platformVersion.split('.')[0] : '');
-          }
-        } catch(e) { /* Client Hints not granted, fall through to UA parsing */ }
-      }
-
-      if (uaDataOS) {
-        os = uaDataOS;
-      } else {
-        // ── Fallback: parse UA string ──
-        if (/Windows NT 10/.test(ua))          os = 'Windows 10/11';
-        else if (/Windows NT/.test(ua))        os = 'Windows';
-        else if (/Mac OS X/.test(ua))          os = 'macOS';
-        else if (/Android/.test(ua)) {
-          var av = ua.match(/Android ([0-9]+)/);
-          os = 'Android' + (av ? ' ' + av[1] : '');
-        }
-        else if (/iPhone|iPad/.test(ua)) {
-          var iv = ua.match(/OS ([0-9_]+)/);
-          os = 'iOS' + (iv ? ' ' + iv[1].split('_')[0] : '');
-        }
-        else if (/Linux/.test(ua))             os = 'Linux';
-        else if (/CrOS/.test(ua))              os = 'ChromeOS';
-      }
-
+      var deviceType = /Mobi|Android|iPhone|iPad/.test(ua) ? 'Mobile' : 'Desktop';
       var deviceEl = document.getElementById('secDevice');
       if (deviceEl) deviceEl.textContent = deviceType + ' · ' + browser + ' · ' + os;
 
-      // ── Fetch IPv4 explicitly, with fallback ──
-      var ipv4 = null;
-      var locCity = '', locRegion = '', locCountry = '';
-
-      // Primary: ipapi.co IPv4-only endpoint
-      try {
-        var r4 = await fetch('https://ipv4.ipapi.co/json/');
-        if (r4.ok) {
-          var d4 = await r4.json();
-          if (d4.ip && !d4.ip.includes(':')) {
-            ipv4 = d4.ip;
-            locCity    = d4.city    || '';
-            locRegion  = d4.region  || '';
-            locCountry = d4.country_name || '';
-          }
-        }
-      } catch(e) { /* try fallback */ }
-
-      // Fallback: ipify (IPv4-forced) + ip-api for location
-      if (!ipv4) {
-        try {
-          var rf = await fetch('https://api.ipify.org?format=json');
-          if (rf.ok) { var df = await rf.json(); ipv4 = df.ip || null; }
-        } catch(e) { /* ignore */ }
-        if (ipv4) {
-          try {
-            var rl = await fetch('https://ipapi.co/' + ipv4 + '/json/');
-            if (rl.ok) {
-              var dl = await rl.json();
-              locCity    = dl.city    || '';
-              locRegion  = dl.region  || '';
-              locCountry = dl.country_name || '';
-            }
-          } catch(e) { /* location unavailable */ }
-        }
+      // Fetch IP + location from public API
+      var resp = await fetch('https://ipapi.co/json/');
+      if (resp.ok) {
+        var data = await resp.json();
+        var ipEl = document.getElementById('secIp');
+        var locEl = document.getElementById('secLocation');
+        if (ipEl) ipEl.textContent = data.ip || 'Unknown';
+        if (locEl) locEl.textContent = [data.city, data.region, data.country_name].filter(Boolean).join(', ') || 'Unknown';
       }
-
-      var ipEl  = document.getElementById('secIp');
-      var locEl = document.getElementById('secLocation');
-      if (ipEl)  ipEl.textContent  = ipv4 || 'Unknown';
-      if (locEl) locEl.textContent = [locCity, locRegion, locCountry].filter(Boolean).join(', ') || 'Unknown';
-
     } catch(e) {
-      var ipEl  = document.getElementById('secIp');
+      var ipEl = document.getElementById('secIp');
       var locEl = document.getElementById('secLocation');
-      if (ipEl)  ipEl.textContent  = 'Unknown';
+      if (ipEl) ipEl.textContent = 'Unknown';
       if (locEl) locEl.textContent = 'Unknown';
     }
   }
+
+  /* ════════════════════════════════════════════════════════
+     ── OWNERSHIP & PIN SYSTEM ──
+     Rules:
+       · Ownership stored in localStorage: jm_owner:<alias> = { pin, sid }
+       · First session to recover = owner (sets PIN)
+       · Session ties: if jm_owner:<alias>.sid === SESSION_ID → is owner
+       · If alias has owner and sid != SESSION_ID → show "taken" message
+       · Owner can transfer → clears ownership so next recovery wins
+       · After transfer: incoming session fresh, must set new PIN
+  ════════════════════════════════════════════════════════ */
+
+  function ownerKey(alias) { return 'jm_owner:' + alias; }
+
+  function getOwnership(alias) {
+    try { return JSON.parse(localStorage.getItem(ownerKey(alias)) || 'null'); }
+    catch(e) { return null; }
+  }
+
+  function setOwnership(alias, pin) {
+    localStorage.setItem(ownerKey(alias), JSON.stringify({ pin: pin, sid: SESSION_ID }));
+  }
+
+  function clearOwnership(alias) {
+    localStorage.removeItem(ownerKey(alias));
+  }
+
+  function isOwner(alias) {
+    var o = getOwnership(alias);
+    return o && o.sid === SESSION_ID;
+  }
+
+  function isTaken(alias) {
+    var o = getOwnership(alias);
+    return o && o.sid !== SESSION_ID;
+  }
+
+  /* ── Show / hide ownership bar ── */
+  function showOwnershipBar(show) {
+    var bar = document.getElementById('ownershipBar');
+    if (bar) bar.style.display = show ? 'flex' : 'none';
+  }
+
+  function showEmailTaken(show) {
+    var block = document.getElementById('emailTakenBlock');
+    if (block) block.classList.toggle('visible', show);
+    // Also hide/show the recover form when taken
+    var recoverDiv = document.querySelector('.control-card > div[style*="margin-top:14px"]');
+    if (recoverDiv) recoverDiv.style.display = show ? 'none' : '';
+  }
+
+  /* ── PIN input helpers ── */
+  function pinInput(evt, prefix, idx, len) {
+    var val = evt.target.value.replace(/[^0-9]/g, '');
+    evt.target.value = val ? val[0] : '';
+    if (val && idx < len - 1) {
+      var next = document.getElementById(prefix + (idx + 1));
+      if (next) { next.focus(); next.select(); }
+    }
+    // auto-submit on last digit
+    if (val && idx === len - 1) {
+      if (prefix === 'setPinC') confirmSetPin();
+      else if (prefix === 'transferPin') confirmTransfer();
+    }
+  }
+
+  function pinKeydown(evt, prefix, idx, len) {
+    if (evt.key === 'Backspace' && !evt.target.value && idx > 0) {
+      var prev = document.getElementById(prefix + (idx - 1));
+      if (prev) { prev.value = ''; prev.focus(); }
+    }
+  }
+
+  function getPinValue(prefix, len) {
+    var s = '';
+    for (var i = 0; i < len; i++) {
+      var el = document.getElementById(prefix + i);
+      s += el ? (el.value || '') : '';
+    }
+    return s;
+  }
+
+  function clearPinInputs(prefix, len) {
+    for (var i = 0; i < len; i++) {
+      var el = document.getElementById(prefix + i);
+      if (el) { el.value = ''; el.classList.remove('error'); }
+    }
+  }
+
+  function shakePin(rowId) {
+    var row = document.getElementById(rowId);
+    if (!row) return;
+    row.classList.remove('shake');
+    void row.offsetWidth;
+    row.classList.add('shake');
+    setTimeout(function() { row.classList.remove('shake'); }, 400);
+  }
+
+  function setPinDigitsError(prefix, len, isError) {
+    for (var i = 0; i < len; i++) {
+      var el = document.getElementById(prefix + i);
+      if (el) el.classList.toggle('error', isError);
+    }
+  }
+
+  /* ── Open Set-PIN modal (first recovery) ── */
+  var _pendingAlias = null;
+
+  function openSetPinModal(alias) {
+    _pendingAlias = alias;
+    document.getElementById('setPinAliasText').textContent = alias;
+    clearPinInputs('setPin', 4);
+    clearPinInputs('setPinC', 4);
+    document.getElementById('setPinError').textContent = '';
+    var overlay = document.getElementById('setPinOverlay');
+    overlay.style.display = 'flex';
+    setTimeout(function() {
+      overlay.classList.add('open');
+      var first = document.getElementById('setPin0');
+      if (first) first.focus();
+    }, 10);
+  }
+
+  function confirmSetPin() {
+    var pin  = getPinValue('setPin', 4);
+    var pinC = getPinValue('setPinC', 4);
+    var errEl = document.getElementById('setPinError');
+
+    if (pin.length < 4) {
+      errEl.textContent = 'Please fill all 4 digits.';
+      shakePin('setPinRow'); setPinDigitsError('setPin', 4, true);
+      return;
+    }
+    if (pinC.length < 4) {
+      errEl.textContent = 'Please confirm your PIN.';
+      shakePin('setPin2Row'); setPinDigitsError('setPinC', 4, true);
+      return;
+    }
+    if (pin !== pinC) {
+      errEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> PINs do not match.';
+      shakePin('setPin2Row');
+      setPinDigitsError('setPinC', 4, true);
+      clearPinInputs('setPinC', 4);
+      setTimeout(function() { var el = document.getElementById('setPinC0'); if (el) el.focus(); }, 50);
+      return;
+    }
+
+    // Save ownership
+    setOwnership(_pendingAlias, pin);
+
+    // Close modal and proceed to inbox
+    var overlay = document.getElementById('setPinOverlay');
+    overlay.classList.remove('open');
+    setTimeout(function() { overlay.style.display = 'none'; }, 200);
+
+    showOwnershipBar(true);
+    showEmailTaken(false);
+    setAlias(_pendingAlias);
+    showToast('PIN set — you are now the owner');
+    _pendingAlias = null;
+  }
+
+  /* ── Open Transfer modal ── */
+  function openTransferModal() {
+    document.getElementById('transferAliasText').textContent = currentAlias || '—';
+    clearPinInputs('transferPin', 4);
+    document.getElementById('transferPinError').textContent = '';
+    var overlay = document.getElementById('transferOverlay');
+    overlay.style.display = 'flex';
+    setTimeout(function() {
+      overlay.classList.add('open');
+      var first = document.getElementById('transferPin0');
+      if (first) first.focus();
+    }, 10);
+  }
+
+  function closeTransferModal() {
+    var overlay = document.getElementById('transferOverlay');
+    overlay.classList.remove('open');
+    setTimeout(function() { overlay.style.display = 'none'; }, 200);
+  }
+
+  function confirmTransfer() {
+    var pin = getPinValue('transferPin', 4);
+    var errEl = document.getElementById('transferPinError');
+    if (pin.length < 4) {
+      errEl.textContent = 'Enter your 4-digit PIN.';
+      shakePin('transferPinRow'); setPinDigitsError('transferPin', 4, true);
+      return;
+    }
+
+    var ownership = getOwnership(currentAlias);
+    if (!ownership || ownership.pin !== pin) {
+      errEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Incorrect PIN. Try again.';
+      shakePin('transferPinRow'); setPinDigitsError('transferPin', 4, true);
+      clearPinInputs('transferPin', 4);
+      setTimeout(function() { var el = document.getElementById('transferPin0'); if (el) el.focus(); }, 50);
+      return;
+    }
+
+    // Clear ownership — alias is now free
+    clearOwnership(currentAlias);
+    // Clear local session too
+    localStorage.removeItem(STORAGE_KEY);
+    clearInterval(silentTimer);
+    if (realtimeChan) { sb.removeChannel(realtimeChan); realtimeChan = null; }
+    currentAlias = '';
+
+    closeTransferModal();
+
+    // Reset UI back to recover state
+    document.getElementById('aliasDisplay').textContent = '—';
+    showOwnershipBar(false);
+    showEmailTaken(false);
+    emails = [];
+    renderEmails();
+    var nas = document.getElementById('noAliasState');
+    if (nas) nas.style.display = 'flex';
+    var es = document.getElementById('emptyState');
+    if (es) es.style.display = 'none';
+
+    // Show recover form again
+    var recoverDiv = document.querySelector('.control-card > div[style*="margin-top:14px"]');
+    if (recoverDiv) recoverDiv.style.display = '';
+
+    showToast('Alias transferred — it is now free for the next user');
+  }
+
+  /* ── Patch recoverAlias to inject ownership check ── */
+  var _origRecoverAlias = recoverAlias;
+  recoverAlias = async function() {
+    if (_recoverBusy) return;
+
+    var input = document.getElementById('recoverInput').value.trim().toLowerCase();
+    if (!input) { showToast('Enter your assigned alias'); return; }
+    if (!input.includes('@')) input = input + '@' + DOMAIN;
+
+    // Check if taken by another session BEFORE any server call
+    if (isTaken(input)) {
+      hideRecoverError();
+      showEmailTaken(true);
+      return;
+    }
+
+    // Run normal validation flow
+    if (isClientBurstBlocked()) {
+      showRecoverError('Too many attempts. Please wait a moment.');
+      return;
+    }
+
+    var btn = document.querySelector('[onclick="recoverAlias()"]');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+    _recoverBusy = true;
+
+    try {
+      var fp = await getBrowserFingerprint();
+      var result = await validateEmailServer(fp, input);
+
+      if (!result.valid) {
+        if (result.blocked) {
+          showRecoverError(result.message || 'Your access has been restricted.');
+          disableRecoverBtn(result.permanent || false, result.message);
+          return;
+        }
+        if (result.reason === 'network_error') {
+          showRecoverError('Connection error. Please try again.');
+          return;
+        }
+        var msg = 'Invalid alias.';
+        var remaining = typeof result.remainingAttempts === 'number' ? result.remainingAttempts : null;
+        if (remaining !== null && remaining === 3) msg += ' Warning: one more wrong attempt will result in a 1-hour ban.';
+        else if (remaining === 2) msg += ' Warning: 2 more wrong attempts before a 24-hour ban.';
+        else if (remaining === 1) msg += ' Warning: 1 more wrong attempt before a permanent ban.';
+        else if (remaining === 0) { msg += ' You are now locked out. Try again later.'; showRecoverError(msg); disableRecoverBtn(false, msg); return; }
+        showRecoverError(msg);
+        return;
+      }
+
+      hideRecoverError();
+      showEmailTaken(false);
+      document.getElementById('recoverInput').value = '';
+
+      if (result._s === 1) activateStealthMode(30000);
+
+      // Already owner this session?
+      if (isOwner(input)) {
+        showOwnershipBar(true);
+        setAlias(input);
+        showToast('Inbox loaded');
+        return;
+      }
+
+      // New ownership — show set-PIN modal
+      openSetPinModal(input);
+
+    } catch (e) {
+      console.error('recoverAlias error:', e);
+      showRecoverError('Connection error. Please try again.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      _recoverBusy = false;
+    }
+  };
 
   window.addEventListener('DOMContentLoaded', async function() {
     // Apply saved UI theme
@@ -2702,16 +3047,16 @@
     var saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       // Re-validate the saved alias against the server on every page load.
-      // This prevents a cached alias from granting inbox access after it has
-      // been removed from the admin whitelist, and blocks anyone who manually
-      // sets the localStorage key to bypass the recovery flow.
       try {
         var fp = await getBrowserFingerprint();
         var result = await validateEmailServer(fp, saved);
         if (result.valid) {
+          // Check ownership state
+          if (isOwner(saved)) {
+            showOwnershipBar(true);
+          }
           setAlias(saved);
         } else {
-          // Alias is no longer valid — clear the cached value and prompt recovery
           localStorage.removeItem(STORAGE_KEY);
           var nas = document.getElementById('noAliasState');
           var es  = document.getElementById('emptyState');
@@ -2719,9 +3064,8 @@
           if (es)  es.style.display  = 'none';
         }
       } catch (e) {
-        // Network error on init — still load from cache so offline use works,
-        // but do not permanently remove the saved alias.
         console.warn('Init re-validation failed (network?), loading from cache:', e);
+        if (isOwner(saved)) showOwnershipBar(true);
         setAlias(saved);
       }
     } else {
@@ -2821,14 +3165,25 @@
   }
 
   // ── LOAD ──
+  // Supabase JS caps .select() at 1000 rows by default.
+  // Fetch ALL rows by paginating in 1000-row chunks.
   async function admLoadEmails(resetPage) {
     if (!_admSb) return;
     if (resetPage) _admPage = 1;
-    document.getElementById('admEmailList').innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>';
+    document.getElementById('admEmailList').innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading&hellip;</div>';
     try {
-      var r = await _admSb.from('allowed_emails').select('*').order('created_at', { ascending: false });
-      if (r.error) throw r.error;
-      _admAllEmails = r.data || [];
+      var all = [];
+      var CHUNK = 1000;
+      var from = 0;
+      while (true) {
+        var r = await _admSb.from('allowed_emails').select('*').order('created_at', { ascending: false }).range(from, from + CHUNK - 1);
+        if (r.error) throw r.error;
+        var rows = r.data || [];
+        all = all.concat(rows);
+        if (rows.length < CHUNK) break;
+        from += CHUNK;
+      }
+      _admAllEmails = all;
       admApplyFilter();
       admUpdateStats();
     } catch(e) {
@@ -2979,6 +3334,22 @@
     document.getElementById('admUploadBtn').disabled = true;
   }
 
+  // ── DELETE ALL ──
+  async function admDeleteAll() {
+    var count = _admAllEmails.length;
+    if (!count) { showToast('No emails to delete.'); return; }
+    if (!confirm('Delete ALL ' + count.toLocaleString() + ' emails? This cannot be undone.')) return;
+    try {
+      var ids = _admAllEmails.map(function(r){ return r.id; });
+      for (var i = 0; i < ids.length; i += 100) {
+        var r = await _admSb.from('allowed_emails').delete().in('id', ids.slice(i, i + 100));
+        if (r.error) throw r.error;
+      }
+      showToast('Deleted all ' + count.toLocaleString() + ' emails.');
+      await admLoadEmails(true);
+    } catch(e) { showToast('Delete all failed: ' + e.message); }
+  }
+
   // ── DELETE ──
   async function admDeleteEmail(id, email) {
     if (!confirm('Remove ' + email + ' from valid emails?')) return;
@@ -3018,6 +3389,86 @@
   }
 
 </script>
+
+<!-- ═══════════════════════════════════════════
+     SET PIN MODAL  (first-time owner setup)
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="setPinOverlay" onclick="if(event.target===this){}">
+  <div class="modal modal-sm" id="setPinModal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Set Your PIN
+      </div>
+    </div>
+    <div class="modal-body">
+      <p class="login-subtitle" style="margin-bottom:12px;">
+        You're the <strong>first to recover</strong> this alias — you now own it. Set a 4-digit PIN to protect your ownership. You'll need this PIN to transfer the alias later.
+      </p>
+      <div class="pin-modal-context" id="setPinAliasCtx">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        <span id="setPinAliasText">—</span>
+      </div>
+      <p class="pin-hint">Enter a 4-digit PIN you'll remember.</p>
+      <div class="pin-input-row" id="setPinRow">
+        <input class="pin-digit" id="setPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPin',0,4)" onkeydown="pinKeydown(event,'setPin',0,4)"/>
+        <input class="pin-digit" id="setPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPin',1,4)" onkeydown="pinKeydown(event,'setPin',1,4)"/>
+        <input class="pin-digit" id="setPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPin',2,4)" onkeydown="pinKeydown(event,'setPin',2,4)"/>
+        <input class="pin-digit" id="setPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPin',3,4)" onkeydown="pinKeydown(event,'setPin',3,4)"/>
+      </div>
+      <p class="pin-hint">Confirm your PIN.</p>
+      <div class="pin-input-row" id="setPin2Row">
+        <input class="pin-digit" id="setPinC0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPinC',0,4)" onkeydown="pinKeydown(event,'setPinC',0,4)"/>
+        <input class="pin-digit" id="setPinC1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPinC',1,4)" onkeydown="pinKeydown(event,'setPinC',1,4)"/>
+        <input class="pin-digit" id="setPinC2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPinC',2,4)" onkeydown="pinKeydown(event,'setPinC',2,4)"/>
+        <input class="pin-digit" id="setPinC3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPinC',3,4)" onkeydown="pinKeydown(event,'setPinC',3,4)"/>
+      </div>
+      <div class="pin-error-msg" id="setPinError"></div>
+      <button class="btn-pill btn-primary w-full" onclick="confirmSetPin()" style="margin-top:4px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Confirm PIN &amp; Access Inbox
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TRANSFER ALIAS MODAL  (owner transfers)
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="transferOverlay" onclick="if(event.target===this)closeTransferModal()">
+  <div class="modal modal-sm" id="transferModal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeTransferModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        Transfer Alias
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="transfer-confirm-row">
+        <strong>Warning:</strong> Once transferred, you will lose ownership of this alias. The next user to recover it will become the new owner and can set a new PIN.
+      </div>
+      <div class="pin-modal-context">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        <span id="transferAliasText">—</span>
+      </div>
+      <p class="pin-hint">Enter your current PIN to confirm the transfer.</p>
+      <div class="pin-input-row" id="transferPinRow">
+        <input class="pin-digit" id="transferPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'transferPin',0,4)" onkeydown="pinKeydown(event,'transferPin',0,4)"/>
+        <input class="pin-digit" id="transferPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'transferPin',1,4)" onkeydown="pinKeydown(event,'transferPin',1,4)"/>
+        <input class="pin-digit" id="transferPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'transferPin',2,4)" onkeydown="pinKeydown(event,'transferPin',2,4)"/>
+        <input class="pin-digit" id="transferPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'transferPin',3,4)" onkeydown="pinKeydown(event,'transferPin',3,4)"/>
+      </div>
+      <div class="pin-error-msg" id="transferPinError"></div>
+      <button class="btn-pill w-full" onclick="confirmTransfer()" style="margin-top:4px;background:#f87171;color:#fff;border:none;padding:10px 18px;font-size:0.88rem;font-weight:600;border-radius:var(--radius-btn);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        Transfer &amp; Release Ownership
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ADMIN PANEL OVERLAY -->
 <div id="adminOverlay">
@@ -3095,10 +3546,16 @@
           Valid email list
           <span class="adm-count" id="admListCount">0</span>
         </div>
-        <button class="btn-pill btn-outline btn-sm" onclick="admLoadEmails(true)" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
-          Refresh
-        </button>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="btn-pill btn-outline btn-sm" onclick="admLoadEmails(true)" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
+            Refresh
+          </button>
+          <button class="btn-pill btn-sm adm-btn-del" onclick="admDeleteAll()" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;background:transparent;border:1px solid #f87171;color:#f87171;" title="Delete all emails">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+            Delete all
+          </button>
+        </div>
       </div>
 
       <div class="adm-search-row">
