@@ -1766,8 +1766,13 @@
         // Invalid alias — show remaining attempts countdown from server
         var msg = 'Invalid alias.';
         var remaining = typeof result.remainingAttempts === 'number' ? result.remainingAttempts : null;
-        if (remaining !== null && remaining > 0) {
-          msg += ' ' + remaining + ' attempt' + (remaining === 1 ? '' : 's') + ' remaining before lockout.';
+        if (remaining !== null && remaining >= 3) {
+          // 1st wrong attempt — just a warning, no ban yet
+          msg += ' Warning: one more wrong attempt will result in a 1-hour ban.';
+        } else if (remaining === 2) {
+          msg += ' 2 attempts remaining before a 24-hour ban.';
+        } else if (remaining === 1) {
+          msg += ' 1 attempt remaining before a permanent ban.';
         } else if (remaining === 0) {
           msg += ' You are now locked out. Try again later.';
         }
