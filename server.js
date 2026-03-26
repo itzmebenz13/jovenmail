@@ -672,12 +672,11 @@ function buildOwnerIdentity(req, fp) {
 }
 
 function isOwner(req, fp, row) {
-  const identity = buildOwnerIdentity(req, fp);
-  return (
-    row.owner_fp === identity.owner_fp &&
-    row.owner_ip === identity.owner_ip &&
-    row.owner_ua === identity.owner_ua
-  );
+  // Match on fingerprint ONLY.
+  // IP and UA can vary between requests (proxy headers, IPv4/IPv6 toggles,
+  // CDN routing) even from the same browser, causing false "not owner" results.
+  // The browser fingerprint is already a strong multi-signal identifier.
+  return row.owner_fp === fp;
 }
 
 async function claimOrVerifyOwnership(req, res, alias, fp) {
