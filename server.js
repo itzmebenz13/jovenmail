@@ -1,5 +1,6 @@
-const express = require('express');
-const cron    = require('node-cron');
+const express  = require('express');
+const cron     = require('node-cron');
+const crypto   = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 const { getAuthUrl, saveToken, fetchEmails, registerWatch } = require('./gmail');
 require('dotenv').config();
@@ -8,9 +9,7 @@ const app = express();
 app.use(express.json());
 
 // ── CORS ──
-// Restrict to your known front-end origin in production
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
-
 app.use(function(req, res, next) {
   const origin = req.headers['origin'] || '';
   if (!ALLOWED_ORIGINS.length || ALLOWED_ORIGINS.includes(origin)) {
@@ -27,7 +26,149 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
+// ════════════════════════════════════════════════════════════
+// ── RATE LIMITING CONFIG ──
+// Block durations (minutes): 1 invalid → 1h, 2 → 24h, 3 → permanent
+// ════════════════════════════════════════════════════════════
+const BLOCK_DURATIONS = [60, 1440, Infinity]; // 1h → 24h → permanent
+const MAX_ATTEMPTS    = 1; // 1 invalid attempt = first block level
+
+// Per-minute burst guard (in-memory)
+// { [ipHash]: { count, windowStart } }
+const burstMap = {};
+const BURST_LIMIT  = 5;
+const BURST_WINDOW = 60 * 1000;
+
+// Progressive response delays (ms)
+const PROG_DELAYS = [1000, 3000, 5000];
+
+// ════════════════════════════════════════════════════════════
+// ── HELPERS ──
+// ════════════════════════════════════════════════════════════
+
+function hashIP(ip) {
+  const salt = process.env.IP_HASH_SALT || 'joven_salt_changeme_in_env';
+  return crypto.createHash('sha256').update(ip + salt).digest('hex');
+}
+
+function getRawIP(req) {
+  let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+  ip = ip.split(',')[0].trim();
+  if (ip.startsWith('::ffff:')) ip = ip.slice(7);
+  return ip;
+}
+
+function getIPRange(req) {
+  const ip = getRawIP(req);
+  const parts = ip.split('.');
+  if (parts.length === 4) return parts[0] + '.' + parts[1];
+  return ip.split(':').slice(0, 4).join(':');
+}
+
+// Sentinel key for IP-range row in DB — hashed, never raw
+function getIPKey(req) {
+  return 'ip:' + hashIP(getIPRange(req));
+}
+
+function isBurstBlocked(req) {
+  const key = hashIP(getRawIP(req));
+  const now = Date.now();
+  const e   = burstMap[key];
+  if (!e || now - e.windowStart > BURST_WINDOW) {
+    burstMap[key] = { count: 1, windowStart: now };
+    return false;
+  }
+  e.count++;
+  return e.count > BURST_LIMIT;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function evaluateRow(row) {
+  if (!row) return { blocked: false, attempts: 0 };
+  if (row.permanent) return { blocked: true, permanent: true, attempts: row.attempts };
+  if (row.blocked_until && new Date(row.blocked_until) > new Date()) {
+    const mins = Math.ceil((new Date(row.blocked_until) - new Date()) / 60000);
+    return {
+      blocked: true,
+      message: 'Too many failed attempts. Try again in ' + (mins >= 60 ? Math.ceil(mins/60) + ' hour(s)' : mins + ' minute(s)') + '.',
+      attempts: row.attempts
+    };
+  }
+  return { blocked: false, attempts: row.attempts || 0 };
+}
+
+function stricter(a, b) {
+  if (!a && !b) return null;
+  if (!a) return b;
+  if (!b) return a;
+  if (a.permanent) return a;
+  if (b.permanent) return b;
+  return (a.block_level || 0) >= (b.block_level || 0) ? a : b;
+}
+
+// ════════════════════════════════════════════════════════════
+// ── ACCESS PATTERN MONITOR ──
+// Tracks per-alias: unique sessions, unique IP hashes, hit frequency
+// Returns a suspicion score 0–100
+// ════════════════════════════════════════════════════════════
+const accessMap = {};
+
+function recordAccess(alias, sessionId, ipHash) {
+  const now = Date.now();
+  if (!accessMap[alias]) {
+    accessMap[alias] = { sessions: new Set(), ips: new Set(), hits: [] };
+  }
+  const e = accessMap[alias];
+  e.sessions.add(sessionId);
+  e.ips.add(ipHash);
+  e.hits = e.hits.filter(h => now - h < 10 * 60 * 1000);
+  e.hits.push(now);
+
+  let score = 0;
+  if (e.sessions.size > 10) score += 30;
+  else if (e.sessions.size > 5) score += 15;
+  if (e.ips.size > 8) score += 25;
+  else if (e.ips.size > 4) score += 12;
+  if (e.hits.length > 60) score += 30;
+  else if (e.hits.length > 30) score += 15;
+  else if (e.hits.length > 15) score += 5;
+
+  return Math.min(score, 100);
+}
+
+function stealthDelay(score) {
+  if (score < 20) return 0;
+  if (score < 50) return PROG_DELAYS[0];
+  if (score < 80) return PROG_DELAYS[1];
+  return PROG_DELAYS[2];
+}
+
+// Sweep stale entries every 30 min
+setInterval(() => {
+  const now = Date.now();
+  for (const alias of Object.keys(accessMap)) {
+    const e = accessMap[alias];
+    e.hits = e.hits.filter(h => now - h < 10 * 60 * 1000);
+    if (e.hits.length === 0) delete accessMap[alias];
+  }
+}, 30 * 60 * 1000);
+
+// ════════════════════════════════════════════════════════════
+// ── INBOX TTL — 15-minute inactivity expiry ──
+// ════════════════════════════════════════════════════════════
+const inboxLastSeen = {};
+const INBOX_TTL = 15 * 60 * 1000;
+
+function touchInbox(alias) { inboxLastSeen[alias] = Date.now(); }
+function isInboxExpired(alias) {
+  const t = inboxLastSeen[alias];
+  return t ? Date.now() - t > INBOX_TTL : false;
+}
+
+// ════════════════════════════════════════════════════════════
 // ── AUTH ──
+// ════════════════════════════════════════════════════════════
 app.get('/auth/login', (req, res) => res.redirect(getAuthUrl()));
 
 app.get('/auth/callback', async (req, res) => {
@@ -36,13 +177,14 @@ app.get('/auth/callback', async (req, res) => {
   res.send('Gmail connected! You can close this tab.');
 });
 
+// ════════════════════════════════════════════════════════════
 // ── GMAIL PUSH ──
+// ════════════════════════════════════════════════════════════
 app.post('/gmail/push', async (req, res) => {
   res.sendStatus(200);
   try {
     const data = req.body?.message?.data;
     if (!data) return;
-    console.log('Gmail push received — fetching new emails');
     const emails = await fetchEmails(10);
     if (!emails.length) return;
     const { error } = await supabase
@@ -55,14 +197,15 @@ app.post('/gmail/push', async (req, res) => {
   }
 });
 
-// ── RE-REGISTER GMAIL WATCH every 6 days ──
+// ════════════════════════════════════════════════════════════
+// ── CRON JOBS ──
+// ════════════════════════════════════════════════════════════
 cron.schedule('0 0 */6 * *', async () => {
   try { await registerWatch(); console.log('Gmail watch refreshed'); }
   catch (e) { console.error('Watch refresh error:', e.message); }
 });
 
-// ── DAILY RESET: clear attempts that are older than 24h and not permanently blocked ──
-// Runs at midnight every day. Resets daily attempt counts so the 3/day limit is fresh.
+// Daily reset for non-permanent blocks older than 24h
 cron.schedule('0 0 * * *', async () => {
   try {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -78,342 +221,169 @@ cron.schedule('0 0 * * *', async () => {
   }
 });
 
-// ── RATE LIMITING CONFIG ──
-// 3 attempts per day. After 3 failures, a block is applied.
-// Block durations escalate per offence level (in minutes).
-const BLOCK_DURATIONS = [60, 180, 720, 1440]; // 1h → 3h → 12h → 24h
-const MAX_ATTEMPTS    = 3;
-
-/**
- * Returns a normalised IP range string (first two octets for IPv4,
- * first four groups for IPv6) so that 175.176.x.x all map to "175.176".
- */
-function getIPRange(req) {
-  let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
-  ip = ip.split(',')[0].trim();
-  // Strip IPv6-mapped IPv4 prefix (::ffff:1.2.3.4 → 1.2.3.4)
-  if (ip.startsWith('::ffff:')) ip = ip.slice(7);
-  const parts = ip.split('.');
-  if (parts.length === 4) return parts[0] + '.' + parts[1]; // IPv4 /16 range
-  return ip.split(':').slice(0, 4).join(':');                // IPv6 /64 range
-}
-
-/**
- * Evaluate whether a row is currently blocked.
- * Returns { blocked, message, permanent, attempts }
- */
-function evaluateRow(row) {
-  if (!row) return { blocked: false, attempts: 0 };
-
-  if (row.permanent) {
-    return { blocked: true, message: 'Access permanently denied.', permanent: true, attempts: row.attempts };
-  }
-
-  if (row.blocked_until) {
-    const until = new Date(row.blocked_until);
-    if (until > new Date()) {
-      const mins = Math.ceil((until - new Date()) / 60000);
-      const timeStr = mins >= 60 ? Math.ceil(mins / 60) + ' hour(s)' : mins + ' minute(s)';
-      return {
-        blocked: true,
-        message: 'Too many failed attempts. Try again in ' + timeStr + '.',
-        attempts: row.attempts
-      };
-    }
-  }
-
-  return { blocked: false, attempts: row.attempts || 0 };
-}
-
-// ── CHECK-BLOCK: called before every recover attempt ──
+// ════════════════════════════════════════════════════════════
+// ── CHECK-BLOCK ──
+// ════════════════════════════════════════════════════════════
 app.post('/api/check-block', async function(req, res) {
   try {
-    const fp      = (req.body.fp || '').trim();
-    const ipRange = getIPRange(req);
+    const fp    = (req.body.fp || '').trim();
+    const ipKey = getIPKey(req);
+    if (!fp) return res.status(400).json({ blocked: false });
 
-    if (!fp) return res.status(400).json({ blocked: false, error: 'Missing fingerprint' });
-
-    // Fetch fingerprint row and IP-range row independently
-    const [{ data: fpRow }, { data: ipRows }] = await Promise.all([
-      supabase.from('recovery_attempts').select('*').eq('fingerprint', fp).maybeSingle(),
-      supabase.from('recovery_attempts').select('*').eq('ip_range', ipRange).order('block_level', { ascending: false }).limit(1)
-    ]);
-
-    const ipRow = ipRows && ipRows.length ? ipRows[0] : null;
-
-    // Pick the stricter of the two (higher block_level wins; permanent always wins)
-    let row = null;
-    if (fpRow && ipRow) {
-      if (fpRow.permanent || (!ipRow.permanent && (fpRow.block_level || 0) >= (ipRow.block_level || 0))) {
-        row = fpRow;
-      } else {
-        row = ipRow;
-      }
-    } else {
-      row = fpRow || ipRow;
+    if (isBurstBlocked(req)) {
+      await sleep(PROG_DELAYS[1]);
+      return res.json({ blocked: false, attempts: 0 }); // stealth
     }
 
-    return res.json(evaluateRow(row));
+    const [{ data: fpRow }, { data: ipRow }] = await Promise.all([
+      supabase.from('recovery_attempts').select('*').eq('fingerprint', fp).maybeSingle(),
+      supabase.from('recovery_attempts').select('*').eq('fingerprint', ipKey).maybeSingle()
+    ]);
+
+    const row  = stricter(fpRow, ipRow);
+    const eval_ = evaluateRow(row);
+
+    if (eval_.blocked) {
+      // Stealth soft-ban: mask it
+      await sleep(2000 + Math.random() * 3000);
+      return res.json({ blocked: false, attempts: 0 });
+    }
+
+    return res.json(eval_);
   } catch (e) {
     console.error('check-block error:', e);
     res.json({ blocked: false, attempts: 0 });
   }
 });
 
-// ── RECORD-ATTEMPT: called only after a confirmed invalid email ──
-// Updates BOTH the fingerprint row AND the IP-range row so that
-// incognito / different browsers on the same network are also blocked.
-app.post('/api/record-attempt', async function(req, res) {
-  try {
-    const fp      = (req.body.fp || '').trim();
-    const ipRange = getIPRange(req);
-    const now     = new Date();
-
-    if (!fp) return res.status(400).json({ ok: false, error: 'Missing fingerprint' });
-
-    async function upsertRecord(query) {
-      const { data: existing } = await query;
-
-      let newAttempts  = (existing?.attempts || 0) + 1;
-      let newLevel     = existing?.block_level || 0;
-      let blockedUntil = null;
-      let permanent    = existing?.permanent || false;
-
-      // If already permanently blocked, nothing changes
-      if (permanent) return;
-
-      if (newAttempts >= MAX_ATTEMPTS) {
-        newLevel = (existing?.block_level || 0) + 1;
-        newAttempts = 0; // reset daily counter after block is issued
-        if (newLevel > BLOCK_DURATIONS.length) {
-          permanent    = true;
-          blockedUntil = null;
-        } else {
-          const durationMins = BLOCK_DURATIONS[newLevel - 1] || BLOCK_DURATIONS[BLOCK_DURATIONS.length - 1];
-          blockedUntil = new Date(now.getTime() + durationMins * 60000).toISOString();
-        }
-      }
-
-      return { newAttempts, newLevel, blockedUntil, permanent };
-    }
-
-    // ── Fingerprint row ──
-    const { data: fpRow } = await supabase
-      .from('recovery_attempts').select('*').eq('fingerprint', fp).maybeSingle();
-
-    const fpCalc = await upsertRecord(Promise.resolve({ data: fpRow }));
-    if (fpCalc) {
-      if (fpRow) {
-        await supabase.from('recovery_attempts').update({
-          attempts: fpCalc.newAttempts,
-          block_level: fpCalc.newLevel,
-          blocked_until: fpCalc.blockedUntil,
-          permanent: fpCalc.permanent,
-          last_attempt: now.toISOString(),
-          ip_range: ipRange
-        }).eq('fingerprint', fp);
-      } else {
-        await supabase.from('recovery_attempts').insert({
-          fingerprint: fp,
-          ip_range: ipRange,
-          attempts: 1,
-          block_level: 0,
-          blocked_until: null,
-          permanent: false,
-          last_attempt: now.toISOString()
-        });
-      }
-    }
-
-    // ── IP-range row (keyed by ip_range, fingerprint = 'ip:' + ipRange sentinel) ──
-    // This ensures the block persists even in incognito / different devices.
-    const ipSentinel = 'ip:' + ipRange;
-    const { data: ipRow } = await supabase
-      .from('recovery_attempts').select('*').eq('fingerprint', ipSentinel).maybeSingle();
-
-    const ipCalc = await upsertRecord(Promise.resolve({ data: ipRow }));
-    if (ipCalc) {
-      if (ipRow) {
-        await supabase.from('recovery_attempts').update({
-          attempts: ipCalc.newAttempts,
-          block_level: ipCalc.newLevel,
-          blocked_until: ipCalc.blockedUntil,
-          permanent: ipCalc.permanent,
-          last_attempt: now.toISOString(),
-          ip_range: ipRange
-        }).eq('fingerprint', ipSentinel);
-      } else {
-        await supabase.from('recovery_attempts').insert({
-          fingerprint: ipSentinel,
-          ip_range: ipRange,
-          attempts: 1,
-          block_level: 0,
-          blocked_until: null,
-          permanent: false,
-          last_attempt: now.toISOString()
-        });
-      }
-    }
-
-    res.json({ ok: true });
-  } catch (e) {
-    console.error('record-attempt error:', e);
-    res.json({ ok: false });
-  }
-});
-
-// ── VALIDATE EMAIL ──
-// Checks whether the alias has at least 1 email in Supabase.
-// Empty mailbox = invalid. Records the failed attempt against both
-// the browser fingerprint AND the IP range so incognito is also blocked.
+// ════════════════════════════════════════════════════════════
+// ── VALIDATE-EMAIL ──
+// Core gate: validates alias existence, enforces all limits,
+// records failures, applies invisible degradation for abusers.
+// ════════════════════════════════════════════════════════════
 app.post('/api/validate-email', async function(req, res) {
   try {
-    const fp      = (req.body.fp || '').trim();
-    const alias   = (req.body.alias || '').trim().toLowerCase();
-    const ipRange = getIPRange(req);
-    const ipKey   = 'ip:' + ipRange; // sentinel key for the IP-range row
+    const fp    = (req.body.fp    || '').trim();
+    const sid   = (req.body.sid   || fp).trim();
+    const alias = (req.body.alias || '').trim().toLowerCase();
+    const ipKey = getIPKey(req);
+    const ipHash = hashIP(getRawIP(req));
 
-    if (!fp)    return res.status(400).json({ valid: false, error: 'Missing fingerprint' });
-    if (!alias) return res.status(400).json({ valid: false, error: 'Missing alias' });
+    if (!fp || !alias) return res.status(400).json({ valid: false, error: 'Missing params' });
 
+    // 1. Burst guard
+    if (isBurstBlocked(req)) {
+      await sleep(PROG_DELAYS[1]);
+      return res.json({ valid: false, reason: 'no_emails', remainingAttempts: 3 });
+    }
+
+    // 2. Format check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(alias)) {
       return res.json({ valid: false, reason: 'invalid_format' });
     }
 
-    // Fetch both tracking rows up front — one per fingerprint, one per IP sentinel
+    // 3. DB block check
     const [{ data: fpRow }, { data: ipRow }] = await Promise.all([
       supabase.from('recovery_attempts').select('*').eq('fingerprint', fp).maybeSingle(),
       supabase.from('recovery_attempts').select('*').eq('fingerprint', ipKey).maybeSingle()
     ]);
 
-    // Block check: pick whichever row is stricter
-    const stricterRow = (function() {
-      if (!fpRow && !ipRow) return null;
-      if (!fpRow) return ipRow;
-      if (!ipRow) return fpRow;
-      if (fpRow.permanent) return fpRow;
-      if (ipRow.permanent) return ipRow;
-      return (fpRow.block_level || 0) >= (ipRow.block_level || 0) ? fpRow : ipRow;
-    })();
+    const worst = stricter(fpRow, ipRow);
+    const blockEval = evaluateRow(worst);
 
-    const blockEval = evaluateRow(stricterRow);
     if (blockEval.blocked) {
-      return res.json({ valid: false, blocked: true, message: blockEval.message, permanent: blockEval.permanent });
+      // STEALTH: simulate normal invalid response, never reveal ban
+      await sleep(2000 + Math.random() * 3000);
+      return res.json({ valid: false, reason: 'no_emails', remainingAttempts: 0 });
     }
 
-    // Check mailbox: does this alias (or any dot-variant for Gmail) have emails?
-    const atIdx      = alias.indexOf('@');
-    const inputUser  = alias.slice(0, atIdx);
-    const domain     = alias.slice(atIdx + 1);
-    const baseUser   = inputUser.replace(/\./g, '');
-    const isGmail    = domain === 'gmail.com' || domain === 'googlemail.com';
+    // 4. Mailbox lookup
+    const atIdx    = alias.indexOf('@');
+    const user     = alias.slice(0, atIdx);
+    const domain   = alias.slice(atIdx + 1);
+    const baseUser = user.replace(/\./g, '');
+    const isGmail  = domain === 'gmail.com' || domain === 'googlemail.com';
 
     let hasEmails = false;
 
     if (isGmail) {
       const { data: candidates, error: candErr } = await supabase
-        .from('emails').select('id, alias')
-        .ilike('alias', '%@' + domain)
-        .limit(500);
-      if (candErr) {
-        console.error('validate-email DB error:', JSON.stringify(candErr));
-        return res.status(500).json({ valid: false, error: 'Database error' });
-      }
-      hasEmails = (candidates || []).some(function(row) {
-        if (!row.alias) return false;
-        const p = row.alias.toLowerCase().split('@');
+        .from('emails').select('id, alias').ilike('alias', '%@' + domain).limit(500);
+      if (candErr) return res.status(500).json({ valid: false, error: 'Database error' });
+      hasEmails = (candidates || []).some(r => {
+        if (!r.alias) return false;
+        const p = r.alias.toLowerCase().split('@');
         return p.length === 2 && p[1] === domain && p[0].replace(/\./g, '') === baseUser;
       });
     } else {
       const { data: rows, error: rowErr } = await supabase
         .from('emails').select('id').eq('alias', alias).limit(1);
-      if (rowErr) {
-        console.error('validate-email DB error:', JSON.stringify(rowErr));
-        return res.status(500).json({ valid: false, error: 'Database error' });
-      }
+      if (rowErr) return res.status(500).json({ valid: false, error: 'Database error' });
       hasEmails = !!(rows && rows.length > 0);
     }
 
+    // 5. Invalid alias — record attempt with escalating blocks
     if (!hasEmails) {
-      // Record failed attempt for both FP row and IP row
       const now = new Date();
 
       async function recordAttempt(key, existingRow) {
-        const attempts   = (existingRow ? existingRow.attempts : 0) + 1;
-        const blockLevel = existingRow ? existingRow.block_level : 0;
-        let newAttempts  = attempts;
-        let newLevel     = blockLevel;
+        if (existingRow?.permanent) return existingRow;
+
+        let newAttempts  = (existingRow?.attempts || 0) + 1;
+        let newLevel     = existingRow?.block_level || 0;
         let blockedUntil = null;
-        let permanent    = existingRow ? existingRow.permanent : false;
+        let permanent    = false;
 
-        if (permanent) return existingRow; // already permanently blocked, no change
+        // Each invalid attempt escalates the block level
+        // 1 attempt → 1h, 2 → 24h, 3 → permanent
+        newLevel = newAttempts; // level mirrors attempt count
+        newAttempts = newAttempts; // keep for reference
 
-        if (newAttempts >= MAX_ATTEMPTS) {
-          newLevel     = blockLevel + 1;
-          newAttempts  = 0;
-          if (newLevel > BLOCK_DURATIONS.length) {
-            permanent    = true;
-            blockedUntil = null;
-          } else {
-            blockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[newLevel - 1] * 60000).toISOString();
-          }
+        const dur = BLOCK_DURATIONS[Math.min(newLevel - 1, BLOCK_DURATIONS.length - 1)];
+        if (!isFinite(dur)) {
+          permanent    = true;
+          blockedUntil = null;
+        } else {
+          blockedUntil = new Date(now.getTime() + dur * 60000).toISOString();
         }
 
-        const payload = {
-          attempts: newAttempts, block_level: newLevel,
-          blocked_until: blockedUntil, permanent: permanent,
-          last_attempt: now.toISOString(), ip_range: ipRange
-        };
+        const payload = { attempts: newAttempts, block_level: newLevel, blocked_until: blockedUntil, permanent, last_attempt: now.toISOString() };
 
         if (existingRow) {
           await supabase.from('recovery_attempts').update(payload).eq('fingerprint', key);
         } else {
-          await supabase.from('recovery_attempts').insert(
-            Object.assign({ fingerprint: key }, payload)
-          );
+          await supabase.from('recovery_attempts').insert(Object.assign({ fingerprint: key }, payload));
         }
-
-        return { attempts: newAttempts, block_level: newLevel, blocked_until: blockedUntil, permanent: permanent };
+        return { ...payload };
       }
 
-      const [updatedFp, updatedIp] = await Promise.all([
-        recordAttempt(fp,    fpRow),
+      const [updFp, updIp] = await Promise.all([
+        recordAttempt(fp, fpRow),
         recordAttempt(ipKey, ipRow)
       ]);
 
-      // Pick the stricter updated row to tell the client what their status is
-      const updated = (function() {
-        if (!updatedFp && !updatedIp) return null;
-        if (!updatedFp) return updatedIp;
-        if (!updatedIp) return updatedFp;
-        if (updatedFp.permanent) return updatedFp;
-        if (updatedIp.permanent) return updatedIp;
-        return (updatedFp.block_level || 0) >= (updatedIp.block_level || 0) ? updatedFp : updatedIp;
-      })();
+      const updated    = stricter(updFp, updIp);
+      const nowBlocked = updated && evaluateRow(updated).blocked;
+      const remaining  = nowBlocked ? 0 : Math.max(0, 3 - (updated?.attempts || 1));
 
-      const nowBlocked   = updated && evaluateRow(updated).blocked;
-      const nowPermanent = updated && updated.permanent;
-      const remaining    = nowBlocked ? 0 : Math.max(0, MAX_ATTEMPTS - (updated ? updated.attempts : 1));
+      // Stealth delay based on attempt number
+      const attemptNum = updated?.attempts || 1;
+      const delay = attemptNum >= 3 ? PROG_DELAYS[2] : attemptNum >= 2 ? PROG_DELAYS[1] : PROG_DELAYS[0];
+      await sleep(delay);
 
-      let message = null;
-      if (nowPermanent) {
-        message = 'Access permanently denied.';
-      } else if (nowBlocked && updated && updated.blocked_until) {
-        const mins = Math.ceil((new Date(updated.blocked_until) - now) / 60000);
-        message = 'Too many failed attempts. Try again in ' + (mins >= 60 ? Math.ceil(mins/60) + ' hour(s)' : mins + ' minute(s)') + '.';
+      if (nowBlocked) {
+        // Mask the block
+        return res.json({ valid: false, reason: 'no_emails', remainingAttempts: 0 });
       }
 
-      return res.json({
-        valid: false,
-        reason: 'no_emails',
-        blocked: nowBlocked,
-        permanent: nowPermanent,
-        message: message,
-        remainingAttempts: remaining
-      });
+      return res.json({ valid: false, reason: 'no_emails', remainingAttempts: remaining });
     }
 
-    // Valid — reset the FP row attempt counter on success
+    // 6. Valid alias — access monitoring + suspicious degradation
+    const score = recordAccess(alias, sid, ipHash);
+    touchInbox(alias);
+
+    // Reset FP attempt counter on success
     if (fpRow && !fpRow.permanent) {
       await supabase.from('recovery_attempts').update({
         attempts: 0, block_level: 0, blocked_until: null, permanent: false,
@@ -421,7 +391,13 @@ app.post('/api/validate-email', async function(req, res) {
       }).eq('fingerprint', fp);
     }
 
-    return res.json({ valid: true });
+    const delay = stealthDelay(score);
+    if (delay > 0) await sleep(delay);
+
+    return res.json({
+      valid: true,
+      _s: score > 50 ? 1 : 0 // stealth flag: client should slow refresh
+    });
 
   } catch (e) {
     console.error('validate-email error:', e);
@@ -429,7 +405,45 @@ app.post('/api/validate-email', async function(req, res) {
   }
 });
 
+// ════════════════════════════════════════════════════════════
+// ── INBOX-ACCESS ──
+// Called when fetching inbox. Applies TTL and suspicion degradation.
+// ════════════════════════════════════════════════════════════
+app.post('/api/inbox-access', async function(req, res) {
+  try {
+    const alias  = (req.body.alias || '').trim().toLowerCase();
+    const sid    = (req.body.sid   || '').trim();
+    const ipHash = hashIP(getRawIP(req));
+
+    if (!alias) return res.status(400).json({ ok: false });
+
+    if (isBurstBlocked(req)) {
+      await sleep(PROG_DELAYS[1]);
+      return res.json({ ok: true, degrade: false });
+    }
+
+    const expired = isInboxExpired(alias);
+    touchInbox(alias);
+
+    const score = recordAccess(alias, sid, ipHash);
+    const delay = stealthDelay(score);
+    if (delay > 0) await sleep(delay);
+
+    return res.json({
+      ok: true,
+      degrade:   score > 50,
+      empty:     expired && score > 60, // TTL expired + suspicious → appear empty
+      refreshMs: score > 50 ? 30000 : 8000
+    });
+  } catch (e) {
+    console.error('inbox-access error:', e);
+    res.json({ ok: true, degrade: false });
+  }
+});
+
+// ════════════════════════════════════════════════════════════
 // ── START ──
+// ════════════════════════════════════════════════════════════
 app.listen(process.env.PORT, () => {
   console.log(`Server running on port ${process.env.PORT}`);
   registerWatch().catch(e => console.error('Initial watch error:', e.message));
