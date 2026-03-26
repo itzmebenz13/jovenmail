@@ -179,23 +179,19 @@ async function recordFailedAttempt(key, existingRow, now) {
   let newPermanent   = false;
 
   // Determine block based on total attempt count
-  if (newAttempts >= 4) {
-    // 4th+ invalid → permanent
+  if (newAttempts >= 3) {
+    // 3rd+ invalid → permanent
     newBlockLevel   = 3;
     newPermanent    = true;
     newBlockedUntil = null;
-  } else if (newAttempts === 3) {
-    // 3rd invalid → 24h
+  } else if (newAttempts === 2) {
+    // 2nd invalid → 24h
     newBlockLevel   = 2;
     newBlockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[1] * 60000).toISOString();
-  } else if (newAttempts === 2) {
-    // 2nd invalid → 1h
+  } else {
+    // 1st invalid → 1h
     newBlockLevel   = 1;
     newBlockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[0] * 60000).toISOString();
-  } else {
-    // 1st invalid → warning only, no block yet
-    newBlockLevel   = 0;
-    newBlockedUntil = null;
   }
 
   const payload = {
@@ -363,11 +359,10 @@ app.post('/api/check-block', async function(req, res) {
 
     // Return real block status — client uses this to show a warning
     return res.json({
-      blocked:      eval_.blocked,
-      permanent:    eval_.permanent || false,
-      message:      eval_.message || null,
-      attemptsUsed: eval_.attemptsUsed || 0,
-      blockedUntil: row ? row.blocked_until || null : null
+      blocked:         eval_.blocked,
+      permanent:       eval_.permanent || false,
+      message:         eval_.message || null,
+      attemptsUsed:    eval_.attemptsUsed || 0
     });
 
   } catch (e) {
@@ -442,7 +437,7 @@ app.post('/api/validate-email', async function(req, res) {
       });
     }
 
-    // ── 5. Mailbox lookup ──
+    // ── 5. Allowed-email lookup (admin-managed whitelist) ──
     const atIdx    = alias.indexOf('@');
     const user     = alias.slice(0, atIdx);
     const domain   = alias.slice(atIdx + 1);
@@ -452,22 +447,23 @@ app.post('/api/validate-email', async function(req, res) {
     let hasEmails = false;
 
     if (isGmail) {
+      // Gmail ignores dots in the local part — check all @gmail.com / @googlemail.com entries
       const { data: candidates, error: candErr } = await supabase
-        .from('emails').select('id, alias')
-        .ilike('alias', '%@' + domain)
+        .from('allowed_emails').select('email')
+        .ilike('email', '%@' + domain)
         .limit(500);
       if (candErr) {
         console.error('validate-email DB error:', JSON.stringify(candErr));
         return res.status(500).json({ valid: false, error: 'Database error' });
       }
       hasEmails = (candidates || []).some(r => {
-        if (!r.alias) return false;
-        const p = r.alias.toLowerCase().split('@');
+        if (!r.email) return false;
+        const p = r.email.toLowerCase().split('@');
         return p.length === 2 && p[1] === domain && p[0].replace(/\./g, '') === baseUser;
       });
     } else {
       const { data: rows, error: rowErr } = await supabase
-        .from('emails').select('id').eq('alias', alias).limit(1);
+        .from('allowed_emails').select('id').eq('email', alias).limit(1);
       if (rowErr) {
         console.error('validate-email DB error:', JSON.stringify(rowErr));
         return res.status(500).json({ valid: false, error: 'Database error' });
@@ -501,11 +497,10 @@ app.post('/api/validate-email', async function(req, res) {
       if (nowBlocked) {
         const newEval = evaluateRow(updated);
         return res.json({
-          valid:        false,
-          blocked:      true,
-          permanent:    updated.permanent || false,
-          blockedUntil: updated.blocked_until || null,
-          message:      updated.permanent
+          valid:     false,
+          blocked:   true,
+          permanent: updated.permanent || false,
+          message:   updated.permanent
             ? 'Your access has been permanently restricted.'
             : newEval.message
         });
@@ -515,7 +510,6 @@ app.post('/api/validate-email', async function(req, res) {
         valid:             false,
         blocked:           false,
         reason:            'no_emails',
-        attemptsUsed:      updated?.attempts || 1,
         remainingAttempts: remaining
       });
     }
@@ -584,4 +578,70 @@ app.post('/api/inbox-access', async function(req, res) {
 app.listen(process.env.PORT, () => {
   console.log(`Server running on port ${process.env.PORT}`);
   registerWatch().catch(e => console.error('Initial watch error:', e.message));
+});
+
+// ════════════════════════════════════════════════════════════
+// ── FETCH-EMAILS ──
+// Clients must use this endpoint to read emails.
+// Re-checks the allowed_emails whitelist on every request so
+// that removing an email from the admin panel immediately
+// kills access — even for sessions that already validated.
+// Prevents the anon Supabase key from bypassing the whitelist.
+// ════════════════════════════════════════════════════════════
+app.post('/api/fetch-emails', async function(req, res) {
+  try {
+    const alias = (req.body.alias || '').trim().toLowerCase();
+    const fp    = (req.body.fp    || '').trim();
+    const sid   = (req.body.sid   || fp).trim();
+
+    if (!alias || !fp) return res.status(400).json({ ok: false, error: 'Missing params' });
+    if (isBurstBlocked(req)) { await sleep(PROG_DELAYS[1]); return res.json({ ok: false, error: 'Too many requests.' }); }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(alias)) return res.status(400).json({ ok: false, error: 'Invalid alias format' });
+
+    const atIdx    = alias.indexOf('@');
+    const user     = alias.slice(0, atIdx);
+    const domain   = alias.slice(atIdx + 1);
+    const baseUser = user.replace(/\./g, '');
+    const isGmail  = domain === 'gmail.com' || domain === 'googlemail.com';
+    let allowed = false;
+
+    if (isGmail) {
+      const { data: candidates, error: candErr } = await supabase
+        .from('allowed_emails').select('email').ilike('email', '%@' + domain).limit(500);
+      if (candErr) { console.error('fetch-emails whitelist error:', JSON.stringify(candErr)); return res.status(500).json({ ok: false, error: 'Database error' }); }
+      allowed = (candidates || []).some(r => {
+        if (!r.email) return false;
+        const p = r.email.toLowerCase().split('@');
+        return p.length === 2 && p[1] === domain && p[0].replace(/\./g, '') === baseUser;
+      });
+    } else {
+      const { data: rows, error: rowErr } = await supabase
+        .from('allowed_emails').select('id').eq('email', alias).limit(1);
+      if (rowErr) { console.error('fetch-emails whitelist error:', JSON.stringify(rowErr)); return res.status(500).json({ ok: false, error: 'Database error' }); }
+      allowed = !!(rows && rows.length > 0);
+    }
+
+    if (!allowed) return res.status(403).json({ ok: false, error: 'not_allowed' });
+
+    const ipHash = hashIP(getRawIP(req));
+    const score  = recordAccess(alias, sid, ipHash);
+    touchInbox(alias);
+    const delay = stealthDelay(score);
+    if (delay > 0) await sleep(delay);
+
+    const { data: emailRows, error: emailErr } = await supabase
+      .from('emails')
+      .select('id, sender, sender_email, subject, body, received_at, alias, gmail_id')
+      .eq('alias', alias)
+      .order('received_at', { ascending: false })
+      .limit(50);
+
+    if (emailErr) { console.error('fetch-emails query error:', JSON.stringify(emailErr)); return res.status(500).json({ ok: false, error: 'Database error' }); }
+
+    return res.json({ ok: true, emails: emailRows || [], degrade: score > 50, _s: score > 50 ? 1 : 0 });
+
+  } catch (e) {
+    console.error('fetch-emails error:', e);
+    return res.status(500).json({ ok: false, error: 'Server error' });
+  }
 });
