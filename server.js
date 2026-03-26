@@ -30,9 +30,10 @@ const supabase = createClient(
 // ── RATE LIMITING CONFIG ──
 //
 // Block escalation per fingerprint/IP (tracked separately):
-//   1st invalid attempt  → blocked_until = now + 1h,  block_level = 1
-//   2nd invalid attempt  → blocked_until = now + 24h, block_level = 2
-//   3rd invalid attempt  → permanent = true,           block_level = 3
+//   1st invalid attempt  → warning only (no ban),      block_level = 0
+//   2nd invalid attempt  → blocked_until = now + 1h,   block_level = 1
+//   3rd invalid attempt  → blocked_until = now + 24h,  block_level = 2
+//   4th+ invalid attempt → permanent = true,            block_level = 3
 //
 // KEY DESIGN: attempts counts UP per bad try and is NEVER reset on success.
 // block_level is only incremented when a new block is issued.
@@ -41,7 +42,7 @@ const supabase = createClient(
 // ════════════════════════════════════════════════════════════
 
 // block_level → duration in minutes
-// Index 0 = level 1 (1st block), index 1 = level 2, index 2 = level 3 (permanent)
+// Index 0 = level 1 (2nd bad attempt → 1h), index 1 = level 2 (3rd → 24h), index 2 = permanent
 const BLOCK_DURATIONS = [60, 1440]; // level 1 → 1h, level 2 → 24h, level 3 → permanent
 
 // Per-minute burst guard (in-memory, resets on process restart)
@@ -153,13 +154,14 @@ function stricter(a, b) {
 /**
  * Record ONE failed attempt for a given fingerprint key.
  *
- * Logic (fixes the previous broken version):
+ * Logic:
  *   - Read existing row (passed in as existingRow)
  *   - Increment attempts counter
  *   - Determine new block_level and blocked_until based on NEW attempt total:
- *       attempts = 1 → block_level 1, blocked 1h
- *       attempts = 2 → block_level 2, blocked 24h
- *       attempts >= 3 → permanent
+ *       attempts = 1 → warning only (block_level 0, no ban)
+ *       attempts = 2 → block_level 1, blocked 1h
+ *       attempts = 3 → block_level 2, blocked 24h
+ *       attempts >= 4 → permanent
  *   - NEVER reset attempts on success — only cron resets old rows
  *   - If already permanently blocked, do nothing
  *
@@ -179,19 +181,23 @@ async function recordFailedAttempt(key, existingRow, now) {
   let newPermanent   = false;
 
   // Determine block based on total attempt count
-  if (newAttempts >= 3) {
-    // 3rd+ invalid → permanent
+  if (newAttempts >= 4) {
+    // 4th+ invalid → permanent
     newBlockLevel   = 3;
     newPermanent    = true;
     newBlockedUntil = null;
-  } else if (newAttempts === 2) {
-    // 2nd invalid → 24h
+  } else if (newAttempts === 3) {
+    // 3rd invalid → 24h
     newBlockLevel   = 2;
     newBlockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[1] * 60000).toISOString();
-  } else {
-    // 1st invalid → 1h
+  } else if (newAttempts === 2) {
+    // 2nd invalid → 1h
     newBlockLevel   = 1;
     newBlockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[0] * 60000).toISOString();
+  } else {
+    // 1st invalid → warning only, no ban
+    newBlockLevel   = 0;
+    newBlockedUntil = null;
   }
 
   const payload = {
@@ -484,12 +490,14 @@ app.post('/api/validate-email', async function(req, res) {
       // Pick the stricter updated row to decide what to tell the user
       const updated    = stricter(updFp, updIp);
       const nowBlocked = updated ? evaluateRow(updated).blocked : false;
-      // How many attempts remain before the next block (if not yet blocked)
-      const remaining  = nowBlocked ? 0 : Math.max(0, 3 - (updated?.attempts || 1));
+      // How many wrong attempts remain before the next escalation
+      // attempt 1 = warning (1 more before 1h ban)
+      // attempt 2 = 1h ban applied; attempt 3 = 24h; attempt 4+ = permanent
+      const remaining  = nowBlocked ? 0 : Math.max(0, 4 - (updated?.attempts || 1));
 
       // Progressive delay: 1st attempt=1s, 2nd=3s, 3rd+=5s
       const attemptNum = updated?.attempts || 1;
-      const delay      = attemptNum >= 3 ? PROG_DELAYS[2]
+      const delay      = attemptNum >= 4 ? PROG_DELAYS[2]
                        : attemptNum >= 2 ? PROG_DELAYS[1]
                        :                  PROG_DELAYS[0];
       await sleep(delay);
