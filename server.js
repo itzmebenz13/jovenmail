@@ -179,19 +179,23 @@ async function recordFailedAttempt(key, existingRow, now) {
   let newPermanent   = false;
 
   // Determine block based on total attempt count
-  if (newAttempts >= 3) {
-    // 3rd+ invalid → permanent
+  if (newAttempts >= 4) {
+    // 4th+ invalid → permanent
     newBlockLevel   = 3;
     newPermanent    = true;
     newBlockedUntil = null;
-  } else if (newAttempts === 2) {
-    // 2nd invalid → 24h
+  } else if (newAttempts === 3) {
+    // 3rd invalid → 24h
     newBlockLevel   = 2;
     newBlockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[1] * 60000).toISOString();
-  } else {
-    // 1st invalid → 1h
+  } else if (newAttempts === 2) {
+    // 2nd invalid → 1h
     newBlockLevel   = 1;
     newBlockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[0] * 60000).toISOString();
+  } else {
+    // 1st invalid → warning only, no block yet
+    newBlockLevel   = 0;
+    newBlockedUntil = null;
   }
 
   const payload = {
@@ -496,10 +500,11 @@ app.post('/api/validate-email', async function(req, res) {
       if (nowBlocked) {
         const newEval = evaluateRow(updated);
         return res.json({
-          valid:     false,
-          blocked:   true,
-          permanent: updated.permanent || false,
-          message:   updated.permanent
+          valid:        false,
+          blocked:      true,
+          permanent:    updated.permanent || false,
+          blockedUntil: updated.blocked_until || null,
+          message:      updated.permanent
             ? 'Your access has been permanently restricted.'
             : newEval.message
         });
@@ -509,6 +514,7 @@ app.post('/api/validate-email', async function(req, res) {
         valid:             false,
         blocked:           false,
         reason:            'no_emails',
+        attemptsUsed:      updated?.attempts || 1,
         remainingAttempts: remaining
       });
     }
