@@ -2670,9 +2670,19 @@
     if (resetPage) _admPage = 1;
     document.getElementById('admEmailList').innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>';
     try {
-      var r = await _admSb.from('allowed_emails').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(10000);
-      if (r.error) throw r.error;
-      _admAllEmails = r.data || [];
+      // Fetch all rows in pages of 1000 to bypass Supabase default row limit
+      var all = [];
+      var PAGE = 1000;
+      var from = 0;
+      while (true) {
+        var r = await _admSb.from('allowed_emails').select('*').order('created_at', { ascending: false }).range(from, from + PAGE - 1);
+        if (r.error) throw r.error;
+        var batch = r.data || [];
+        all = all.concat(batch);
+        if (batch.length < PAGE) break;
+        from += PAGE;
+      }
+      _admAllEmails = all;
       admApplyFilter();
       admUpdateStats();
     } catch(e) {
@@ -2869,6 +2879,20 @@
     admUpdateBulkBar();
     admRenderPage();
   }
+  async function admDeleteAll() {
+    if (!_admAllEmails.length) { showToast('No emails to delete'); return; }
+    if (!confirm('Delete ALL ' + _admAllEmails.length + ' email(s)? This cannot be undone.')) return;
+    try {
+      var ids = _admAllEmails.map(function(r){ return r.id; });
+      for (var i = 0; i < ids.length; i += 100) {
+        var r = await _admSb.from('allowed_emails').delete().in('id', ids.slice(i, i+100));
+        if (r.error) throw r.error;
+      }
+      showToast('Deleted all ' + ids.length + ' emails');
+      _admSelIds.clear();
+      await admLoadEmails(false);
+    } catch(e) { showToast('Delete failed: ' + e.message); }
+  }
   async function admDeleteSelected() {
     if (!_admSelIds.size) return;
     if (!confirm('Delete ' + _admSelIds.size + ' selected email(s)?')) return;
@@ -2962,10 +2986,16 @@
           Valid email list
           <span class="adm-count" id="admListCount">0</span>
         </div>
-        <button class="btn-pill btn-outline btn-sm" onclick="admLoadEmails(true)" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
-          Refresh
-        </button>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="btn-pill btn-outline btn-sm" onclick="admLoadEmails(true)" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
+            Refresh
+          </button>
+          <button class="adm-btn-del" onclick="admDeleteAll()" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+            Delete all
+          </button>
+        </div>
       </div>
 
       <div class="adm-search-row">
