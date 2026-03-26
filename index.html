@@ -1354,6 +1354,122 @@
     font-size: 0.78rem; color: var(--text-dim); line-height: 1.6;
   }
   .transfer-confirm-row strong { color: #fb923c; }
+  /* QuickLink mode toggle */
+  .ql-mode-row {
+    display: flex; gap: 6px; margin: 14px 0 10px;
+  }
+  .ql-mode-btn {
+    flex: 1; padding: 10px 8px; border-radius: 9px;
+    border: 1.5px solid var(--border-strong); background: var(--bg-input);
+    color: var(--text-dim); font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.18s; font-family: 'Inter', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .ql-mode-btn:hover { border-color: var(--border-strong); color: var(--text-main); }
+  .ql-mode-btn.active { border-color: var(--accent); background: rgba(217,249,80,0.08); color: var(--text-main); }
+  .ql-mode-btn.active.private { border-color: #f59e0b; background: rgba(245,158,11,0.08); color: #f59e0b; }
+  .ql-desc {
+    font-size: 0.75rem; color: var(--text-dim); line-height: 1.55;
+    padding: 9px 12px; border-radius: 8px; background: var(--bg-input);
+    border: 1px solid var(--border); margin-bottom: 14px;
+  }
+  /* Viewer mode banner */
+  #viewerBanner {
+    display: none;
+    align-items: center; justify-content: space-between; gap: 8px;
+    padding: 9px 14px; border-radius: 10px;
+    background: rgba(217,249,80,0.07); border: 1px solid rgba(217,249,80,0.25);
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  #viewerBanner.visible { display: flex; }
+  .viewer-label {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 0.76rem; font-weight: 600; color: var(--accent);
+  }
+  .viewer-exit {
+    font-size: 0.72rem; color: var(--text-muted); background: none;
+    border: none; cursor: pointer; padding: 3px 8px; border-radius: 6px;
+    transition: color 0.15s; font-family: 'Inter', sans-serif;
+  }
+  .viewer-exit:hover { color: var(--text-main); }
+  /* QuickLink access overlay (private mode) */
+  #qlAccessOverlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg-app); align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  #qlAccessOverlay.visible { display: flex; }
+  .ql-access-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 32px 28px; max-width: 340px; width: 90%;
+    text-align: center; box-shadow: var(--shadow-card);
+  }
+  .ql-access-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(245,158,11,0.1); border: 1.5px solid rgba(245,158,11,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .ql-access-title { font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+  .ql-access-alias {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    color: var(--code-text); background: var(--bg-input);
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 7px 12px; margin: 10px 0 16px; word-break: break-all;
+  }
+  .ql-access-sub { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 16px; line-height: 1.5; }
+
+  /* ── Recover button loading state ── */
+  .btn-recover { position: relative; overflow: hidden; }
+  .btn-recover .btn-recover-spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(100,100,100,0.35);
+    border-top-color: var(--text-main);
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+    display: none; flex-shrink: 0;
+  }
+  .btn-recover.loading .btn-recover-spinner { display: block; }
+  .btn-recover.loading .btn-recover-icon { display: none; }
+  .btn-recover.loading { opacity: 1 !important; cursor: wait; }
+
+  /* ── QuickLink page loader ── */
+  #qlPageLoader {
+    display: none; position: fixed; inset: 0; z-index: 9998;
+    background: var(--bg-app);
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px;
+  }
+  #qlPageLoader.visible { display: flex; }
+  .ql-loader-icon {
+    width: 56px; height: 56px; border-radius: 16px;
+    background: rgba(217,249,80,0.10); border: 1.5px solid rgba(217,249,80,0.25);
+    display: flex; align-items: center; justify-content: center;
+    animation: qlPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes qlPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(217,249,80,0.3); }
+    50%      { box-shadow: 0 0 0 14px rgba(217,249,80,0); }
+  }
+  .ql-loader-text {
+    font-size: 0.9rem; font-weight: 600; color: var(--text-main);
+    letter-spacing: -0.01em;
+  }
+  .ql-loader-sub {
+    font-size: 0.75rem; color: var(--text-dim); margin-top: -10px;
+  }
+  .ql-loader-dots { display: flex; gap: 6px; margin-top: 4px; }
+  .ql-loader-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); opacity: 0.3;
+    animation: qlDot 1.2s ease-in-out infinite;
+  }
+  .ql-loader-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .ql-loader-dots span:nth-child(3) { animation-delay: 0.30s; }
+  @keyframes qlDot {
+    0%,80%,100% { opacity: 0.3; transform: scale(0.85); }
+    40%          { opacity: 1;   transform: scale(1.1); }
+  }
 </style>
 </head>
 <body>
@@ -1447,15 +1563,34 @@
       </div>
 
       <!-- Ownership badge — shown when this session owns the alias -->
-      <div id="ownershipBar" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;">
+      <div id="ownershipBar" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
         <span class="owner-badge">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           You own this alias
         </span>
-        <button class="btn-transfer" onclick="openTransferModal()" title="Transfer ownership to another user">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-          Transfer Access
-        </button>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <button class="btn-transfer" onclick="openQuickLinkModal()" title="Share inbox access via QuickLink" style="background:rgba(217,249,80,0.08);border-color:rgba(217,249,80,0.3);color:var(--accent);font-size:0.72rem;padding:5px 10px;" id="quickLinkBtn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            QuickLink
+          </button>
+          <button class="btn-transfer" onclick="copySessionLink()" title="Generate a restore link to open this session in any browser" style="background:rgba(217,249,80,0.10);border-color:rgba(217,249,80,0.3);color:var(--accent);font-size:0.72rem;padding:5px 10px;" id="sessionLinkBtn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Save link
+          </button>
+          <button class="btn-transfer" onclick="openTransferModal()" title="Transfer ownership to another user">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            Transfer Access
+          </button>
+        </div>
+      </div>
+
+      <!-- Viewer mode banner — shown when inbox is opened via QuickLink -->
+      <div id="viewerBanner">
+        <div class="viewer-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Viewing via QuickLink · Read-only
+        </div>
+        <button class="viewer-exit" onclick="exitViewerMode()">Exit ×</button>
       </div>
 
       <div class="actions-grid">
@@ -1511,10 +1646,19 @@
           </span><br/>
           <span style="color:var(--text-muted);font-size:0.66rem;">Unauthorized access attempts are logged and may be reported.</span>
         </div>
-        <button class="btn-pill btn-outline" style="margin-top:10px;padding:10px 20px;width:100%;border-color:var(--border-strong);" onclick="recoverAlias()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-          Load Inbox (Recover)
+        <button class="btn-pill btn-outline btn-recover" id="recoverBtn" style="margin-top:10px;padding:10px 20px;width:100%;border-color:var(--border-strong);" onclick="recoverAlias()">
+          <svg class="btn-recover-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <div class="btn-recover-spinner"></div>
+          <span id="recoverBtnLabel">Load Inbox (Recover)</span>
         </button>
+        <!-- Recent aliases — shown when history exists -->
+        <div id="recentAliasesWrap" style="display:none;margin-top:14px;">
+          <div style="font-size:0.68rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:7px;display:flex;align-items:center;gap:5px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Recent aliases on this device
+          </div>
+          <div id="recentAliasesList" style="display:flex;flex-direction:column;gap:5px;"></div>
+        </div>
       </div>
     </div>
 
@@ -1801,6 +1945,7 @@
     currentAlias = alias;
     document.getElementById('aliasDisplay').textContent = alias;
     localStorage.setItem(STORAGE_KEY, alias);
+    addToHistory(alias); // track across sessions
 
     subscribeToAlias(alias);
     startSilentRefresh();
@@ -1809,6 +1954,158 @@
     // Signal server for access pattern monitoring.
     // Response silently applies stealth degradation if suspicious.
     signalInboxAccess(alias);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // ── ALIAS HISTORY — persistent, cross-session, max 5 ──
+  //
+  // Solves two problems:
+  //   1. Accidental alias switch — user can 1-tap back to any previous alias
+  //   2. In-app browser isolation — session restore link carries the full
+  //      history so any browser context can restore everything at once
+  // ═══════════════════════════════════════════════════════
+  var HISTORY_KEY = 'jm_history';
+
+  function getHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+    catch(e) { return []; }
+  }
+
+  function addToHistory(alias) {
+    if (!alias) return;
+    var h = getHistory().filter(function(a) { return a !== alias; });
+    h.unshift(alias);
+    h = h.slice(0, 5); // keep at most 5
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+    renderRecentAliases();
+  }
+
+  function renderRecentAliases() {
+    var h = getHistory();
+    // Only show aliases OTHER than the currently active one
+    var others = h.filter(function(a) { return a !== currentAlias; });
+    var wrap = document.getElementById('recentAliasesWrap');
+    var list = document.getElementById('recentAliasesList');
+    if (!wrap || !list) return;
+    if (!others.length) { wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+    list.innerHTML = others.map(function(alias) {
+      return '<button onclick="quickSwitchAlias(\'' + alias.replace(/'/g,"\\'") + '\')" ' +
+        'style="display:flex;align-items:center;justify-content:space-between;gap:8px;' +
+        'padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);' +
+        'width:100%;cursor:pointer;transition:border-color 0.15s,background 0.15s;text-align:left;"' +
+        'onmouseover="this.style.borderColor=\'var(--accent)\';this.style.background=\'rgba(217,249,80,0.05)\'"' +
+        'onmouseout="this.style.borderColor=\'var(--border)\';this.style.background=\'var(--bg-input)\'">' +
+          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.78rem;color:var(--code-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">' +
+            alias +
+          '</span>' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>' +
+        '</button>';
+    }).join('');
+  }
+
+  // One-tap switch to a recent alias (fast-path — skips server call if owner)
+  async function quickSwitchAlias(alias) {
+    if (!alias) return;
+    document.getElementById('recoverInput').value = alias;
+    await recoverAlias();
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // ── SESSION RESTORE LINK ──
+  //
+  // Generates a URL like: https://site.com/?r=BASE64
+  // Encoded payload: { sid, aliases: [...history], ts }
+  //
+  // When opened in ANY browser (including in-app browsers like
+  // Messenger/Instagram), the page detects ?r= and restores:
+  //   · SESSION_ID (so Supabase ownership checks match)
+  //   · alias_ownership records for every alias in history
+  //   · jm_history (so the recent aliases list is populated)
+  // ═══════════════════════════════════════════════════════
+  function copySessionLink() {
+    var h = getHistory();
+    if (!h.length && !currentAlias) {
+      showToast('No alias active yet.');
+      return;
+    }
+    var payload = {
+      sid: SESSION_ID,
+      aliases: h.length ? h : (currentAlias ? [currentAlias] : []),
+      ts: Date.now()
+    };
+    var encoded;
+    try {
+      encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    } catch(e) {
+      showToast('Could not encode session.'); return;
+    }
+    var url = location.origin + location.pathname + '?r=' + encodeURIComponent(encoded);
+    navigator.clipboard.writeText(url).then(function() {
+      var btn = document.getElementById('sessionLinkBtn');
+      if (btn) {
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.style.color = '#22c55e';
+        setTimeout(function() { btn.innerHTML = orig; btn.style.color = ''; }, 2500);
+      }
+      showToast('Session link copied — open it in any browser to restore');
+    }).catch(function() {
+      // Fallback: prompt the user to manually copy
+      window.prompt('Copy this link and open it in any browser:', url);
+    });
+  }
+
+  // ── Import session from ?r= URL parameter ──
+  // Called BEFORE normal init. Merges incoming data without overwriting
+  // any existing ownership records already on this device.
+  function tryRestoreFromUrl() {
+    try {
+      var params = new URLSearchParams(location.search);
+      var r = params.get('r');
+      if (!r) return false;
+
+      // Remove ?r= from address bar without reloading
+      var clean = location.pathname + (location.hash || '');
+      history.replaceState(null, '', clean);
+
+      var raw = decodeURIComponent(encodeURIComponent(decodeURIComponent(r)));
+      var payload = JSON.parse(decodeURIComponent(escape(atob(r))));
+
+      if (!payload || !payload.sid) return false;
+
+      // Reject links older than 30 days
+      if (payload.ts && Date.now() - payload.ts > 30 * 24 * 60 * 60 * 1000) {
+        showToast('Session link has expired. Please generate a new one.');
+        return false;
+      }
+
+      // ── Import SESSION_ID ──
+      // Only import if this device has no SESSION_ID yet (fresh browser context)
+      var existingSid = localStorage.getItem('jm_sid');
+      if (!existingSid) {
+        localStorage.setItem('jm_sid', payload.sid);
+        // Reload so SESSION_ID variable is re-read from the new localStorage value
+        location.reload();
+        return true; // will reload
+      }
+
+      // ── Import alias history ──
+      var incoming = Array.isArray(payload.aliases) ? payload.aliases : [];
+      var existing = getHistory();
+      // Merge: incoming first (they brought these aliases), dedup, cap at 5
+      var merged = incoming.concat(existing.filter(function(a) {
+        return incoming.indexOf(a) === -1;
+      })).slice(0, 5);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(merged));
+
+      showToast('Session restored — choose your alias below');
+      return false; // no reload needed, continue normal init with merged history
+
+    } catch(e) {
+      console.warn('Session restore failed:', e);
+      return false;
+    }
   }
 
   /* ════════════════════════════════════════════════════════
@@ -3046,25 +3343,38 @@
   var _transferAfterPin = false;
 
   function openTransferModal() {
-    // Always open transfer modal directly — no forced PIN setup
     _transferAfterPin = false;
     document.getElementById('transferAliasText').textContent = currentAlias || '—';
     clearPinInputs('transferPin', 4);
     document.getElementById('transferPinError').textContent = '';
 
-    // Show PIN section only if owner has already set a PIN
+    var pinAlreadySet = hasPin(currentAlias);
+
+    // "Set a PIN" section — shown only when no PIN is set yet
+    var setPinSection = document.getElementById('transferSetPinSection');
+    if (setPinSection) setPinSection.style.display = pinAlreadySet ? 'none' : '';
+
+    // PIN confirm section — shown only when a PIN is already set
     var pinSection = document.getElementById('transferPinSection');
-    if (pinSection) pinSection.style.display = hasPin(currentAlias) ? '' : 'none';
+    if (pinSection) pinSection.style.display = pinAlreadySet ? '' : 'none';
 
     var overlay = document.getElementById('transferOverlay');
     overlay.style.display = 'flex';
     setTimeout(function() {
       overlay.classList.add('open');
-      if (hasPin(currentAlias)) {
+      if (pinAlreadySet) {
         var first = document.getElementById('transferPin0');
         if (first) first.focus();
       }
     }, 10);
+  }
+
+  // Called from the Transfer modal — opens the Set PIN flow and re-opens
+  // Transfer modal once the PIN is confirmed.
+  function openSetPinFromTransfer() {
+    closeTransferModal();
+    _transferAfterPin = true;
+    setTimeout(function() { openSetPinModal(currentAlias); }, 220);
   }
 
   function closeTransferModal() {
@@ -3213,8 +3523,22 @@
     if (!input) { showToast('Enter your assigned alias'); return; }
     if (!input.includes('@')) input = input + '@' + DOMAIN;
 
-    var btn = document.querySelector('[onclick="recoverAlias()"]');
-    if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+    var btn = document.getElementById('recoverBtn');
+    function setRecoverLoading(on, label) {
+      if (!btn) return;
+      if (on) {
+        btn.classList.add('loading');
+        btn.disabled = true;
+        var lbl = document.getElementById('recoverBtnLabel');
+        if (lbl) lbl.textContent = label || 'Loading…';
+      } else {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        var lbl = document.getElementById('recoverBtnLabel');
+        if (lbl) lbl.textContent = 'Load Inbox (Recover)';
+      }
+    }
+    setRecoverLoading(true, 'Checking…');
     _recoverBusy = true;
 
     try {
@@ -3301,7 +3625,7 @@
       console.error('recoverAlias error:', e);
       showRecoverError('Connection error. Please try again.');
     } finally {
-      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      setRecoverLoading(false);
       _recoverBusy = false;
     }
   };
@@ -3311,8 +3635,18 @@
     var savedUi = localStorage.getItem('ui-theme') || 'meiro';
     setUiTheme(savedUi);
 
+    // ── Check for QuickLink (?q=) FIRST — viewer mode, no ownership involved ──
+    if (tryLoadQuickLink()) return;
+
+    // ── Try restoring from ?r= URL param first ──
+    // If this triggers a reload (new SESSION_ID imported), stop here.
+    if (tryRestoreFromUrl()) return;
+
     // Populate security notice immediately
     populateSecurityNotice();
+
+    // Render recent aliases immediately (uses localStorage, no network)
+    renderRecentAliases();
 
     // Check ban status on load — disable button immediately if banned
     try {
@@ -3541,7 +3875,239 @@
     clearTimeout(_admSearchTimer);
     _admSearchTimer = setTimeout(function(){ _admSearch = document.getElementById('admSearch').value; _admPage = 1; admApplyFilter(); }, 220);
   }
-  function admClearSearch() { document.getElementById('admSearch').value=''; _admSearch=''; _admPage=1; admApplyFilter(); }
+  // ═══════════════════════════════════════════════════════
+  // ── QUICKLINK FEATURE ──
+  //
+  // Owner side: generate a ?q=BASE64 URL that grants read-only
+  //   inbox access to anyone (public) or PIN-holders (private).
+  // Recipient side: page detects ?q= on load and shows either
+  //   the inbox directly (public) or a PIN entry screen (private).
+  // The link payload: { alias, mode:'public'|'private', pin:(if private), ts }
+  // ═══════════════════════════════════════════════════════
+  var _qlMode = 'public';
+  var _qlPendingAlias = ''; // stores alias while waiting for PIN verify
+  var _qlPendingPin   = '';
+  var _viewerMode = false;
+
+  function openQuickLinkModal() {
+    if (!currentAlias) { showToast('No active alias'); return; }
+    document.getElementById('qlAliasText').textContent = currentAlias;
+    setQlMode('public');
+    // Reset PIN digits
+    ['qlPin0','qlPin1','qlPin2','qlPin3'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.value='';
+    });
+    document.getElementById('qlPinError').textContent = '';
+    document.getElementById('quickLinkOverlay').classList.add('open');
+  }
+
+  function closeQuickLinkModal() {
+    document.getElementById('quickLinkOverlay').classList.remove('open');
+  }
+
+  function setQlMode(mode) {
+    _qlMode = mode;
+    var pubBtn = document.getElementById('qlModePublicBtn');
+    var privBtn = document.getElementById('qlModePrivateBtn');
+    var pinSec = document.getElementById('qlPinSection');
+    var desc = document.getElementById('qlModeDesc');
+    if (mode === 'public') {
+      pubBtn.className = 'ql-mode-btn active';
+      privBtn.className = 'ql-mode-btn';
+      pinSec.style.display = 'none';
+      desc.textContent = 'Anyone with the link can instantly view this inbox — no PIN required.';
+    } else {
+      pubBtn.className = 'ql-mode-btn';
+      privBtn.className = 'ql-mode-btn active private';
+      pinSec.style.display = '';
+      desc.textContent = 'Recipients must enter the PIN you set before they can view this inbox.';
+      setTimeout(function(){ var el=document.getElementById('qlPin0'); if(el) el.focus(); }, 80);
+    }
+  }
+
+  function copyQuickLink() {
+    if (!currentAlias) return;
+    var payload = { alias: currentAlias, mode: _qlMode, ts: Date.now() };
+
+    if (_qlMode === 'private') {
+      var pin = ['qlPin0','qlPin1','qlPin2','qlPin3'].map(function(id){
+        var el=document.getElementById(id); return el?el.value:'';
+      }).join('');
+      if (pin.length < 4) {
+        document.getElementById('qlPinError').textContent = 'Enter all 4 digits';
+        document.getElementById('qlPin0').focus();
+        return;
+      }
+      payload.pin = pin;
+      document.getElementById('qlPinError').textContent = '';
+    }
+
+    var encoded;
+    try { encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); }
+    catch(e) { showToast('Could not encode link'); return; }
+
+    var url = location.origin + location.pathname + '?q=' + encodeURIComponent(encoded);
+    navigator.clipboard.writeText(url).then(function() {
+      var btn = document.getElementById('qlCopyBtn');
+      var orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+      btn.style.background = '#22c55e'; btn.style.color = '#000';
+      setTimeout(function(){
+        btn.innerHTML = orig;
+        btn.style.background = ''; btn.style.color = '';
+      }, 2500);
+      showToast(_qlMode === 'public' ? 'Public QuickLink copied — anyone can view' : 'Private QuickLink copied — share the PIN separately');
+    }).catch(function(){
+      window.prompt('Copy this QuickLink:', url);
+    });
+  }
+
+  // ── Recipient side: detect and load ?q= on page open ──
+  function tryLoadQuickLink() {
+    try {
+      var params = new URLSearchParams(location.search);
+      var q = params.get('q');
+      if (!q) return false;
+
+      // Clean URL from address bar
+      history.replaceState(null, '', location.pathname + (location.hash || ''));
+
+      var payload;
+      try { payload = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(q))))); }
+      catch(e) { showToast('Invalid QuickLink.'); return false; }
+
+      if (!payload || !payload.alias) { showToast('Malformed QuickLink.'); return false; }
+
+      // Links expire after 7 days
+      if (payload.ts && Date.now() - payload.ts > 7 * 24 * 60 * 60 * 1000) {
+        showToast('This QuickLink has expired.'); return false;
+      }
+
+      if (payload.mode === 'public') {
+        // Load immediately in viewer mode
+        loadViewerMode(payload.alias);
+        return true;
+      } else {
+        // Show private PIN overlay
+        _qlPendingAlias = payload.alias;
+        _qlPendingPin   = payload.pin || '';
+        var aliasEl = document.getElementById('qlAccessAlias');
+        if (aliasEl) aliasEl.textContent = payload.alias;
+        var overlay = document.getElementById('qlAccessOverlay');
+        if (overlay) overlay.classList.add('visible');
+        // Pre-focus first PIN digit
+        setTimeout(function(){ var el=document.getElementById('qlVerifyPin0'); if(el) el.focus(); }, 200);
+        return true;
+      }
+    } catch(e) {
+      console.warn('QuickLink parse error:', e);
+      return false;
+    }
+  }
+
+  // Auto-submit on last digit for the verify form
+  function qlVerifyPinAutoSubmit(event) {
+    pinInput(event, 'qlVerifyPin', 3, 4);
+    // If all 4 filled, auto-verify
+    var all = ['qlVerifyPin0','qlVerifyPin1','qlVerifyPin2','qlVerifyPin3'].every(function(id){
+      var el=document.getElementById(id); return el && el.value.length===1;
+    });
+    if (all) setTimeout(verifyQuickLinkPin, 100);
+  }
+
+  function verifyQuickLinkPin() {
+    var entered = ['qlVerifyPin0','qlVerifyPin1','qlVerifyPin2','qlVerifyPin3'].map(function(id){
+      var el=document.getElementById(id); return el?el.value:'';
+    }).join('');
+    if (entered.length < 4) {
+      document.getElementById('qlVerifyError').textContent = 'Enter all 4 digits';
+      return;
+    }
+    if (entered !== _qlPendingPin) {
+      document.getElementById('qlVerifyError').textContent = 'Incorrect PIN. Try again.';
+      var row = document.getElementById('qlVerifyPinRow');
+      if (row) { row.classList.add('shake'); setTimeout(function(){ row.classList.remove('shake'); }, 400); }
+      ['qlVerifyPin0','qlVerifyPin1','qlVerifyPin2','qlVerifyPin3'].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.value='';
+      });
+      document.getElementById('qlVerifyPin0').focus();
+      return;
+    }
+    // Correct PIN — close overlay and load viewer mode
+    document.getElementById('qlAccessOverlay').classList.remove('visible');
+    loadViewerMode(_qlPendingAlias);
+  }
+
+  // ── Viewer mode — read-only inbox without ownership claim ──
+  function loadViewerMode(alias) {
+    _viewerMode = true;
+    currentAlias = alias;
+
+    // Show full-page loader immediately so user sees feedback
+    var loader = document.getElementById('qlPageLoader');
+    if (loader) loader.classList.add('visible');
+
+    // Show viewer banner, hide recovery section and ownership actions
+    var banner = document.getElementById('viewerBanner');
+    if (banner) banner.classList.add('visible');
+    var ownerBar = document.getElementById('ownershipBar');
+    if (ownerBar) ownerBar.style.display = 'none';
+    var noAlias = document.getElementById('noAliasState');
+    if (noAlias) noAlias.style.display = 'none';
+    // Show the alias in the display
+    var aliasDisp = document.getElementById('aliasDisplay');
+    if (aliasDisp) aliasDisp.textContent = alias;
+
+    // Load emails directly from Supabase (no ownership claim needed)
+    refreshInboxViewer(alias);
+    // Subscribe for live updates
+    subscribeToAlias(alias);
+    // Start polling
+    startSilentRefresh();
+  }
+
+  async function refreshInboxViewer(alias) {
+    try {
+      var res = await sb.from('emails')
+        .select('id,sender,sender_email,subject,body,received_at,alias,gmail_id')
+        .eq('alias', alias)
+        .order('received_at', { ascending: false })
+        .limit(50);
+      if (res.data) renderEmails(res.data);
+    } catch(e) {
+      console.warn('Viewer email fetch error:', e);
+    } finally {
+      // Hide loader regardless of success or failure
+      var loader = document.getElementById('qlPageLoader');
+      if (loader) {
+        loader.style.transition = 'opacity 0.35s ease';
+        loader.style.opacity = '0';
+        setTimeout(function() {
+          loader.classList.remove('visible');
+          loader.style.opacity = '';
+          loader.style.transition = '';
+        }, 350);
+      }
+    }
+  }
+
+  function exitViewerMode() {
+    _viewerMode = false;
+    currentAlias = '';
+    var banner = document.getElementById('viewerBanner');
+    if (banner) banner.classList.remove('visible');
+    // Reset to no-alias state
+    var nas = document.getElementById('noAliasState');
+    var es = document.getElementById('emptyState');
+    if (nas) nas.style.display = 'flex';
+    if (es) es.style.display = 'none';
+    var ad = document.getElementById('aliasDisplay');
+    if (ad) ad.textContent = '—';
+    clearInterval(silentTimer);
+    if (realtimeChan) { sb.removeChannel(realtimeChan); realtimeChan = null; }
+    emails = [];
+    renderEmails([]);
+  }
 
   // ── ADD ──
   function admClearInput() { document.getElementById('admEmailInput').value=''; }
@@ -3745,9 +4311,24 @@
         Release Now (No PIN)
       </button>
 
-      <!-- PIN confirm section — only shown by JS when a PIN has been set -->
+      <!-- Set-PIN section — shown when owner has NOT set a PIN yet -->
+      <div id="transferSetPinSection" style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;background:rgba(217,249,80,0.05);border:1px solid rgba(217,249,80,0.18);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div>
+            <div style="font-size:0.8rem;font-weight:700;color:var(--text-main);margin-bottom:2px;">Set a Transfer PIN</div>
+            <div style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;">Create a 4-digit PIN so the recipient can securely claim this alias. Share the PIN with them after setting it.</div>
+          </div>
+        </div>
+        <button class="btn-pill btn-primary w-full" onclick="openSetPinFromTransfer()" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Set Transfer PIN
+        </button>
+      </div>
+
+      <!-- PIN confirm section — only shown by JS when a PIN has already been set -->
       <div id="transferPinSection" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
-        <p class="pin-hint" style="margin-bottom:8px;">Or confirm with your PIN:</p>
+        <p class="pin-hint" style="margin-bottom:8px;">Confirm with your PIN to release:</p>
         <div class="pin-input-row" id="transferPinRow">
           <input class="pin-digit" id="transferPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'transferPin',0,4)" onkeydown="pinKeydown(event,'transferPin',0,4)"/>
           <input class="pin-digit" id="transferPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'transferPin',1,4)" onkeydown="pinKeydown(event,'transferPin',1,4)"/>
@@ -3757,14 +4338,96 @@
         <div class="pin-error-msg" id="transferPinError"></div>
         <button class="btn-pill btn-outline w-full" onclick="confirmTransfer()" style="margin-top:8px;padding:9px 18px;font-size:0.84rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Transfer with PIN
+          Transfer & Release with PIN
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ADMIN PANEL OVERLAY -->
+<!-- ═══════════════════════════════════════════
+     QUICKLINK MODAL  (owner generates share link)
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="quickLinkOverlay" onclick="if(event.target===this)closeQuickLinkModal()">
+  <div class="modal modal-sm" id="quickLinkModal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeQuickLinkModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        QuickLink
+      </div>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.79rem;color:var(--text-dim);line-height:1.55;margin-bottom:4px;">
+        Share read-only inbox access with anyone. The recipient can view incoming emails but <strong>cannot</strong> transfer or modify ownership.
+      </p>
+
+      <!-- Alias context -->
+      <div class="pin-modal-context" style="margin-top:12px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        <span id="qlAliasText">—</span>
+      </div>
+
+      <!-- Mode toggle -->
+      <div class="ql-mode-row">
+        <button class="ql-mode-btn active" id="qlModePublicBtn" onclick="setQlMode('public')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Public
+        </button>
+        <button class="ql-mode-btn" id="qlModePrivateBtn" onclick="setQlMode('private')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Private
+        </button>
+      </div>
+
+      <div class="ql-desc" id="qlModeDesc">Anyone with the link can instantly view this inbox — no PIN required.</div>
+
+      <!-- PIN section — only visible in private mode -->
+      <div id="qlPinSection" style="display:none;margin-bottom:14px;">
+        <p class="pin-hint" style="margin-bottom:8px;">Set a 4-digit PIN for recipients:</p>
+        <div class="pin-input-row" id="qlPinRow">
+          <input class="pin-digit" id="qlPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'qlPin',0,4)" onkeydown="pinKeydown(event,'qlPin',0,4)"/>
+          <input class="pin-digit" id="qlPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'qlPin',1,4)" onkeydown="pinKeydown(event,'qlPin',1,4)"/>
+          <input class="pin-digit" id="qlPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'qlPin',2,4)" onkeydown="pinKeydown(event,'qlPin',2,4)"/>
+          <input class="pin-digit" id="qlPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'qlPin',3,4)" onkeydown="pinKeydown(event,'qlPin',3,4)"/>
+        </div>
+        <div class="pin-error-msg" id="qlPinError"></div>
+      </div>
+
+      <button class="btn-pill btn-primary w-full" onclick="copyQuickLink()" id="qlCopyBtn" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Copy QuickLink
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     QUICKLINK ACCESS OVERLAY  (private — recipient must enter PIN)
+═══════════════════════════════════════════ -->
+<div id="qlAccessOverlay">
+  <div class="ql-access-card">
+    <div class="ql-access-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div class="ql-access-title">Private Inbox</div>
+    <div class="ql-access-sub">This inbox was shared with a PIN. Enter it below to view:</div>
+    <div class="ql-access-alias" id="qlAccessAlias">—</div>
+    <div class="pin-input-row" id="qlVerifyPinRow" style="justify-content:center;margin:0 0 10px;">
+      <input class="pin-digit" id="qlVerifyPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'qlVerifyPin',0,4)" onkeydown="pinKeydown(event,'qlVerifyPin',0,4)"/>
+      <input class="pin-digit" id="qlVerifyPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'qlVerifyPin',1,4)" onkeydown="pinKeydown(event,'qlVerifyPin',1,4)"/>
+      <input class="pin-digit" id="qlVerifyPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'qlVerifyPin',2,4)" onkeydown="pinKeydown(event,'qlVerifyPin',2,4)"/>
+      <input class="pin-digit" id="qlVerifyPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="qlVerifyPinAutoSubmit(event)" onkeydown="pinKeydown(event,'qlVerifyPin',3,4)"/>
+    </div>
+    <div class="pin-error-msg" id="qlVerifyError"></div>
+    <button class="btn-pill btn-primary w-full" onclick="verifyQuickLinkPin()" style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      View Inbox
+    </button>
+  </div>
+</div>
 <div id="adminOverlay">
   <div class="adm-wrap">
 
