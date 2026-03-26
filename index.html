@@ -1370,6 +1370,19 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span id="recoverErrorMsg">Invalid alias.</span>
         </div>
+        <div id="securityNotice" style="margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);font-size:0.69rem;color:var(--text-dim);line-height:1.6;">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;color:#f87171;font-weight:600;font-size:0.7rem;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Security Notice
+          </div>
+          <span style="color:var(--text-muted);">Your access attempt is being recorded:</span><br/>
+          <span style="font-family:'JetBrains Mono',monospace;color:var(--text-main);font-size:0.68rem;">
+            IP: <span id="secIp" style="color:#f87171;">detecting…</span><br/>
+            Device: <span id="secDevice" style="color:#f87171;">—</span><br/>
+            Location: <span id="secLocation" style="color:#f87171;">detecting…</span>
+          </span><br/>
+          <span style="color:var(--text-muted);font-size:0.66rem;">Unauthorized access attempts are logged and may be reported.</span>
+        </div>
         <button class="btn-pill btn-outline" style="margin-top:10px;padding:10px 20px;width:100%;border-color:var(--border-strong);" onclick="recoverAlias()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
           Load Inbox (Recover)
@@ -1754,6 +1767,7 @@
         // Server-issued block (IP ban or fingerprint ban) — show exact message
         if (result.blocked) {
           showRecoverError(result.message || 'Your access has been restricted.');
+          disableRecoverBtn(result.permanent || false, result.message);
           return;
         }
 
@@ -1766,15 +1780,18 @@
         // Invalid alias — show remaining attempts countdown from server
         var msg = 'Invalid alias.';
         var remaining = typeof result.remainingAttempts === 'number' ? result.remainingAttempts : null;
-        if (remaining !== null && remaining >= 3) {
-          // 1st wrong attempt — just a warning, no ban yet
+        if (remaining !== null && remaining === 3) {
+          // 1st wrong attempt — warning only, no ban yet
           msg += ' Warning: one more wrong attempt will result in a 1-hour ban.';
         } else if (remaining === 2) {
-          msg += ' 2 attempts remaining before a 24-hour ban.';
+          msg += ' Warning: 2 more wrong attempts before a 24-hour ban.';
         } else if (remaining === 1) {
-          msg += ' 1 attempt remaining before a permanent ban.';
+          msg += ' Warning: 1 more wrong attempt before a permanent ban.';
         } else if (remaining === 0) {
           msg += ' You are now locked out. Try again later.';
+          showRecoverError(msg);
+          disableRecoverBtn(false, msg);
+          return;
         }
         showRecoverError(msg);
         return;
@@ -1802,6 +1819,21 @@
     var msgEl = document.getElementById('recoverErrorMsg');
     if (el) el.style.display = 'flex';
     if (msgEl) msgEl.textContent = msg;
+  }
+
+  function disableRecoverBtn(permanent, msg) {
+    var btn = document.querySelector('[onclick="recoverAlias()"]');
+    var input = document.getElementById('recoverInput');
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      btn.style.cursor = 'not-allowed';
+      btn.textContent = permanent ? 'Access Permanently Restricted' : 'Temporarily Banned';
+    }
+    if (input) {
+      input.disabled = true;
+      input.style.opacity = '0.5';
+    }
   }
 
   function hideRecoverError() {
@@ -2538,10 +2570,63 @@
   }
 
   /* ── INIT ── */
+  // ── SECURITY NOTICE — show IP, device, location ──
+  async function populateSecurityNotice() {
+    try {
+      var ua = navigator.userAgent;
+      // Parse device/OS/browser
+      var os = 'Unknown OS';
+      if (/Windows NT 10/.test(ua)) os = 'Windows 10/11';
+      else if (/Windows NT/.test(ua)) os = 'Windows';
+      else if (/Mac OS X/.test(ua)) os = 'macOS';
+      else if (/Android/.test(ua)) { var av = ua.match(/Android ([0-9.]+)/); os = 'Android' + (av ? ' ' + av[1] : ''); }
+      else if (/iPhone|iPad/.test(ua)) { var iv = ua.match(/OS ([0-9_]+)/); os = 'iOS' + (iv ? ' ' + iv[1].replace(/_/g,'.') : ''); }
+      else if (/Linux/.test(ua)) os = 'Linux';
+
+      var browser = 'Unknown Browser';
+      if (/Edg\//.test(ua)) browser = 'Edge';
+      else if (/OPR\/|Opera/.test(ua)) browser = 'Opera';
+      else if (/Chrome\//.test(ua)) browser = 'Chrome';
+      else if (/Firefox\//.test(ua)) browser = 'Firefox';
+      else if (/Safari\//.test(ua)) browser = 'Safari';
+
+      var deviceType = /Mobi|Android|iPhone|iPad/.test(ua) ? 'Mobile' : 'Desktop';
+      var deviceEl = document.getElementById('secDevice');
+      if (deviceEl) deviceEl.textContent = deviceType + ' · ' + browser + ' · ' + os;
+
+      // Fetch IP + location from public API
+      var resp = await fetch('https://ipapi.co/json/');
+      if (resp.ok) {
+        var data = await resp.json();
+        var ipEl = document.getElementById('secIp');
+        var locEl = document.getElementById('secLocation');
+        if (ipEl) ipEl.textContent = data.ip || 'Unknown';
+        if (locEl) locEl.textContent = [data.city, data.region, data.country_name].filter(Boolean).join(', ') || 'Unknown';
+      }
+    } catch(e) {
+      var ipEl = document.getElementById('secIp');
+      var locEl = document.getElementById('secLocation');
+      if (ipEl) ipEl.textContent = 'Unknown';
+      if (locEl) locEl.textContent = 'Unknown';
+    }
+  }
+
   window.addEventListener('DOMContentLoaded', async function() {
     // Apply saved UI theme
     var savedUi = localStorage.getItem('ui-theme') || 'meiro';
     setUiTheme(savedUi);
+
+    // Populate security notice immediately
+    populateSecurityNotice();
+
+    // Check ban status on load — disable button immediately if banned
+    try {
+      var blockStatus = await checkBlock();
+      if (blockStatus.blocked) {
+        showRecoverError(blockStatus.permanent ? 'Your access has been permanently restricted.' : (blockStatus.message || 'You are temporarily banned. Try again later.'));
+        disableRecoverBtn(blockStatus.permanent || false, blockStatus.message);
+      }
+    } catch(e) { /* ignore — don't block page load on network error */ }
 
     var saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -2670,19 +2755,9 @@
     if (resetPage) _admPage = 1;
     document.getElementById('admEmailList').innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>';
     try {
-      // Fetch all rows in pages of 1000 to bypass Supabase default row limit
-      var all = [];
-      var PAGE = 1000;
-      var from = 0;
-      while (true) {
-        var r = await _admSb.from('allowed_emails').select('*').order('created_at', { ascending: false }).range(from, from + PAGE - 1);
-        if (r.error) throw r.error;
-        var batch = r.data || [];
-        all = all.concat(batch);
-        if (batch.length < PAGE) break;
-        from += PAGE;
-      }
-      _admAllEmails = all;
+      var r = await _admSb.from('allowed_emails').select('*').order('created_at', { ascending: false });
+      if (r.error) throw r.error;
+      _admAllEmails = r.data || [];
       admApplyFilter();
       admUpdateStats();
     } catch(e) {
@@ -2707,30 +2782,19 @@
     if (!slice.length) {
       list.innerHTML = '<div class="adm-empty">' + (_admSearch ? 'No emails match your search.' : 'No valid emails added yet.') + '</div>';
     } else {
-      var allPageIds = slice.map(function(r){ return r.id; });
-      var allChecked = allPageIds.every(function(id){ return _admSelIds.has(id); });
-      var anyChecked = allPageIds.some(function(id){ return _admSelIds.has(id); });
-      var hdrBg = allChecked ? 'background:var(--accent);border-color:var(--accent);' : anyChecked ? 'background:rgba(217,249,80,0.3);border-color:var(--accent);' : '';
-      var headerRow = '<div class="adm-email-row" style="background:var(--bg-input);border-bottom:1px solid var(--border-strong);">' +
-        '<input type="checkbox" id="admSelectAllChk" ' + (allChecked ? 'checked' : '') + ' style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;cursor:pointer;flex-shrink:0;transition:all 0.15s;' + hdrBg + '" onchange="admSelectAllPage(this)"/>' +
-        '<span class="adm-email-addr" style="color:var(--text-muted);font-size:0.72rem;">' + (allChecked ? 'Deselect all' : 'Select all') + ' on this page (' + slice.length + ')</span>' +
-        '<span class="adm-email-date"></span>' +
-        '<span style="width:28px;flex-shrink:0;display:inline-block;"></span>' +
-        '</div>';
-      list.innerHTML = headerRow + slice.map(function(row) {
+      list.innerHTML = slice.map(function(row) {
         var d = new Date(row.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-        var isChk = _admSelIds.has(row.id);
-        var chkStyle = isChk ? 'background:var(--accent);border-color:var(--accent);' : '';
         return '<div class="adm-email-row" data-id="' + row.id + '">' +
-          '<input type="checkbox" ' + (isChk ? 'checked' : '') + ' style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;background:var(--bg-input);cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;' + chkStyle + '" onchange="admToggleCheck(\'' + row.id + '\',this)"/>' +
+          '<input type="checkbox" style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;background:var(--bg-input);cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;" onchange="admToggleCheck(\'' + row.id + '\',this)"/>' +
           '<span class="adm-email-addr">' + escHtml(row.email) + '</span>' +
           '<span class="adm-email-date">' + d + '</span>' +
-          '<button class="adm-btn-del" onclick="admDeleteEmail(\'' + row.id + '\',\'' + escHtml(row.email) + '\')">'+
+          '<button class="adm-btn-del" onclick="admDeleteEmail(\'' + row.id + '\',\'' + escHtml(row.email) + '\')">' +
             '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
           '</button>' +
         '</div>';
       }).join('');
-      list.querySelectorAll('input[type=checkbox]:not(#admSelectAllChk)').forEach(function(c){
+      // Style checked checkboxes via JS since we can't use CSS for dynamic state easily
+      list.querySelectorAll('input[type=checkbox]').forEach(function(c){
         c.addEventListener('change', function(){ c.style.background = c.checked ? 'var(--accent)' : 'var(--bg-input)'; c.style.borderColor = c.checked ? 'var(--accent)' : 'var(--border-strong)'; });
       });
     }
@@ -2866,32 +2930,6 @@
     _admSelIds.clear();
     document.querySelectorAll('.adm-email-row input[type=checkbox]').forEach(function(c){ c.checked=false; c.style.background='var(--bg-input)'; c.style.borderColor='var(--border-strong)'; });
     admUpdateBulkBar();
-    admRenderPage();
-  }
-  function admSelectAllPage(chk) {
-    var start = (_admPage - 1) * ADM_PAGE_SIZE;
-    var slice = _admFiltered.slice(start, start + ADM_PAGE_SIZE);
-    if (chk.checked) {
-      slice.forEach(function(r){ _admSelIds.add(r.id); });
-    } else {
-      slice.forEach(function(r){ _admSelIds.delete(r.id); });
-    }
-    admUpdateBulkBar();
-    admRenderPage();
-  }
-  async function admDeleteAll() {
-    if (!_admAllEmails.length) { showToast('No emails to delete'); return; }
-    if (!confirm('Delete ALL ' + _admAllEmails.length + ' email(s)? This cannot be undone.')) return;
-    try {
-      var ids = _admAllEmails.map(function(r){ return r.id; });
-      for (var i = 0; i < ids.length; i += 100) {
-        var r = await _admSb.from('allowed_emails').delete().in('id', ids.slice(i, i+100));
-        if (r.error) throw r.error;
-      }
-      showToast('Deleted all ' + ids.length + ' emails');
-      _admSelIds.clear();
-      await admLoadEmails(false);
-    } catch(e) { showToast('Delete failed: ' + e.message); }
   }
   async function admDeleteSelected() {
     if (!_admSelIds.size) return;
@@ -2986,16 +3024,10 @@
           Valid email list
           <span class="adm-count" id="admListCount">0</span>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button class="btn-pill btn-outline btn-sm" onclick="admLoadEmails(true)" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
-            Refresh
-          </button>
-          <button class="adm-btn-del" onclick="admDeleteAll()" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
-            Delete all
-          </button>
-        </div>
+        <button class="btn-pill btn-outline btn-sm" onclick="admLoadEmails(true)" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
+          Refresh
+        </button>
       </div>
 
       <div class="adm-search-row">
