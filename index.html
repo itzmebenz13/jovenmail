@@ -19,7 +19,7 @@
 
 <!-- Supabase & Lucide Icons -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+<!-- lucide inlined -->
 
 <script>
   const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -1184,8 +1184,8 @@
   }
   .adm-input:focus { border-color: var(--accent); }
 
-  .adm-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
-  .adm-hint { font-size: 0.75rem; color: var(--text-muted); flex: 1; }
+  .adm-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  .adm-hint { font-size: 0.75rem; color: var(--text-muted); width: 100%; order: -1; margin-bottom: 2px; }
 
   .adm-upload-zone {
     border: 2px dashed var(--border-strong); border-radius: 10px;
@@ -1202,8 +1202,9 @@
   .adm-upload-zone small { color: var(--text-muted); font-size: 0.75rem; }
   .adm-file-label { display: none; color: var(--accent); font-weight: 600; font-family: 'JetBrains Mono', monospace; margin-top: 7px; font-size: 0.82rem; }
 
-  .adm-search-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .adm-search-row .adm-input { flex: 1; }
+  .adm-search-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+  .adm-search-row .adm-input { flex: 1; min-width: 0; }
+  .adm-search-row .btn-pill { flex-shrink: 0; width: auto; }
 
   .adm-email-list { display: flex; flex-direction: column; gap: 2px; }
   .adm-email-row {
@@ -1250,8 +1251,16 @@
   .adm-bulk-bar strong { color: var(--accent); }
 
   @media (max-width: 500px) {
-    .adm-stats { grid-template-columns: repeat(2,1fr); }
-    .adm-stats .adm-stat:last-child { grid-column: 1/-1; }
+    .adm-stats { grid-template-columns: repeat(3,1fr); }
+    .adm-stat { padding: 10px; }
+    .adm-stat .adm-val { font-size: 1.1rem; }
+    .adm-stat .adm-lbl { font-size: 0.65rem; }
+    .adm-topbar { flex-wrap: wrap; gap: 8px; }
+    .adm-topbar > .btn-pill { width: 100%; justify-content: center; }
+    .adm-card-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .adm-card-head > .btn-pill { align-self: stretch; justify-content: center; }
+    .adm-email-row { gap: 7px; }
+    .adm-email-date { display: none; }
   }
 </style>
 </head>
@@ -1260,25 +1269,25 @@
 <div class="wrap">
   <header>
     <div class="logo-wrap">
-      <i data-lucide="zap" class="logo-icon" width="20" height="20"></i>
+      <svg class="logo-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></i>
       <div class="logo">joven.mail</div>
       <div class="badge">Beta</div>
     </div>
     <div class="header-actions">
       <nav class="header-nav">
-        <a href="#" class="nav-link" onclick="showToast('API is not yet available'); return false;"><i data-lucide="book-open" width="14" height="14"></i> API</a>
-        <a href="#" class="nav-link" onclick="openPrivacyModal(); return false;"><i data-lucide="shield-check" width="14" height="14"></i> Privacy</a>
+        <a href="#" class="nav-link" onclick="showToast('API is not yet available'); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></i> API</a>
+        <a href="#" class="nav-link" onclick="openPrivacyModal(); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></i> Privacy</a>
       </nav>
       <div class="header-divider"></div>
       <button class="btn-pill btn-outline btn-sm" onclick="openLoginModal()">
-        <i data-lucide="log-in" width="14" height="14"></i> Login
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></i> Login
       </button>
       <button class="theme-switch" onclick="toggleTheme()" aria-label="Toggle Theme">
-        <i data-lucide="sun" class="icon-sun" width="16" height="16"></i>
-        <i data-lucide="moon" class="icon-moon" width="16" height="16"></i>
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg></i>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></i>
       </button>
       <button class="menu-btn" onclick="toggleMobileMenu(event)" aria-label="Menu">
-        <i data-lucide="menu" width="16" height="16"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></i>
       </button>
     </div>
     
@@ -1337,7 +1346,7 @@
     <div class="control-card">
       <div class="card-header">
         <div class="card-title">
-          <i data-lucide="fingerprint" width="14" height="14"></i> Active Identity
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"/><path d="M5 19.5C5.5 18 6 15 6 12c0-1.5.5-2.9 1.4-4"/><path d="M21.8 16c-.2 1.4-.6 2.8-1.4 4"/><path d="M12 12c0 3-1 5.5-2.5 7.5"/><path d="M12 12c0-2 .7-3.9 2-5.3"/><path d="M12 2a10 10 0 0 1 7 17.8"/><path d="M7 4.9C8.5 3.7 10.2 3 12 3"/><path d="M16.5 7.5c.5.7.9 1.5 1.1 2.3"/></svg></i> Active Identity
         </div>
       </div>
 
@@ -1347,7 +1356,7 @@
 
       <div class="actions-grid">
         <button class="btn-pill btn-primary" onclick="copyAlias()">
-          <i data-lucide="copy" width="16" height="16"></i> Copy address
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></i> Copy address
         </button>
       </div>
 
@@ -1375,7 +1384,7 @@
       </div>
       <div class="inbox-actions">
         <button class="btn-refresh" id="refreshBtn" onclick="manualRefresh()" title="Refresh inbox">
-          <i data-lucide="refresh-cw" width="13" height="13"></i> Refresh
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></i> Refresh
         </button>
         <button class="btn-text" onclick="clearInbox()">Clear</button>
       </div>
@@ -1430,7 +1439,7 @@
   <div class="modal" id="modal" onclick="event.stopPropagation()">
     <div class="modal-head">
       <button class="modal-close" onclick="closeModal()">
-        <i data-lucide="x" width="16" height="16"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></i>
       </button>
       <div class="modal-subject" id="modalSubject"></div>
       <div class="modal-meta">
@@ -1455,18 +1464,18 @@
   <div class="modal modal-sm" id="loginModal" onclick="event.stopPropagation()">
     <div class="modal-head">
       <button class="modal-close" onclick="closeLoginModal()">
-        <i data-lucide="x" width="16" height="16"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></i>
       </button>
       <div class="modal-subject" style="margin-bottom: 0;">Admin Login</div>
     </div>
     <div class="modal-body">
       <p class="login-subtitle">Access is restricted to authorized administrators only. Registration is disabled.</p>
       <div class="form-group">
-        <label><i data-lucide="key" width="12" height="12"></i> Password</label>
+        <label><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L22 7l-3-3"/></svg></i> Password</label>
         <input class="input-minimal w-full" id="loginPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()"/>
       </div>
       <button class="btn-pill btn-primary w-full mt-4" onclick="handleLogin()">
-        <i data-lucide="unlock" width="16" height="16"></i> Authenticate
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg></i> Authenticate
       </button>
     </div>
   </div>
@@ -1477,7 +1486,7 @@
   <div class="modal" id="privacyModal" onclick="event.stopPropagation()">
     <div class="modal-head">
       <button class="modal-close" onclick="closePrivacyModal()">
-        <i data-lucide="x" width="16" height="16"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></i>
       </button>
       <div class="modal-subject" style="margin-bottom: 0;">Privacy Policy</div>
     </div>
@@ -1495,7 +1504,7 @@
   <div class="modal" id="termsModal" onclick="event.stopPropagation()">
     <div class="modal-head">
       <button class="modal-close" onclick="closeTermsModal()">
-        <i data-lucide="x" width="16" height="16"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></i>
       </button>
       <div class="modal-subject" style="margin-bottom: 0;">Terms of Service</div>
     </div>
@@ -1535,13 +1544,12 @@
 
 <!-- TOAST -->
 <div class="toast" id="toast">
-  <i data-lucide="check-circle-2" class="toast-icon" width="16" height="16"></i>
+  <svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></i>
   <span id="toastMsg">Action completed</span>
 </div>
 
 <script>
   // Initialize Icons
-  lucide.createIcons();
 
   /* ── THEME TOGGLE (dark/light) ── */
   function toggleTheme() {
@@ -1565,7 +1573,6 @@
     // Close mobile menu
     var menu = document.getElementById('mobileMenu');
     if (menu) menu.classList.remove('open');
-    lucide.createIcons();
   }
 
   function openUiThemeMenu(e) {
@@ -1719,74 +1726,6 @@
     silentTimer = setInterval(silentFetch, _stealthPollMs);
   }
 
-  // ── SOFT CAPTCHA ──
-  // Shown only after suspicious activity (no external APIs).
-  // A simple arithmetic challenge generated client-side.
-  var _captchaRequired  = false;
-  var _captchaAnswer    = null;
-  var _captchaPendingFn = null;
-
-  function requireCaptcha(onPass) {
-    _captchaRequired  = true;
-    _captchaPendingFn = onPass;
-    var a = Math.floor(Math.random() * 9) + 1;
-    var b = Math.floor(Math.random() * 9) + 1;
-    _captchaAnswer = a + b;
-    var overlay = document.getElementById('captchaOverlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'captchaOverlay';
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);';
-      overlay.innerHTML = '<div style="background:var(--bg-card);border:1px solid var(--border-strong);border-radius:14px;padding:28px 32px;min-width:280px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.5);">' +
-        '<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:12px;letter-spacing:0.05em;text-transform:uppercase;">Quick check</div>' +
-        '<div id="captchaQuestion" style="font-size:1.5rem;font-weight:700;color:var(--text-main);margin-bottom:16px;font-family:\'JetBrains Mono\',monospace;"></div>' +
-        '<input id="captchaInput" type="number" placeholder="Answer" style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border-strong);background:var(--bg-input);color:var(--text-main);font-size:1rem;text-align:center;outline:none;margin-bottom:12px;" onkeydown="if(event.key===\'Enter\')submitCaptcha()"/>' +
-        '<div id="captchaError" style="display:none;font-size:0.72rem;color:#f87171;margin-bottom:10px;">Incorrect — try again.</div>' +
-        '<button onclick="submitCaptcha()" style="width:100%;padding:10px;border-radius:8px;background:var(--accent);color:var(--accent-text);border:none;font-weight:700;cursor:pointer;font-size:0.85rem;">Verify</button>' +
-        '</div>';
-      document.body.appendChild(overlay);
-    }
-    document.getElementById('captchaQuestion').textContent = 'What is ' + a + ' + ' + b + '?';
-    document.getElementById('captchaInput').value = '';
-    document.getElementById('captchaError').style.display = 'none';
-    overlay.style.display = 'flex';
-    setTimeout(function(){ document.getElementById('captchaInput').focus(); }, 50);
-  }
-
-  function submitCaptcha() {
-    var val = parseInt(document.getElementById('captchaInput').value, 10);
-    if (val !== _captchaAnswer) {
-      document.getElementById('captchaError').style.display = 'block';
-      document.getElementById('captchaInput').value = '';
-      // Regenerate challenge
-      var a = Math.floor(Math.random() * 9) + 1;
-      var b = Math.floor(Math.random() * 9) + 1;
-      _captchaAnswer = a + b;
-      document.getElementById('captchaQuestion').textContent = 'What is ' + a + ' + ' + b + '?';
-      return;
-    }
-    document.getElementById('captchaOverlay').style.display = 'none';
-    _captchaRequired = false;
-    if (_captchaPendingFn) { _captchaPendingFn(); _captchaPendingFn = null; }
-  }
-
-  // ── RECOVERY ATTEMPT COUNTER ──
-  // Tracks how many times this session has hit invalid aliases.
-  // After 2 invalid attempts, show a captcha before the next try.
-  var _sessionInvalidCount = (function() {
-    try { return parseInt(localStorage.getItem('jm_inv') || '0', 10); } catch(e) { return 0; }
-  })();
-
-  function incrementInvalidCount() {
-    _sessionInvalidCount++;
-    try { localStorage.setItem('jm_inv', _sessionInvalidCount); } catch(e) {}
-  }
-
-  function resetInvalidCount() {
-    _sessionInvalidCount = 0;
-    try { localStorage.removeItem('jm_inv'); } catch(e) {}
-  }
-
   // ── DOUBLE-SUBMIT GUARD ──
   var _recoverBusy = false;
 
@@ -1797,15 +1736,9 @@
     if (!input) { showToast('Enter your assigned alias'); return; }
     if (!input.includes('@')) input = input + '@' + DOMAIN;
 
-    // Client-side burst guard
+    // Client-side burst guard — saves a round-trip on obvious spam floods
     if (isClientBurstBlocked()) {
       showRecoverError('Too many attempts. Please wait a moment.');
-      return;
-    }
-
-    // Show captcha if user has had 2+ invalid attempts this session
-    if (_sessionInvalidCount >= 2 && !_captchaRequired) {
-      requireCaptcha(function() { recoverAlias(); });
       return;
     }
 
@@ -1818,28 +1751,36 @@
       var result = await validateEmailServer(fp, input);
 
       if (!result.valid) {
-        if (result.reason !== 'network_error') incrementInvalidCount();
-
-        var remaining = typeof result.remainingAttempts === 'number' ? result.remainingAttempts : null;
-        var msg = 'Invalid alias — no mailbox activity found.';
-        if (remaining !== null && remaining > 0) {
-          msg += ' ' + remaining + ' attempt' + (remaining === 1 ? '' : 's') + ' remaining.';
-        } else if (remaining === 0) {
-          msg += ' Please try again later.';
+        // Server-issued block (IP ban or fingerprint ban) — show exact message
+        if (result.blocked) {
+          showRecoverError(result.message || 'Your access has been restricted.');
+          return;
         }
-        if (result.reason === 'network_error') msg = 'Connection error. Please try again.';
+
+        // Network / connection error
+        if (result.reason === 'network_error') {
+          showRecoverError('Connection error. Please try again.');
+          return;
+        }
+
+        // Invalid alias — show remaining attempts countdown from server
+        var msg = 'Invalid alias.';
+        var remaining = typeof result.remainingAttempts === 'number' ? result.remainingAttempts : null;
+        if (remaining !== null && remaining > 0) {
+          msg += ' ' + remaining + ' attempt' + (remaining === 1 ? '' : 's') + ' remaining before lockout.';
+        } else if (remaining === 0) {
+          msg += ' You are now locked out. Try again later.';
+        }
         showRecoverError(msg);
         return;
       }
 
       // Valid — load inbox
-      resetInvalidCount();
       hideRecoverError();
       document.getElementById('recoverInput').value = '';
       setAlias(input);
       showToast('Inbox loaded');
 
-      // Check if server flagged suspicious session → stealth mode
       if (result._s === 1) activateStealthMode(30000);
 
     } catch (e) {
@@ -2019,7 +1960,6 @@
       showToast('Refresh failed — check connection');
     } finally {
       btn.classList.remove('spinning');
-      lucide.createIcons();
     }
   }
 
@@ -2421,116 +2361,7 @@
       });
       
       // Removed strict table sizing and padding so promotional emails can render natively
-      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;color:#000;background:#fff;}img{max-width:100%;height:auto;}*{box-sizing:border-box}</style></head><body>' + body + '
-<!-- ADMIN PANEL OVERLAY -->
-<div id="adminOverlay">
-  <div class="adm-wrap">
-
-    <!-- Topbar -->
-    <div class="adm-topbar">
-      <div class="adm-logo">
-        <div class="adm-logo-dot"></div>
-        <h2>joven.mail</h2>
-        <span>admin</span>
-      </div>
-      <button class="btn-pill btn-outline btn-sm" onclick="closeAdminPanel()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:0.8rem;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Sign out
-      </button>
-    </div>
-
-    <!-- Stats -->
-    <div class="adm-stats">
-      <div class="adm-stat"><div class="adm-val accent" id="admStatTotal">—</div><div class="adm-lbl">Valid emails</div></div>
-      <div class="adm-stat"><div class="adm-val" id="admStatToday">—</div><div class="adm-lbl">Added today</div></div>
-      <div class="adm-stat"><div class="adm-val" id="admStatDomains">—</div><div class="adm-lbl">Unique domains</div></div>
-    </div>
-
-    <!-- Add emails card -->
-    <div class="adm-card">
-      <div class="adm-card-head">
-        <div class="adm-card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Add valid emails
-        </div>
-      </div>
-
-      <div class="adm-tabs">
-        <div class="adm-tab active" onclick="admSwitchTab('manual')">Manual input</div>
-        <div class="adm-tab" onclick="admSwitchTab('upload')">Upload .txt file</div>
-      </div>
-
-      <div class="adm-tab-panel active" id="admTabManual">
-        <textarea class="adm-textarea" id="admEmailInput" placeholder="one@example.com&#10;two@gmail.com&#10;three@domain.org&#10;&#10;One email per line — no limit"></textarea>
-        <div class="adm-row">
-          <span class="adm-hint">Each line = one valid email address</span>
-          <button class="btn-pill btn-outline btn-sm" onclick="admClearInput()">Clear</button>
-          <button class="btn-pill btn-primary btn-sm" id="admAddBtn" onclick="admAddEmails()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add emails
-          </button>
-        </div>
-      </div>
-
-      <div class="adm-tab-panel" id="admTabUpload">
-        <div class="adm-upload-zone" id="admUploadZone">
-          <input type="file" accept=".txt,text/plain" id="admFileInput" onchange="admHandleFile(this)"/>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <p>Drop a .txt file here or click to browse</p>
-          <small>One email per line — any file size</small>
-          <div class="adm-file-label" id="admFileLabel"></div>
-        </div>
-        <div class="adm-row">
-          <span class="adm-hint" id="admFileHint">No file selected</span>
-          <button class="btn-pill btn-primary btn-sm" id="admUploadBtn" onclick="admAddFromFile()" disabled>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Import emails
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Email list card -->
-    <div class="adm-card">
-      <div class="adm-card-head">
-        <div class="adm-card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Valid email list
-          <span class="adm-count" id="admListCount">0</span>
-        </div>
-        <button class="btn-pill btn-outline btn-sm" onclick="admLoadEmails(true)" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
-          Refresh
-        </button>
-      </div>
-
-      <div class="adm-search-row">
-        <input class="adm-input" type="text" id="admSearch" placeholder="Search emails..." oninput="admDebounceSearch()"/>
-        <button class="btn-pill btn-outline btn-sm" onclick="admClearSearch()" style="padding:8px 11px;" title="Clear">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-
-      <div class="adm-bulk-bar" id="admBulkBar">
-        <strong id="admSelCount">0</strong> selected
-        <button class="adm-btn-del" onclick="admDeleteSelected()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
-          Delete selected
-        </button>
-        <button class="btn-pill btn-outline btn-sm" onclick="admClearSel()" style="padding:4px 10px;font-size:0.75rem;margin-left:auto;">Cancel</button>
-      </div>
-
-      <div id="admEmailList" class="adm-email-list">
-        <div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>
-      </div>
-
-      <div class="adm-pagination" id="admPagination"></div>
-    </div>
-
-  </div>
-</div>
-
-</body></html>';
+      iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;color:#000;background:#fff;}img{max-width:100%;height:auto;}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
     } else {
       bodyEl.classList.remove('is-iframe'); // Remove zero padding
       bodyEl.classList.add('is-plain');     // Add monospace styling
@@ -2702,14 +2533,36 @@
   }
 
   /* ── INIT ── */
-  window.addEventListener('DOMContentLoaded', function() {
+  window.addEventListener('DOMContentLoaded', async function() {
     // Apply saved UI theme
     var savedUi = localStorage.getItem('ui-theme') || 'meiro';
     setUiTheme(savedUi);
 
     var saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      setAlias(saved);
+      // Re-validate the saved alias against the server on every page load.
+      // This prevents a cached alias from granting inbox access after it has
+      // been removed from the admin whitelist, and blocks anyone who manually
+      // sets the localStorage key to bypass the recovery flow.
+      try {
+        var fp = await getBrowserFingerprint();
+        var result = await validateEmailServer(fp, saved);
+        if (result.valid) {
+          setAlias(saved);
+        } else {
+          // Alias is no longer valid — clear the cached value and prompt recovery
+          localStorage.removeItem(STORAGE_KEY);
+          var nas = document.getElementById('noAliasState');
+          var es  = document.getElementById('emptyState');
+          if (nas) nas.style.display = 'flex';
+          if (es)  es.style.display  = 'none';
+        }
+      } catch (e) {
+        // Network error on init — still load from cache so offline use works,
+        // but do not permanently remove the saved alias.
+        console.warn('Init re-validation failed (network?), loading from cache:', e);
+        setAlias(saved);
+      }
     } else {
       // First time — show recover-first message
       var nas = document.getElementById('noAliasState');
@@ -2842,10 +2695,10 @@
       list.innerHTML = slice.map(function(row) {
         var d = new Date(row.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
         return '<div class="adm-email-row" data-id="' + row.id + '">' +
-          '<input type="checkbox" style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;background:var(--bg-input);cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;" onchange="admToggleCheck('' + row.id + '',this)"/>' +
+          '<input type="checkbox" style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;background:var(--bg-input);cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;" onchange="admToggleCheck(\'' + row.id + '\',this)"/>' +
           '<span class="adm-email-addr">' + escHtml(row.email) + '</span>' +
           '<span class="adm-email-date">' + d + '</span>' +
-          '<button class="adm-btn-del" onclick="admDeleteEmail('' + row.id + '','' + escHtml(row.email) + '')">' +
+          '<button class="adm-btn-del" onclick="admDeleteEmail(\'' + row.id + '\',\'' + escHtml(row.email) + '\')">' +
             '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
           '</button>' +
         '</div>';
@@ -3004,5 +2857,115 @@
   }
 
 </script>
+
+<!-- ADMIN PANEL OVERLAY -->
+<div id="adminOverlay">
+  <div class="adm-wrap">
+
+    <!-- Topbar -->
+    <div class="adm-topbar">
+      <div class="adm-logo">
+        <div class="adm-logo-dot"></div>
+        <h2>joven.mail</h2>
+        <span>admin</span>
+      </div>
+      <button class="btn-pill btn-outline btn-sm" onclick="closeAdminPanel()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:0.8rem;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="adm-stats">
+      <div class="adm-stat"><div class="adm-val accent" id="admStatTotal">—</div><div class="adm-lbl">Valid emails</div></div>
+      <div class="adm-stat"><div class="adm-val" id="admStatToday">—</div><div class="adm-lbl">Added today</div></div>
+      <div class="adm-stat"><div class="adm-val" id="admStatDomains">—</div><div class="adm-lbl">Unique domains</div></div>
+    </div>
+
+    <!-- Add emails card -->
+    <div class="adm-card">
+      <div class="adm-card-head">
+        <div class="adm-card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Add valid emails
+        </div>
+      </div>
+
+      <div class="adm-tabs">
+        <div class="adm-tab active" onclick="admSwitchTab('manual')">Manual input</div>
+        <div class="adm-tab" onclick="admSwitchTab('upload')">Upload .txt file</div>
+      </div>
+
+      <div class="adm-tab-panel active" id="admTabManual">
+        <textarea class="adm-textarea" id="admEmailInput" placeholder="one@example.com&#10;two@gmail.com&#10;three@domain.org&#10;&#10;One email per line — no limit"></textarea>
+        <div class="adm-row">
+          <span class="adm-hint">Each line = one valid email address</span>
+          <button class="btn-pill btn-outline btn-sm" onclick="admClearInput()">Clear</button>
+          <button class="btn-pill btn-primary btn-sm" id="admAddBtn" onclick="admAddEmails()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add emails
+          </button>
+        </div>
+      </div>
+
+      <div class="adm-tab-panel" id="admTabUpload">
+        <div class="adm-upload-zone" id="admUploadZone">
+          <input type="file" accept=".txt,text/plain" id="admFileInput" onchange="admHandleFile(this)"/>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Drop a .txt file here or click to browse</p>
+          <small>One email per line — any file size</small>
+          <div class="adm-file-label" id="admFileLabel"></div>
+        </div>
+        <div class="adm-row">
+          <span class="adm-hint" id="admFileHint">No file selected</span>
+          <button class="btn-pill btn-primary btn-sm" id="admUploadBtn" onclick="admAddFromFile()" disabled>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Import emails
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email list card -->
+    <div class="adm-card">
+      <div class="adm-card-head">
+        <div class="adm-card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Valid email list
+          <span class="adm-count" id="admListCount">0</span>
+        </div>
+        <button class="btn-pill btn-outline btn-sm" onclick="admLoadEmails(true)" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
+          Refresh
+        </button>
+      </div>
+
+      <div class="adm-search-row">
+        <input class="adm-input" type="text" id="admSearch" placeholder="Search emails..." oninput="admDebounceSearch()"/>
+        <button class="btn-pill btn-outline btn-sm" onclick="admClearSearch()" style="padding:8px 11px;" title="Clear">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="adm-bulk-bar" id="admBulkBar">
+        <strong id="admSelCount">0</strong> selected
+        <button class="adm-btn-del" onclick="admDeleteSelected()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+          Delete selected
+        </button>
+        <button class="btn-pill btn-outline btn-sm" onclick="admClearSel()" style="padding:4px 10px;font-size:0.75rem;margin-left:auto;">Cancel</button>
+      </div>
+
+      <div id="admEmailList" class="adm-email-list">
+        <div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>
+      </div>
+
+      <div class="adm-pagination" id="admPagination"></div>
+    </div>
+
+  </div>
+</div>
+
+
 </body>
 </html>
