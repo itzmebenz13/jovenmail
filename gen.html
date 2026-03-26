@@ -494,54 +494,163 @@ function getOpts(){
     minGap:      document.getElementById('optMinGap').checked
   };
 }
-function cryptoRand(){
-  if(window.crypto&&window.crypto.getRandomValues){
-    var a=new Uint32Array(1);window.crypto.getRandomValues(a);return a[0]/0xFFFFFFFF;
-  }
-  return Math.random();
+
+// ── Cryptographic RNG ──
+function cryptoRandBatch(n){
+  var a=new Uint32Array(n);
+  if(window.crypto&&window.crypto.getRandomValues) window.crypto.getRandomValues(a);
+  else for(var i=0;i<n;i++) a[i]=Math.floor(Math.random()*0x100000000);
+  return a;
 }
-function shannonEntropy(s){
-  var f={},e=0,l=s.length;
-  for(var i=0;i<l;i++) f[s[i]]=(f[s[i]]||0)+1;
-  for(var c in f){var p=f[c]/l;e-=p*Math.log2(p);}
-  return Math.min(e/Math.log2(27),1);
+function cryptoRand(){
+  return cryptoRandBatch(1)[0]/0x100000000;
+}
+
+// ── Guessability score — shows actual combination count ──
+// C(n, k) = how many ways to place k dots in n gaps.
+// At k ≈ n/2 this is maximized → hardest zone to guess.
+function nCr(n, k){
+  if(k<0||k>n) return 0;
+  if(k===0||k===n) return 1;
+  k=Math.min(k,n-k);
+  var r=1;
+  for(var i=0;i<k;i++) r=r*(n-i)/(i+1);
+  return Math.round(r);
+}
+function guessScore(mask, gaps){
+  if(!gaps) return { pct: 0, label: '?' };
+  var dots=0;
+  for(var b=0;b<gaps;b++) if(mask&(1<<b)) dots++;
+  var p=dots/gaps;
+  if(p<=0||p>=1) return { pct:0, label:'trivial' };
+  // Binary entropy per gap (max=1 at p=0.5) → 90-99% display
+  var h = -p*Math.log2(p)-(1-p)*Math.log2(1-p);
+  var pct = Math.min(99, Math.max(10, Math.round(h*100)));
+  // Actual combinations at this dot count (without constraints)
+  var combos = nCr(gaps, dots);
+  var label = combos >= 1000000 ? (combos/1000000).toFixed(1)+'M'
+            : combos >= 1000    ? (combos/1000).toFixed(1)+'k'
+            : combos+'';
+  return { pct: pct, label: '1/'+label };
 }
 
 // ─────────────────────────────────────────────────
-// GENERATION — enumerate all variants, shuffle, slice
+// GENERATION ENGINE
+//
+// High-entropy mode (default ON):
+//   Each alias is an independent CSPRNG draw — no enumeration.
+//   • Pick dot density uniformly from [MIN_D, MAX_D] per alias.
+//   • Flip each gap independently at that probability.
+//   • Enforce constraints via fast rejection.
+//   • Guarantee >= MIN_D fraction of gaps have dots.
+//   • De-duplicate with a Set.
+//
+// "Generate All": enumerates every valid mask, then crypto-shuffles.
 // ─────────────────────────────────────────────────
-function enumAll(base, opts){
-  var n=base.length;
+var MIN_D = 0.46; // ← tightly around 50% = maximum C(n,k) combinations
+var MAX_D = 0.55; // keeps every alias in the hardest-to-guess density zone
+
+function cryptoSample(base, count, opts){
+  var gaps = base.length - 1;
+  if(gaps <= 0) return [{ alias: base, mask: 0, gaps: 0 }];
+
+  var noS  = opts.noSequential !== false;
+  var minG = opts.minGap       !== false;
+  var hiE  = opts.highEntropy  !== false;
+  var totalMasks = Math.pow(2, gaps);
+
+  // For "all" or count >= total pool, enumerate
+  if(count === 'all' || count >= totalMasks - 1){
+    return enumAllShuffle(base, gaps, opts);
+  }
+
+  var wanted  = count;
+  var seen    = new Set();
+  var out     = [];
+  var budget  = wanted * 50 + 4000;
+  var bufSize = Math.min(budget * 2, 65536);
+  var rng     = cryptoRandBatch(bufSize);
+  var ri      = 0;
+
+  function nr(){ // next rand [0,1)
+    if(ri >= rng.length){ rng=cryptoRandBatch(bufSize); ri=0; }
+    return rng[ri++]/0x100000000;
+  }
+
+  for(var tries=0; tries<budget && out.length<wanted; tries++){
+    // ── Random dot density for this alias ──
+    var density = hiE
+      ? MIN_D + nr()*(MAX_D - MIN_D)
+      : 0.08 + nr()*0.60;
+
+    // ── Independently flip each gap ──
+    var mask=0;
+    for(var b=0; b<gaps; b++) if(nr()<density) mask|=(1<<b);
+    if(mask===0) mask=1<<Math.floor(nr()*gaps); // ensure at least one dot
+
+    // ── Constraints ──
+    if(minG||noS){
+      var pos=[];
+      for(var b2=0;b2<gaps;b2++) if(mask&(1<<b2)) pos.push(b2);
+      var ok=true;
+      for(var pi=1;pi<pos.length;pi++){
+        var g=pos[pi]-pos[pi-1];
+        if(minG&&g<2){ok=false;break;}
+        if(noS&&pi>=2&&pos[pi-1]-pos[pi-2]===1&&g===1){ok=false;break;}
+      }
+      if(!ok) continue;
+    }
+
+    // ── Dot-floor gate (high entropy) ──
+    if(hiE){
+      var dc=0;
+      for(var b3=0;b3<gaps;b3++) if(mask&(1<<b3)) dc++;
+      if(dc < Math.max(1, Math.floor(gaps*MIN_D))) continue;
+    }
+
+    // ── Dedup ──
+    if(seen.has(mask)) continue;
+    seen.add(mask);
+
+    // ── Build alias string ──
+    var r='';
+    for(var ci=0; ci<base.length; ci++){
+      r+=base[ci];
+      if(ci<gaps&&(mask&(1<<ci))) r+='.';
+    }
+    out.push({ alias:r, mask:mask, gaps:gaps });
+  }
+
+  return out;
+}
+
+// Enumerate every valid mask (for "Generate All"), crypto-shuffle the array
+function enumAllShuffle(base, gaps, opts){
   var noS=opts.noSequential!==false;
   var minG=opts.minGap!==false;
-  var hiE=opts.highEntropy!==false;
-  var gaps=n-1;
   var results=[];
-  // iterate every bitmask of dot positions
   for(var mask=1;mask<(1<<gaps);mask++){
-    var positions=[];
-    for(var b=0;b<gaps;b++) if(mask&(1<<b)) positions.push(b);
-    // filter constraints
+    var pos=[];
+    for(var b=0;b<gaps;b++) if(mask&(1<<b)) pos.push(b);
     var ok=true;
-    for(var i=1;i<positions.length;i++){
-      var gap=positions[i]-positions[i-1];
-      if(minG && gap<2){ok=false;break;}
-      // noSequential: block 3+ dots in a row (e.g. r.i.z.a)
-      if(noS && i>=2 && positions[i-1]-positions[i-2]===1 && gap===1){ok=false;break;}
+    for(var i=1;i<pos.length;i++){
+      var g=pos[i]-pos[i-1];
+      if(minG&&g<2){ok=false;break;}
+      if(noS&&i>=2&&pos[i-1]-pos[i-2]===1&&g===1){ok=false;break;}
     }
     if(!ok) continue;
-    // build string
     var r='';
-    for(var ci=0;ci<n;ci++){
+    for(var ci=0;ci<base.length;ci++){
       r+=base[ci];
-      if(ci<gaps && (mask&(1<<ci))) r+='.';
+      if(ci<gaps&&(mask&(1<<ci))) r+='.';
     }
-    results.push(r);
+    results.push({ alias:r, mask:mask, gaps:gaps });
   }
-  // fisher-yates shuffle
+  // crypto Fisher-Yates
+  var rng=cryptoRandBatch(results.length);
   for(var j=results.length-1;j>0;j--){
-    var kk=Math.floor(cryptoRand()*(j+1));
-    var tmp=results[j];results[j]=results[kk];results[kk]=tmp;
+    var k=Math.floor((rng[j]/0x100000000)*(j+1));
+    var tmp=results[j];results[j]=results[k];results[k]=tmp;
   }
   return results;
 }
@@ -574,7 +683,7 @@ function vsRender(){
   if(!_vsData.length){ _vsItems.innerHTML=''; return; }
   var st  = _vsCon.scrollTop;
   var vh  = _vsCon.clientHeight;
-  var pad = 8; // extra rows above/below
+  var pad = 8;
   var s   = Math.max(0, Math.floor(st/IH) - pad);
   var e   = Math.min(_vsData.length-1, Math.ceil((st+vh)/IH) + pad);
   if(s===_vsStart && e===_vsEnd) return;
@@ -584,9 +693,11 @@ function vsRender(){
 
   var frag = document.createDocumentFragment();
   for(var i=s;i<=e;i++){
-    var email = _vsData[i];
-    var up    = email;
-    var pct   = Math.round(shannonEntropy(up)*100);
+    var item  = _vsData[i];
+    var email = item.alias;
+    var score = guessScore(item.mask, item.gaps);
+    var pct   = score.pct;
+    var combo = score.label;
 
     var row = document.createElement('div');
     row.className='bi'; row.style.height=IH+'px';
@@ -594,7 +705,10 @@ function vsRender(){
 
     var n1=document.createElement('span'); n1.className='bi-num'; n1.textContent=i+1;
     var n2=document.createElement('span'); n2.className='bi-email'; n2.textContent=email;
-    var n3=document.createElement('span'); n3.className='bi-ent'; n3.textContent=pct+'%';
+    var n3=document.createElement('span'); n3.className='bi-ent';
+    n3.textContent=pct+'%';
+    n3.title='~'+combo+' possible aliases at this dot density';
+    n3.style.cursor='help';
     var n4=document.createElement('button'); n4.className='bi-copy'; n4.title='Copy';
     n4.innerHTML=ICO_CP_SM;
     n4.addEventListener('click',function(ev){
@@ -628,31 +742,36 @@ function triggerGenerate(){
   if(!base||base.length<2){ showToast('Enter a username first'); return; }
 
   var opts=getOpts();
-  var all=enumAll(base,opts);
+  // cryptoSample returns [{alias,mask,gaps}, ...]
+  var items=cryptoSample(base, _bulk==='all'?'all':_bulk, opts);
 
-  if(all.length===0){
+  if(!items||items.length===0){
     showToast('Username too short to generate variants');
     return;
   }
 
-  var results=(_bulk==='all' ? all : all.slice(0,Math.min(_bulk,all.length)))
-    .map(function(v){ return domain ? v+'@'+domain : v; });
+  // Append domain to alias strings if provided
+  if(domain){
+    items=items.map(function(it){
+      return { alias: it.alias+'@'+domain, mask: it.mask, gaps: it.gaps };
+    });
+  }
+
+  _batchStore=items;
 
   if(_bulk===1){
-    _batchStore=results;
-    setMainEmail(results[0],true);
+    setMainEmail(items[0].alias, true);
     document.getElementById('batchCard').style.display='none';
     return;
   }
 
-  _batchStore=results;
   var bc=document.getElementById('batchCard');
   bc.style.display='';
   bc.style.animation='none'; void bc.offsetWidth; bc.style.animation='';
-  document.getElementById('batchCountPill').textContent=results.length+(_bulk==='all'?' (all)':'');
+  document.getElementById('batchCountPill').textContent=items.length+(_bulk==='all'?' (all)':'');
   document.getElementById('progressWrap').style.display='none';
-  vsLoad(results);
-  setMainEmail(results[0],true);
+  vsLoad(items);
+  setMainEmail(items[0].alias,true);
 }
 
 function setMainEmail(alias, animate){}
@@ -673,20 +792,22 @@ function copyBatchItem(btn,email){
 }
 function copyAll(){
   if(!_batchStore.length)return;
-  navigator.clipboard.writeText(_batchStore.join('\n')).then(function(){
-    showToast('Copied '+_batchStore.length+' aliases');
+  var lines=_batchStore.map(function(it){ return it.alias; });
+  navigator.clipboard.writeText(lines.join('\n')).then(function(){
+    showToast('Copied '+lines.length+' aliases');
   });
 }
 function downloadTxt(){
   if(!_batchStore.length){showToast('Nothing to download');return;}
   var base=getUser()||'aliases';
-  var hdr='# Dot aliases for '+base+'\n# Generated: '+new Date().toISOString()+'\n# Total: '+_batchStore.length+'\n\n';
-  var blob=new Blob([hdr+_batchStore.join('\n')],{type:'text/plain'});
+  var lines=_batchStore.map(function(it){ return it.alias; });
+  var hdr='# Dot aliases for '+base+'\n# Generated: '+new Date().toISOString()+'\n# Total: '+lines.length+'\n\n';
+  var blob=new Blob([hdr+lines.join('\n')],{type:'text/plain'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download=base+'-aliases.txt';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showToast('Downloaded '+_batchStore.length+' aliases');
+  showToast('Downloaded '+lines.length+' aliases');
 }
 
 // ICONS
