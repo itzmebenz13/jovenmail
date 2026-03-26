@@ -2670,7 +2670,7 @@
     if (resetPage) _admPage = 1;
     document.getElementById('admEmailList').innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>';
     try {
-      var r = await _admSb.from('allowed_emails').select('*').order('created_at', { ascending: false });
+      var r = await _admSb.from('allowed_emails').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(10000);
       if (r.error) throw r.error;
       _admAllEmails = r.data || [];
       admApplyFilter();
@@ -2697,19 +2697,30 @@
     if (!slice.length) {
       list.innerHTML = '<div class="adm-empty">' + (_admSearch ? 'No emails match your search.' : 'No valid emails added yet.') + '</div>';
     } else {
-      list.innerHTML = slice.map(function(row) {
+      var allPageIds = slice.map(function(r){ return r.id; });
+      var allChecked = allPageIds.every(function(id){ return _admSelIds.has(id); });
+      var anyChecked = allPageIds.some(function(id){ return _admSelIds.has(id); });
+      var hdrBg = allChecked ? 'background:var(--accent);border-color:var(--accent);' : anyChecked ? 'background:rgba(217,249,80,0.3);border-color:var(--accent);' : '';
+      var headerRow = '<div class="adm-email-row" style="background:var(--bg-input);border-bottom:1px solid var(--border-strong);">' +
+        '<input type="checkbox" id="admSelectAllChk" ' + (allChecked ? 'checked' : '') + ' style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;cursor:pointer;flex-shrink:0;transition:all 0.15s;' + hdrBg + '" onchange="admSelectAllPage(this)"/>' +
+        '<span class="adm-email-addr" style="color:var(--text-muted);font-size:0.72rem;">' + (allChecked ? 'Deselect all' : 'Select all') + ' on this page (' + slice.length + ')</span>' +
+        '<span class="adm-email-date"></span>' +
+        '<span style="width:28px;flex-shrink:0;display:inline-block;"></span>' +
+        '</div>';
+      list.innerHTML = headerRow + slice.map(function(row) {
         var d = new Date(row.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        var isChk = _admSelIds.has(row.id);
+        var chkStyle = isChk ? 'background:var(--accent);border-color:var(--accent);' : '';
         return '<div class="adm-email-row" data-id="' + row.id + '">' +
-          '<input type="checkbox" style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;background:var(--bg-input);cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;" onchange="admToggleCheck(\'' + row.id + '\',this)"/>' +
+          '<input type="checkbox" ' + (isChk ? 'checked' : '') + ' style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;background:var(--bg-input);cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;' + chkStyle + '" onchange="admToggleCheck(\'' + row.id + '\',this)"/>' +
           '<span class="adm-email-addr">' + escHtml(row.email) + '</span>' +
           '<span class="adm-email-date">' + d + '</span>' +
-          '<button class="adm-btn-del" onclick="admDeleteEmail(\'' + row.id + '\',\'' + escHtml(row.email) + '\')">' +
+          '<button class="adm-btn-del" onclick="admDeleteEmail(\'' + row.id + '\',\'' + escHtml(row.email) + '\')">'+
             '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
           '</button>' +
         '</div>';
       }).join('');
-      // Style checked checkboxes via JS since we can't use CSS for dynamic state easily
-      list.querySelectorAll('input[type=checkbox]').forEach(function(c){
+      list.querySelectorAll('input[type=checkbox]:not(#admSelectAllChk)').forEach(function(c){
         c.addEventListener('change', function(){ c.style.background = c.checked ? 'var(--accent)' : 'var(--bg-input)'; c.style.borderColor = c.checked ? 'var(--accent)' : 'var(--border-strong)'; });
       });
     }
@@ -2845,6 +2856,18 @@
     _admSelIds.clear();
     document.querySelectorAll('.adm-email-row input[type=checkbox]').forEach(function(c){ c.checked=false; c.style.background='var(--bg-input)'; c.style.borderColor='var(--border-strong)'; });
     admUpdateBulkBar();
+    admRenderPage();
+  }
+  function admSelectAllPage(chk) {
+    var start = (_admPage - 1) * ADM_PAGE_SIZE;
+    var slice = _admFiltered.slice(start, start + ADM_PAGE_SIZE);
+    if (chk.checked) {
+      slice.forEach(function(r){ _admSelIds.add(r.id); });
+    } else {
+      slice.forEach(function(r){ _admSelIds.delete(r.id); });
+    }
+    admUpdateBulkBar();
+    admRenderPage();
   }
   async function admDeleteSelected() {
     if (!_admSelIds.size) return;
