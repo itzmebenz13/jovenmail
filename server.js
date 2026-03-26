@@ -1,6 +1,7 @@
 const express  = require('express');
 const cron     = require('node-cron');
 const crypto   = require('crypto');
+const bcrypt   = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
 const { getAuthUrl, saveToken, fetchEmails, registerWatch } = require('./gmail');
 require('dotenv').config();
@@ -515,10 +516,7 @@ app.post('/api/validate-email', async function(req, res) {
     const delay = stealthDelay(score);
     if (delay > 0) await sleep(delay);
 
-    return res.json({
-      valid: true,
-      _s:   score > 50 ? 1 : 0  // stealth flag → client slows refresh
-    });
+    return await claimOrVerifyOwnership(req, res, alias, fp);
 
   } catch (e) {
     console.error('validate-email error:', e);
@@ -639,5 +637,296 @@ app.post('/api/fetch-emails', async function(req, res) {
   } catch (e) {
     console.error('fetch-emails error:', e);
     return res.status(500).json({ ok: false, error: 'Server error' });
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+// ── SESSION OWNERSHIP ──
+//
+// REQUIRED SUPABASE TABLE:
+//
+//   CREATE TABLE email_sessions (
+//     email           TEXT PRIMARY KEY,
+//     owner_fp        TEXT,
+//     owner_ip        TEXT,
+//     owner_ua        TEXT,
+//     claimed_at      TIMESTAMPTZ,
+//     pin_hash        TEXT,
+//     has_pin         BOOLEAN DEFAULT false,
+//     pin_set_at      TIMESTAMPTZ,
+//     transferred_at  TIMESTAMPTZ
+//   );
+//   CREATE INDEX ON email_sessions (has_pin);
+//
+// ALSO ADD to your .env:
+//   ADMIN_SECRET=some_long_random_string_here
+// ════════════════════════════════════════════════════════════
+
+function buildOwnerIdentity(req, fp) {
+  const ip = hashIP(getRawIP(req));
+  const ua = crypto
+    .createHash('sha256')
+    .update((req.headers['user-agent'] || '') + (process.env.IP_HASH_SALT || ''))
+    .digest('hex');
+  return { owner_fp: fp, owner_ip: ip, owner_ua: ua };
+}
+
+function isOwner(req, fp, row) {
+  const identity = buildOwnerIdentity(req, fp);
+  return (
+    row.owner_fp === identity.owner_fp &&
+    row.owner_ip === identity.owner_ip &&
+    row.owner_ua === identity.owner_ua
+  );
+}
+
+async function claimOrVerifyOwnership(req, res, alias, fp) {
+  const { data: session, error: selErr } = await supabase
+    .from('email_sessions')
+    .select('*')
+    .eq('email', alias)
+    .maybeSingle();
+
+  if (selErr) {
+    console.error('session lookup error:', selErr);
+    return res.status(500).json({ valid: false, error: 'Database error' });
+  }
+
+  if (!session) {
+    const identity = buildOwnerIdentity(req, fp);
+    const { error: insErr } = await supabase
+      .from('email_sessions')
+      .insert({
+        email:      alias,
+        owner_fp:   identity.owner_fp,
+        owner_ip:   identity.owner_ip,
+        owner_ua:   identity.owner_ua,
+        claimed_at: new Date().toISOString(),
+        has_pin:    false
+      });
+
+    if (insErr) {
+      const { data: raceRow } = await supabase
+        .from('email_sessions')
+        .select('*')
+        .eq('email', alias)
+        .maybeSingle();
+      if (raceRow && !isOwner(req, fp, raceRow)) {
+        return res.json({
+          valid:   false,
+          reason:  'session_taken',
+          message: 'This inbox is currently in use by another session.'
+        });
+      }
+    }
+
+    return res.json({ valid: true, owner: true, session: 'new' });
+  }
+
+  if (isOwner(req, fp, session)) {
+    return res.json({ valid: true, owner: true, session: 'active' });
+  }
+
+  return res.json({
+    valid:   false,
+    reason:  'session_active',
+    message: 'This inbox is currently claimed by another session. If you have a transfer PIN, use it to claim access.'
+  });
+}
+
+// ── SET TRANSFER PIN ─────────────────────────────────────────
+app.post('/api/set-transfer-pin', async function(req, res) {
+  try {
+    const fp    = (req.body.fp    || '').trim();
+    const alias = (req.body.alias || '').trim().toLowerCase();
+    const pin   = (req.body.pin   || '').trim();
+
+    if (!fp || !alias || !pin) return res.status(400).json({ ok: false, error: 'Missing params' });
+    if (!/^\d{4}$/.test(pin)) return res.status(400).json({ ok: false, error: 'PIN must be exactly 4 digits' });
+    if (isBurstBlocked(req)) { await sleep(PROG_DELAYS[1]); return res.json({ ok: false, error: 'Too many requests.' }); }
+
+    const { data: session } = await supabase
+      .from('email_sessions').select('*').eq('email', alias).maybeSingle();
+
+    if (!session || !isOwner(req, fp, session)) {
+      return res.status(403).json({ ok: false, error: 'Not authorized.' });
+    }
+
+    const pinHash = await bcrypt.hash(pin, 8);
+
+    const { error: updErr } = await supabase
+      .from('email_sessions')
+      .update({ pin_hash: pinHash, has_pin: true, pin_set_at: new Date().toISOString() })
+      .eq('email', alias);
+
+    if (updErr) { console.error('set-transfer-pin error:', updErr); return res.status(500).json({ ok: false, error: 'Database error' }); }
+
+    return res.json({ ok: true, message: 'Transfer PIN set. Share the PIN with the person you want to transfer access to.' });
+  } catch (e) {
+    console.error('set-transfer-pin error:', e);
+    return res.status(500).json({ ok: false, error: 'Server error' });
+  }
+});
+
+// ── CLAIM WITH PIN ───────────────────────────────────────────
+const pinAttempts = {};
+const PIN_ATTEMPT_LIMIT  = 5;
+const PIN_ATTEMPT_WINDOW = 60 * 60 * 1000;
+
+function isPinBlocked(fp) {
+  const now = Date.now();
+  const e   = pinAttempts[fp];
+  if (!e) return false;
+  if (now - e.since > PIN_ATTEMPT_WINDOW) { delete pinAttempts[fp]; return false; }
+  return e.count >= PIN_ATTEMPT_LIMIT;
+}
+
+function recordPinAttempt(fp) {
+  const now = Date.now();
+  if (!pinAttempts[fp] || now - pinAttempts[fp].since > PIN_ATTEMPT_WINDOW) {
+    pinAttempts[fp] = { count: 1, since: now };
+  } else {
+    pinAttempts[fp].count++;
+  }
+}
+
+app.post('/api/claim-with-pin', async function(req, res) {
+  try {
+    const fp    = (req.body.fp    || '').trim();
+    const alias = (req.body.alias || '').trim().toLowerCase();
+    const pin   = (req.body.pin   || '').trim();
+
+    if (!fp || !alias || !pin) return res.status(400).json({ ok: false, error: 'Missing params' });
+    if (!/^\d{4}$/.test(pin)) return res.status(400).json({ ok: false, error: 'Invalid PIN format' });
+    if (isBurstBlocked(req)) { await sleep(PROG_DELAYS[1]); return res.json({ ok: false, error: 'Too many requests.' }); }
+    if (isPinBlocked(fp)) return res.json({ ok: false, blocked: true, error: 'Too many incorrect PIN attempts. Try again later.' });
+
+    const { data: session } = await supabase
+      .from('email_sessions').select('*').eq('email', alias).maybeSingle();
+
+    if (!session || !session.has_pin || !session.pin_hash) {
+      await sleep(1500);
+      return res.json({ ok: false, error: 'No transfer is available for this inbox.' });
+    }
+
+    const match = await bcrypt.compare(pin, session.pin_hash);
+
+    if (!match) {
+      recordPinAttempt(fp);
+      await sleep(1000 + Math.random() * 500);
+      return res.json({ ok: false, error: 'Incorrect PIN.' });
+    }
+
+    const newIdentity = buildOwnerIdentity(req, fp);
+
+    const { error: updErr } = await supabase
+      .from('email_sessions')
+      .update({
+        owner_fp:       newIdentity.owner_fp,
+        owner_ip:       newIdentity.owner_ip,
+        owner_ua:       newIdentity.owner_ua,
+        claimed_at:     new Date().toISOString(),
+        transferred_at: new Date().toISOString(),
+        pin_hash:       null,
+        has_pin:        false,
+        pin_set_at:     null
+      })
+      .eq('email', alias);
+
+    if (updErr) { console.error('claim-with-pin error:', updErr); return res.status(500).json({ ok: false, error: 'Database error' }); }
+
+    delete pinAttempts[fp];
+    return res.json({ ok: true, message: 'Access transferred. You are now the session owner.' });
+  } catch (e) {
+    console.error('claim-with-pin error:', e);
+    return res.status(500).json({ ok: false, error: 'Server error' });
+  }
+});
+
+// ── RELEASE SESSION ──────────────────────────────────────────
+app.post('/api/release-session', async function(req, res) {
+  try {
+    const fp    = (req.body.fp    || '').trim();
+    const alias = (req.body.alias || '').trim().toLowerCase();
+
+    if (!fp || !alias) return res.status(400).json({ ok: false });
+    if (isBurstBlocked(req)) { await sleep(PROG_DELAYS[1]); return res.json({ ok: false, error: 'Too many requests.' }); }
+
+    const { data: session } = await supabase
+      .from('email_sessions').select('*').eq('email', alias).maybeSingle();
+
+    if (!session || !isOwner(req, fp, session)) {
+      return res.status(403).json({ ok: false, error: 'Not authorized.' });
+    }
+
+    await supabase.from('email_sessions').delete().eq('email', alias);
+    return res.json({ ok: true, message: 'Session released.' });
+  } catch (e) {
+    console.error('release-session error:', e);
+    return res.status(500).json({ ok: false, error: 'Server error' });
+  }
+});
+
+// ── ADMIN ENDPOINTS ──────────────────────────────────────────
+function requireAdminSecret(req, res, next) {
+  const secret = req.headers['x-admin-secret'] || '';
+  if (!process.env.ADMIN_SECRET || secret !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
+app.get('/api/admin/sessions', requireAdminSecret, async function(req, res) {
+  try {
+    const { data: rows, error } = await supabase
+      .from('email_sessions')
+      .select('email, claimed_at, has_pin, pin_set_at, transferred_at')
+      .order('claimed_at', { ascending: false });
+    if (error) return res.status(500).json({ error: 'Database error' });
+    return res.json({ ok: true, sessions: rows || [] });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/admin/sessions/with-pins', requireAdminSecret, async function(req, res) {
+  try {
+    const { data: rows, error } = await supabase
+      .from('email_sessions')
+      .select('email, claimed_at, pin_set_at')
+      .eq('has_pin', true)
+      .order('pin_set_at', { ascending: false });
+    if (error) return res.status(500).json({ error: 'Database error' });
+    return res.json({ ok: true, sessions: rows || [] });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/admin/release-session', requireAdminSecret, async function(req, res) {
+  try {
+    const alias = (req.body.alias || '').trim().toLowerCase();
+    if (!alias) return res.status(400).json({ ok: false });
+    await supabase.from('email_sessions').delete().eq('email', alias);
+    return res.json({ ok: true, message: `Session for ${alias} cleared.` });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── SESSION CLEANUP CRON ─────────────────────────────────────
+// Clears sessions inactive for 24h (no PIN pending)
+cron.schedule('0 * * * *', async () => {
+  try {
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { error } = await supabase
+      .from('email_sessions')
+      .delete()
+      .lt('claimed_at', cutoff)
+      .eq('has_pin', false);
+    if (error) console.error('[CRON] session cleanup error:', error);
+    else console.log('[CRON] Stale sessions cleared');
+  } catch (e) {
+    console.error('[CRON] session cleanup cron error:', e);
   }
 });
