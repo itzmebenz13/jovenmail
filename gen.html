@@ -368,11 +368,6 @@ body{
       autocapitalize="off" spellcheck="false"
       oninput="onBaseInput()"
       onkeydown="if(event.key==='Enter')triggerGenerate()"/>
-    <span class="input-at">@</span>
-    <input class="input-domain-field" id="domainInput" type="text"
-      placeholder="gmail.com" value="gmail.com"
-      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-      onkeydown="if(event.key==='Enter')triggerGenerate()"/>
   </div>
 
   <div class="bulk-row">
@@ -401,29 +396,14 @@ body{
       <div class="chip-box"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
       <span class="chip-text">No sequential dots</span>
     </label>
-    <label class="option-chip active" id="chipMinGap">
-      <input type="checkbox" id="optMinGap" checked onchange="toggleChip('chipMinGap',this)"/>
+    <label class="option-chip" id="chipMinGap">
+      <input type="checkbox" id="optMinGap" onchange="toggleChip('chipMinGap',this)"/>
       <div class="chip-box"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
       <span class="chip-text">Min 2-char gap</span>
     </label>
   </div>
 
-  <div class="entropy-wrap" id="entropyWrap" style="display:none">
-    <div class="entropy-row">
-      <span class="entropy-label">Entropy score</span>
-      <span class="entropy-score" id="entropyScore">—</span>
-    </div>
-    <div class="entropy-bar"><div class="entropy-fill" id="entropyFill" style="width:0%"></div></div>
-  </div>
 
-  <div class="email-display" id="emailDisplay">
-    <span class="email-placeholder" id="emailPlaceholder">Your alias will appear here</span>
-    <span class="email-value" id="emailValue" style="display:none"></span>
-    <button class="copy-btn" id="mainCopyBtn" onclick="copyMain()" disabled>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      Copy
-    </button>
-  </div>
 </div>
 
 <!-- BATCH CARD -->
@@ -505,10 +485,8 @@ function selectBulk(m){
 // ─────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────
-function sanitizeBase(r){ return r.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,30); }
-function sanitizeDomain(r){ var d=r.trim().toLowerCase().replace(/[^a-z0-9.\-]/g,''); return d||'gmail.com'; }
+function sanitizeBase(r){ return r.toLowerCase().split('@')[0].replace(/[^a-z0-9]/g,'').slice(0,30); }
 function getUser(){ return sanitizeBase(document.getElementById('userInput').value.trim()); }
-function getDomain(){ return sanitizeDomain(document.getElementById('domainInput').value); }
 function getOpts(){
   return{
     highEntropy: document.getElementById('optHighEntropy').checked,
@@ -530,101 +508,42 @@ function shannonEntropy(s){
 }
 
 // ─────────────────────────────────────────────────
-// WEB WORKER — all heavy generation runs off-thread
+// GENERATION — enumerate all variants, shuffle, slice
 // ─────────────────────────────────────────────────
-var WORKER_SRC = (function(){/*
-self.onmessage=function(e){
-  var d=e.data,base=d.base,domain=d.domain,opts=d.opts,mode=d.mode;
-
-  function cr(){
-    if(self.crypto&&self.crypto.getRandomValues){
-      var a=new Uint32Array(1);self.crypto.getRandomValues(a);return a[0]/0xFFFFFFFF;
+function enumAll(base, opts){
+  var n=base.length;
+  var noS=opts.noSequential!==false;
+  var minG=opts.minGap!==false;
+  var hiE=opts.highEntropy!==false;
+  var gaps=n-1;
+  var results=[];
+  // iterate every bitmask of dot positions
+  for(var mask=1;mask<(1<<gaps);mask++){
+    var positions=[];
+    for(var b=0;b<gaps;b++) if(mask&(1<<b)) positions.push(b);
+    // filter constraints
+    var ok=true;
+    for(var i=1;i<positions.length;i++){
+      var gap=positions[i]-positions[i-1];
+      if(minG && gap<2){ok=false;break;}
+      // noSequential: block 3+ dots in a row (e.g. r.i.z.a)
+      if(noS && i>=2 && positions[i-1]-positions[i-2]===1 && gap===1){ok=false;break;}
     }
-    return Math.random();
-  }
-  function se(s){
-    var f={},e=0,l=s.length;
-    for(var i=0;i<l;i++) f[s[i]]=(f[s[i]]||0)+1;
-    for(var c in f){var p=f[c]/l;e-=p*Math.log2(p);}
-    return Math.min(e/Math.log2(27),1);
-  }
-  function gen(base,opts,used){
-    var hiE=opts.highEntropy!==false,noS=opts.noSequential!==false,minG=opts.minGap!==false;
-    var n=base.length;
-    if(n<2)return base;
-    var all=[];for(var i=0;i<n-1;i++)all.push(i);
-    for(var att=0;att<600;att++){
-      var pos=all.slice();
-      for(var j=pos.length-1;j>0;j--){var k=Math.floor(cr()*(j+1));var t=pos[j];pos[j]=pos[k];pos[k]=t;}
-      var minD,maxD;
-      if(hiE){minD=Math.max(2,Math.floor(n*0.50));maxD=Math.min(Math.floor(n*0.80),n-1);}
-      else{minD=Math.max(1,Math.floor(n/4));maxD=Math.min(Math.floor(n/2),n-1);}
-      if(minD>maxD)minD=maxD;
-      var nd=minD+Math.floor(cr()*(maxD-minD+1));
-      var chosen=pos.slice(0,nd).sort(function(a,b){return a-b;});
-      var result='',lastDot=-999,valid=true;
-      for(var ci=0;ci<n;ci++){
-        result+=base[ci];
-        if(chosen.indexOf(ci)!==-1&&ci<n-1){
-          if(noS&&ci-lastDot===1){valid=false;break;}
-          if(minG&&ci-lastDot<2){valid=false;break;}
-          result+='.';lastDot=ci;
-        }
-      }
-      if(!valid)continue;
-      if(result[0]==='.'||result[result.length-1]==='.'||result.indexOf('..')!==-1)continue;
-      if(used.has(result))continue;
-      if(hiE&&se(result)<0.90)continue;
-      return result;
+    if(!ok) continue;
+    // build string
+    var r='';
+    for(var ci=0;ci<n;ci++){
+      r+=base[ci];
+      if(ci<gaps && (mask&(1<<ci))) r+='.';
     }
-    var fb='';for(var fi=0;fi<n;fi++){fb+=base[fi];if(fi<n-1&&fi%2===0)fb+='.';}return fb;
+    results.push(r);
   }
-  function enumAll(base,opts){
-    var n=base.length,gaps=n-1,results=[];
-    var noS=opts.noSequential!==false,minG=opts.minGap!==false,hiE=opts.highEntropy!==false;
-    var total=1<<gaps;
-    for(var mask=1;mask<total;mask++){
-      var positions=[];
-      for(var b=0;b<gaps;b++)if(mask&(1<<b))positions.push(b);
-      var valid=true;
-      if(noS)for(var i=1;i<positions.length;i++)if(positions[i]-positions[i-1]===1){valid=false;break;}
-      if(valid&&minG)for(var i=1;i<positions.length;i++)if(positions[i]-positions[i-1]<2){valid=false;break;}
-      if(!valid)continue;
-      var r='',pi=0;
-      for(var ci=0;ci<n;ci++){
-        r+=base[ci];
-        if(pi<positions.length&&positions[pi]===ci&&ci<n-1){r+='.';pi++;}
-      }
-      if(r[0]==='.'||r[r.length-1]==='.'||r.indexOf('..')!==-1)continue;
-      if(hiE&&se(r)<0.90)continue;
-      results.push(r);
-    }
-    for(var j=results.length-1;j>0;j--){var kk=Math.floor(cr()*(j+1));var tt=results[j];results[j]=results[kk];results[kk]=tt;}
-    return results;
+  // fisher-yates shuffle
+  for(var j=results.length-1;j>0;j--){
+    var kk=Math.floor(cryptoRand()*(j+1));
+    var tmp=results[j];results[j]=results[kk];results[kk]=tmp;
   }
-
-  if(mode==='all'){
-    var all=enumAll(base,opts).slice(0,5000);
-    self.postMessage({type:'done',results:all.map(function(v){return v+'@'+domain;}),total:all.length});
-    return;
-  }
-  var count=mode,results=[],used=new Set(),STEP=Math.max(50,Math.floor(count/40));
-  for(var i=0;i<count;i++){
-    var v=gen(base,opts,used);used.add(v);results.push(v+'@'+domain);
-    if((i+1)%STEP===0) self.postMessage({type:'progress',done:i+1,total:count});
-  }
-  self.postMessage({type:'done',results:results,total:count});
-};
-*/}).toString().slice(16,-3); // extract comment body
-
-var _workerBlob = new Blob([WORKER_SRC], {type:'application/javascript'});
-var _workerURL  = URL.createObjectURL(_workerBlob);
-var _worker     = null;
-
-function getWorker(){
-  if(_worker) _worker.terminate();
-  _worker = new Worker(_workerURL);
-  return _worker;
+  return results;
 }
 
 // ─────────────────────────────────────────────────
@@ -666,7 +585,7 @@ function vsRender(){
   var frag = document.createDocumentFragment();
   for(var i=s;i<=e;i++){
     var email = _vsData[i];
-    var up    = email.split('@')[0];
+    var up    = email;
     var pct   = Math.round(shannonEntropy(up)*100);
 
     var row = document.createElement('div');
@@ -701,112 +620,42 @@ function onBaseInput(){ /* live — no-op, output stays until new generation */ 
 
 function triggerGenerate(){
   if(_isGen) return;
-  var base=getUser(), domain=getDomain();
+  var raw=document.getElementById('userInput').value.trim();
+  var parts=raw.split('@');
+  var base=sanitizeBase(parts[0]);
+  var domain=parts[1]?parts[1].trim():'';
+
   if(!base||base.length<2){ showToast('Enter a username first'); return; }
 
+  var opts=getOpts();
+  var all=enumAll(base,opts);
+
+  if(all.length===0){
+    showToast('Username too short to generate variants');
+    return;
+  }
+
+  var results=(_bulk==='all' ? all : all.slice(0,Math.min(_bulk,all.length)))
+    .map(function(v){ return domain ? v+'@'+domain : v; });
+
   if(_bulk===1){
-    // Instant inline single
-    var opts=getOpts();
-    var used=new Set(_batchStore.map(function(e){return e.split('@')[0];}));
-    var v=genInline(base,opts,used);
-    var full=v+'@'+domain;
-    _batchStore=[full];
-    setMainEmail(full,true);
+    _batchStore=results;
+    setMainEmail(results[0],true);
     document.getElementById('batchCard').style.display='none';
     return;
   }
 
-  // Batch via worker
-  setGenerating(true);
+  _batchStore=results;
   var bc=document.getElementById('batchCard');
   bc.style.display='';
   bc.style.animation='none'; void bc.offsetWidth; bc.style.animation='';
-  document.getElementById('batchCountPill').textContent='…';
-  document.getElementById('progressFill').style.width='0%';
-  document.getElementById('progressWrap').style.display='';
-  document.getElementById('progressLabel').textContent='Generating…';
-  _vsItems.innerHTML='';
-
-  var w=getWorker();
-  w.onmessage=function(e){
-    var d=e.data;
-    if(d.type==='progress'){
-      var pct=Math.round(d.done/d.total*100);
-      document.getElementById('progressFill').style.width=pct+'%';
-      document.getElementById('progressLabel').textContent='Generating… '+d.done+' / '+d.total;
-    } else if(d.type==='done'){
-      _batchStore=d.results;
-      document.getElementById('progressWrap').style.display='none';
-      setGenerating(false);
-      document.getElementById('batchCountPill').textContent=
-        d.results.length+(_bulk==='all'?' (all)':'');
-      vsLoad(d.results);
-      if(d.results.length>0) setMainEmail(d.results[0],true);
-    }
-  };
-  w.onerror=function(err){
-    setGenerating(false);
-    document.getElementById('progressWrap').style.display='none';
-    showToast('Error generating — try again');
-    console.error(err);
-  };
-  w.postMessage({base:base,domain:domain,opts:getOpts(),mode:_bulk});
+  document.getElementById('batchCountPill').textContent=results.length+(_bulk==='all'?' (all)':'');
+  document.getElementById('progressWrap').style.display='none';
+  vsLoad(results);
+  setMainEmail(results[0],true);
 }
 
-// Inline generator for single-mode (< 1ms)
-function genInline(base,opts,used){
-  var hiE=opts.highEntropy!==false,noS=opts.noSequential!==false,minG=opts.minGap!==false;
-  var n=base.length;
-  if(n<2)return base;
-  var all=[];for(var i=0;i<n-1;i++)all.push(i);
-  for(var att=0;att<600;att++){
-    var pos=all.slice();
-    for(var j=pos.length-1;j>0;j--){var k=Math.floor(cryptoRand()*(j+1));var t=pos[j];pos[j]=pos[k];pos[k]=t;}
-    var minD,maxD;
-    if(hiE){minD=Math.max(2,Math.floor(n*0.50));maxD=Math.min(Math.floor(n*0.80),n-1);}
-    else{minD=Math.max(1,Math.floor(n/4));maxD=Math.min(Math.floor(n/2),n-1);}
-    if(minD>maxD)minD=maxD;
-    var nd=minD+Math.floor(cryptoRand()*(maxD-minD+1));
-    var chosen=pos.slice(0,nd).sort(function(a,b){return a-b;});
-    var result='',lastDot=-999,valid=true;
-    for(var ci=0;ci<n;ci++){
-      result+=base[ci];
-      if(chosen.indexOf(ci)!==-1&&ci<n-1){
-        if(noS&&ci-lastDot===1){valid=false;break;}
-        if(minG&&ci-lastDot<2){valid=false;break;}
-        result+='.';lastDot=ci;
-      }
-    }
-    if(!valid)continue;
-    if(result[0]==='.'||result[result.length-1]==='.'||result.indexOf('..')!==-1)continue;
-    if(used&&used.has(result))continue;
-    if(hiE&&shannonEntropy(result)<0.90)continue;
-    return result;
-  }
-  var fb='';for(var fi=0;fi<n;fi++){fb+=base[fi];if(fi<n-1&&fi%2===0)fb+='.';}return fb;
-}
-
-function setMainEmail(email, animate){
-  var up=email.split('@')[0];
-  document.getElementById('emailPlaceholder').style.display='none';
-  var v=document.getElementById('emailValue');
-  v.style.display='';
-  if(animate&&v.textContent&&v.textContent!==email){
-    v.classList.remove('flash'); void v.offsetWidth; v.classList.add('flash');
-  }
-  v.textContent=email;
-  document.getElementById('emailDisplay').classList.add('has-value');
-  document.getElementById('mainCopyBtn').disabled=false;
-  var ent=shannonEntropy(up), pct=Math.round(ent*100);
-  var col=pct>=90?'var(--accent)':pct>=70?'#fb923c':'#f87171';
-  document.getElementById('entropyWrap').style.display='';
-  document.getElementById('entropyScore').textContent=pct+'%';
-  document.getElementById('entropyScore').style.color=col;
-  var fill=document.getElementById('entropyFill');
-  fill.style.width=pct+'%'; fill.style.background=col;
-  var btn=document.getElementById('mainCopyBtn');
-  btn.classList.remove('copied'); btn.innerHTML=ICO_CP_MD+' Copy';
-}
+function setMainEmail(alias, animate){}
 
 function setGenerating(on){
   _isGen=on;
@@ -815,15 +664,6 @@ function setGenerating(on){
 }
 
 // COPY
-function copyMain(){
-  var val=document.getElementById('emailValue').textContent; if(!val)return;
-  navigator.clipboard.writeText(val).then(function(){
-    var btn=document.getElementById('mainCopyBtn');
-    btn.classList.add('copied'); btn.innerHTML=ICO_CK_MD+' Copied!';
-    showToast('Copied to clipboard');
-    setTimeout(function(){btn.classList.remove('copied');btn.innerHTML=ICO_CP_MD+' Copy';},2000);
-  });
-}
 function copyBatchItem(btn,email){
   navigator.clipboard.writeText(email).then(function(){
     btn.classList.add('copied'); btn.innerHTML=ICO_CK_SM;
@@ -839,8 +679,8 @@ function copyAll(){
 }
 function downloadTxt(){
   if(!_batchStore.length){showToast('Nothing to download');return;}
-  var base=getUser()||'aliases', domain=getDomain();
-  var hdr='# Dot aliases for '+base+'@'+domain+'\n# Generated: '+new Date().toISOString()+'\n# Total: '+_batchStore.length+'\n\n';
+  var base=getUser()||'aliases';
+  var hdr='# Dot aliases for '+base+'\n# Generated: '+new Date().toISOString()+'\n# Total: '+_batchStore.length+'\n\n';
   var blob=new Blob([hdr+_batchStore.join('\n')],{type:'text/plain'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download=base+'-aliases.txt';
