@@ -1774,21 +1774,23 @@
       var result = await validateEmailServer(fp, input);
 
       if (!result.valid) {
-        // If server says blocked, show ban modal
+        // Server says explicitly blocked
         if (result.blocked) {
           showBanModal(result.permanent, result.message, result.blockedUntil);
           return;
         }
 
-        incrementInvalidCount();
-
-        // Empty mailbox — show suspension warning with attempts info
+        // Empty/inactive mailbox
         if (result.reason === 'no_emails') {
+          incrementInvalidCount();
           var attemptsUsed = typeof result.attemptsUsed === 'number' ? result.attemptsUsed : _sessionInvalidCount;
-          // If this attempt just triggered a block, show ban modal instead
-          if (result.nowBlocked) {
-            showBanModal(result.permanent, result.message, result.blockedUntil);
+          // 2nd attempt triggers 1h ban, 3rd triggers 24h — show ban modal
+          if (attemptsUsed >= 2) {
+            // Re-fetch block status to get blockedUntil for countdown
+            var blockCheck = await checkBlock();
+            showBanModal(blockCheck.permanent, blockCheck.message, blockCheck.blockedUntil);
           } else {
+            // 1st invalid — suspension warning
             showSuspensionModal(attemptsUsed);
           }
           return;
