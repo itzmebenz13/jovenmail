@@ -3633,8 +3633,8 @@
         Release Now (No PIN)
       </button>
 
-      <!-- PIN confirm section — only shown when a PIN has been set -->
-      <div id="transferPinSection" style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+      <!-- PIN confirm section — only shown by JS when a PIN has been set -->
+      <div id="transferPinSection" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
         <p class="pin-hint" style="margin-bottom:8px;">Or confirm with your PIN:</p>
         <div class="pin-input-row" id="transferPinRow">
           <input class="pin-digit" id="transferPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'transferPin',0,4)" onkeydown="pinKeydown(event,'transferPin',0,4)"/>
