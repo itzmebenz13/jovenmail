@@ -1454,7 +1454,7 @@
         </span>
         <button class="btn-transfer" onclick="openTransferModal()" title="Transfer ownership to another user">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-          Transfer Alias
+          Transfer Access
         </button>
       </div>
 
@@ -2725,44 +2725,146 @@
   }
 
   /* ════════════════════════════════════════════════════════
-     ── OWNERSHIP & PIN SYSTEM ──
+     ── OWNERSHIP & PIN SYSTEM (Supabase-backed) ──
      Rules:
-       · Ownership stored in localStorage: jm_owner:<alias> = { pin, sid }
-       · First session to recover = owner (sets PIN)
-       · Session ties: if jm_owner:<alias>.sid === SESSION_ID → is owner
-       · If alias has owner and sid != SESSION_ID → show "taken" message
-       · Owner can transfer → clears ownership so next recovery wins
-       · After transfer: incoming session fresh, must set new PIN
+       · Ownership stored in BOTH localStorage AND Supabase (alias_ownership table)
+       · First session to recover = owner (provisional, then PIN on transfer)
+       · SESSION_ID is stable per-browser-install (localStorage jm_sid)
+       · On any browser: Supabase lookup determines if alias is taken
+       · If alias owner_sid === SESSION_ID → this browser IS the owner
+       · If alias has a different owner_sid → alias is taken (show block)
+       · Owner can transfer → clears Supabase record; next recovery wins
+       · localStorage acts as instant cache; Supabase is the ground truth
+
+     Supabase table required (create in Supabase dashboard):
+       CREATE TABLE alias_ownership (
+         alias text PRIMARY KEY,
+         owner_sid text NOT NULL,
+         pin text,
+         created_at timestamptz DEFAULT now()
+       );
+       ALTER TABLE alias_ownership ENABLE ROW LEVEL SECURITY;
+       CREATE POLICY "allow_all" ON alias_ownership FOR ALL USING (true) WITH CHECK (true);
   ════════════════════════════════════════════════════════ */
+
+  var OWNERSHIP_TABLE = 'alias_ownership';
 
   function ownerKey(alias) { return 'jm_owner:' + alias; }
 
-  function getOwnership(alias) {
+  // ── localStorage helpers (instant cache) ──
+  function getOwnershipLocal(alias) {
     try { return JSON.parse(localStorage.getItem(ownerKey(alias)) || 'null'); }
     catch(e) { return null; }
   }
 
-  function setOwnership(alias, pin) {
+  function setOwnershipLocal(alias, pin) {
     localStorage.setItem(ownerKey(alias), JSON.stringify({ pin: pin, sid: SESSION_ID }));
   }
 
-  function clearOwnership(alias) {
+  function clearOwnershipLocal(alias) {
     localStorage.removeItem(ownerKey(alias));
   }
 
-  function isOwner(alias) {
-    var o = getOwnership(alias);
+  // ── Supabase ownership sync ──
+  async function getOwnershipRemote(alias) {
+    try {
+      var r = await sb.from(OWNERSHIP_TABLE).select('owner_sid,pin').eq('alias', alias).maybeSingle();
+      if (r.error) throw r.error;
+      return r.data; // { owner_sid, pin } or null
+    } catch(e) {
+      console.warn('getOwnershipRemote failed:', e);
+      return null; // treat as unknown — fall back to local
+    }
+  }
+
+  async function setOwnershipRemote(alias, pin) {
+    try {
+      var r = await sb.from(OWNERSHIP_TABLE).upsert(
+        { alias: alias, owner_sid: SESSION_ID, pin: pin },
+        { onConflict: 'alias' }
+      );
+      if (r.error) throw r.error;
+    } catch(e) {
+      console.warn('setOwnershipRemote failed (table may not exist):', e);
+    }
+  }
+
+  async function clearOwnershipRemote(alias) {
+    try {
+      var r = await sb.from(OWNERSHIP_TABLE).delete().eq('alias', alias).eq('owner_sid', SESSION_ID);
+      if (r.error) throw r.error;
+    } catch(e) {
+      console.warn('clearOwnershipRemote failed:', e);
+    }
+  }
+
+  // ── Combined ownership API ──
+  // Sets ownership locally immediately and syncs to Supabase in background
+  function setOwnership(alias, pin) {
+    setOwnershipLocal(alias, pin);
+    setOwnershipRemote(alias, pin); // fire-and-forget
+  }
+
+  // Clears ownership everywhere
+  async function clearOwnership(alias) {
+    clearOwnershipLocal(alias);
+    await clearOwnershipRemote(alias);
+  }
+
+  // Local-only check (instant, for UI decisions after we already know ownership)
+  function getOwnership(alias) {
+    return getOwnershipLocal(alias);
+  }
+
+  function isOwnerLocal(alias) {
+    var o = getOwnershipLocal(alias);
     return o && o.sid === SESSION_ID;
   }
 
+  function isOwner(alias) {
+    return isOwnerLocal(alias);
+  }
+
   function hasPin(alias) {
-    var o = getOwnership(alias);
+    var o = getOwnershipLocal(alias);
     return o && o.sid === SESSION_ID && o.pin !== null && o.pin !== undefined && o.pin !== '';
   }
 
-  function isTaken(alias) {
-    var o = getOwnership(alias);
+  function isTakenLocal(alias) {
+    var o = getOwnershipLocal(alias);
     return o && o.sid !== SESSION_ID;
+  }
+
+  // ── checkOwnershipStatus ──
+  // Checks Supabase for ground-truth ownership of an alias.
+  // Returns: 'owner' | 'taken' | 'free'
+  async function checkOwnershipStatus(alias) {
+    // First check local cache for instant response
+    var local = getOwnershipLocal(alias);
+    if (local) {
+      if (local.sid === SESSION_ID) return 'owner'; // this browser owns it
+      // Local says taken by someone else — verify with Supabase
+    }
+
+    // Query Supabase for ground truth
+    var remote = await getOwnershipRemote(alias);
+    if (!remote) {
+      // No remote record — alias is free (or table doesn't exist)
+      // Clear any stale local record
+      clearOwnershipLocal(alias);
+      return 'free';
+    }
+
+    if (remote.owner_sid === SESSION_ID) {
+      // This browser owns it — sync local cache
+      setOwnershipLocal(alias, remote.pin || null);
+      return 'owner';
+    }
+
+    // Owned by a different browser/device
+    // Cache this fact locally so future checks are instant
+    localStorage.setItem(ownerKey(alias), JSON.stringify({ sid: remote.owner_sid, pin: null }));
+    return 'taken';
   }
 
   /* ── Show / hide ownership bar ── */
@@ -2875,7 +2977,7 @@
       return;
     }
 
-    // Save ownership with PIN
+    // Save ownership with PIN (local + remote)
     var savedAlias = _pendingAlias;
     setOwnership(savedAlias, pin);
     _pendingAlias = null;
@@ -2935,7 +3037,7 @@
     setTimeout(function() { overlay.style.display = 'none'; }, 200);
   }
 
-  function confirmTransfer() {
+  async function confirmTransfer() {
     var pin = getPinValue('transferPin', 4);
     var errEl = document.getElementById('transferPinError');
     if (pin.length < 4) {
@@ -2944,7 +3046,7 @@
       return;
     }
 
-    var ownership = getOwnership(currentAlias);
+    var ownership = getOwnershipLocal(currentAlias);
     if (!ownership || ownership.pin !== pin) {
       errEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Incorrect PIN. Try again.';
       shakePin('transferPinRow'); setPinDigitsError('transferPin', 4, true);
@@ -2953,15 +3055,19 @@
       return;
     }
 
-    // Clear ownership — alias is now free
-    clearOwnership(currentAlias);
-    // Clear local session too
+    var alias = currentAlias;
+
+    // Clear ownership from both local and Supabase
+    clearOwnershipLocal(alias);
     localStorage.removeItem(STORAGE_KEY);
     clearInterval(silentTimer);
     if (realtimeChan) { sb.removeChannel(realtimeChan); realtimeChan = null; }
     currentAlias = '';
 
     closeTransferModal();
+
+    // Clear remote ownership (async, in background)
+    clearOwnershipRemote(alias);
 
     // Reset UI back to recover state
     document.getElementById('aliasDisplay').textContent = '—';
@@ -2981,7 +3087,7 @@
     showToast('Alias transferred — it is now free for the next user');
   }
 
-  /* ── Patch recoverAlias to inject ownership check ── */
+  /* ── Patched recoverAlias with Supabase ownership check ── */
   var _origRecoverAlias = recoverAlias;
   recoverAlias = async function() {
     if (_recoverBusy) return;
@@ -2990,24 +3096,29 @@
     if (!input) { showToast('Enter your assigned alias'); return; }
     if (!input.includes('@')) input = input + '@' + DOMAIN;
 
-    // Check if taken by another session BEFORE any server call
-    if (isTaken(input)) {
-      hideRecoverError();
-      showEmailTaken(true);
-      return;
-    }
-
-    // Run normal validation flow
-    if (isClientBurstBlocked()) {
-      showRecoverError('Too many attempts. Please wait a moment.');
-      return;
-    }
-
+    // ── OWNERSHIP CHECK (Supabase ground-truth) ──
+    // Show a brief loading state on the button while we query
     var btn = document.querySelector('[onclick="recoverAlias()"]');
     if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
     _recoverBusy = true;
 
     try {
+      // Check ownership status from Supabase (with local cache fallback)
+      var ownerStatus = await checkOwnershipStatus(input);
+
+      if (ownerStatus === 'taken') {
+        // Alias is owned by a different browser/device
+        hideRecoverError();
+        showEmailTaken(true);
+        return;
+      }
+
+      // ownerStatus is 'owner' or 'free' — proceed with server validation
+      if (isClientBurstBlocked()) {
+        showRecoverError('Too many attempts. Please wait a moment.');
+        return;
+      }
+
       var fp = await getBrowserFingerprint();
       var result = await validateEmailServer(fp, input);
 
@@ -3031,26 +3142,28 @@
         return;
       }
 
+      // ── VALID ALIAS ──
       hideRecoverError();
       showEmailTaken(false);
       document.getElementById('recoverInput').value = '';
 
       if (result._s === 1) activateStealthMode(30000);
 
-      // Already owner this session?
-      if (isOwner(input)) {
+      if (ownerStatus === 'owner') {
+        // This browser already owns it — restore session
         showOwnershipBar(true);
         setAlias(input);
-        showToast('Inbox loaded');
+        showToast('Inbox loaded — welcome back');
         return;
       }
 
-      // New ownership — load inbox immediately, defer PIN setup to Transfer Access
+      // ── NEW OWNERSHIP (ownerStatus === 'free') ──
+      // Register this browser as the owner in Supabase
       setOwnership(input, null); // provisional ownership (no PIN yet)
       showOwnershipBar(true);
       showEmailTaken(false);
       setAlias(input);
-      showToast('Inbox loaded — set a PIN when you transfer access');
+      showToast('Inbox loaded — you are now the owner of this alias');
 
     } catch (e) {
       console.error('recoverAlias error:', e);
@@ -3082,11 +3195,25 @@
     if (saved) {
       // Re-validate the saved alias against the server on every page load.
       try {
+        // First check if we still own it (Supabase ground truth)
+        var ownerStatus = await checkOwnershipStatus(saved);
+
+        if (ownerStatus === 'taken') {
+          // Someone else took it while we were away — clear local state
+          localStorage.removeItem(STORAGE_KEY);
+          clearOwnershipLocal(saved);
+          var nas = document.getElementById('noAliasState');
+          var es  = document.getElementById('emptyState');
+          if (nas) nas.style.display = 'flex';
+          if (es)  es.style.display  = 'none';
+          showToast('Your alias was transferred to another user');
+          return;
+        }
+
         var fp = await getBrowserFingerprint();
         var result = await validateEmailServer(fp, saved);
         if (result.valid) {
-          // Check ownership state
-          if (isOwner(saved)) {
+          if (ownerStatus === 'owner') {
             showOwnershipBar(true);
           }
           setAlias(saved);
