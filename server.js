@@ -16,7 +16,7 @@ app.use(function(req, res, next) {
   if (!ALLOWED_ORIGINS.length || ALLOWED_ORIGINS.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin || '*');
   }
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
