@@ -1328,6 +1328,85 @@
     .adm-email-date { display: none; }
   }
 
+  /* ── HONEYPOT badge + button ── */
+  .adm-honeypot-badge {
+    background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.35);
+    color: #f87171; font-size: 0.66rem; font-weight: 700;
+    padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+    letter-spacing: 0.04em; text-transform: uppercase; flex-shrink: 0;
+  }
+  .adm-trap-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-muted); border-radius: 6px; padding: 3px 8px;
+    font-size: 0.72rem; cursor: pointer; transition: all 0.15s;
+    white-space: nowrap; display: flex; align-items: center; gap: 4px;
+    flex-shrink: 0;
+  }
+  .adm-trap-btn:hover { border-color: #f87171; color: #f87171; }
+  .adm-trap-btn.active { background: rgba(248,113,113,0.1); border-color: #f87171; color: #f87171; }
+
+  /* ── FRAUD DETECTOR tab ── */
+  .fraud-stats {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
+    margin-bottom: 14px;
+  }
+  .fraud-stat {
+    background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .fraud-stat .fs-val {
+    font-size: 1.3rem; font-weight: 700; font-family: 'JetBrains Mono',monospace;
+    letter-spacing: -0.03em; line-height: 1;
+  }
+  .fraud-stat .fs-lbl { font-size: 0.7rem; color: var(--text-muted); }
+  .fraud-stat.red  .fs-val { color: #f87171; }
+  .fraud-stat.orange .fs-val { color: #fb923c; }
+  .fraud-stat.yellow .fs-val { color: #facc15; }
+
+  .fraud-table-wrap { overflow-x: auto; }
+  .fraud-table {
+    width: 100%; border-collapse: collapse; font-size: 0.78rem;
+  }
+  .fraud-table th {
+    text-align: left; padding: 7px 10px;
+    font-size: 0.68rem; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  .fraud-table td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  .fraud-table tr:last-child td { border-bottom: none; }
+  .fraud-table tr:hover td { background: var(--bg-hover); }
+  .fraud-fp {
+    font-family: 'JetBrains Mono',monospace; font-size: 0.73rem;
+    color: var(--text-dim); max-width: 140px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .fraud-chip {
+    display: inline-flex; align-items: center;
+    border-radius: 5px; padding: 2px 7px;
+    font-size: 0.68rem; font-weight: 700; white-space: nowrap;
+  }
+  .fraud-chip.permanent  { background: rgba(248,113,113,0.18); color: #f87171; }
+  .fraud-chip.blocked    { background: rgba(251,146,60,0.18);  color: #fb923c; }
+  .fraud-chip.warned     { background: rgba(250,204,21,0.18);   color: #facc15; }
+  .fraud-chip.clean      { background: rgba(100,100,100,0.14);  color: var(--text-muted); }
+  .fraud-chip.ip         { background: rgba(99,102,241,0.15);   color: #818cf8; font-weight: 600; }
+  .fraud-actions { display: flex; gap: 5px; }
+  .fraud-ban-btn {
+    background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3);
+    color: #f87171; border-radius: 5px; padding: 3px 8px;
+    font-size: 0.7rem; cursor: pointer; transition: all 0.15s;
+  }
+  .fraud-ban-btn:hover { background: rgba(248,113,113,0.2); }
+  .fraud-unban-btn {
+    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);
+    color: #4ade80; border-radius: 5px; padding: 3px 8px;
+    font-size: 0.7rem; cursor: pointer; transition: all 0.15s;
+  }
+  .fraud-unban-btn:hover { background: rgba(34,197,94,0.2); }
+  .fraud-empty { text-align: center; padding: 28px 20px; color: var(--text-muted); font-size: 0.84rem; }
+
   /* ══════════════════════════════════════
      PIN / OWNERSHIP SYSTEM
   ══════════════════════════════════════ */
@@ -4022,6 +4101,7 @@
   function openAdminPanel() {
     if (!_admSb) _admSb = sb; // reuse existing supabase client
     document.getElementById('adminOverlay').classList.add('open');
+    admSwitchSection('emails');
     admLoadEmails(true);
 
     // Drag & drop
@@ -4093,10 +4173,15 @@
     } else {
       list.innerHTML = slice.map(function(row) {
         var d = new Date(row.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        var isHp = !!(row.honeypot);
         return '<div class="adm-email-row" data-id="' + row.id + '">' +
           '<input type="checkbox" style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;background:var(--bg-input);cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;" onchange="admToggleCheck(\'' + row.id + '\',this)"/>' +
           '<span class="adm-email-addr">' + escHtml(row.email) + '</span>' +
+          (isHp ? '<span class="adm-honeypot-badge">\ud83e\udea4 TRAP</span>' : '') +
           '<span class="adm-email-date">' + d + '</span>' +
+          '<button class="adm-trap-btn' + (isHp ? ' active' : '') + '" onclick="admToggleHoneypot(\'' + escHtml(row.email) + '\',' + isHp + ')" title="' + (isHp ? 'Remove trap' : 'Set as honeypot trap') + '">' +
+            (isHp ? '\u2716 Untrap' : '\ud83e\udea4 Trap') +
+          '</button>' +
           '<button class="adm-btn-del" onclick="admDeleteEmail(\'' + row.id + '\',\'' + escHtml(row.email) + '\')">' +
             '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
           '</button>' +
@@ -4716,6 +4801,15 @@
       <div class="adm-stat"><div class="adm-val" id="admStatDomains">—</div><div class="adm-lbl">Unique domains</div></div>
     </div>
 
+    <!-- Section nav -->
+    <div class="adm-tabs" style="margin-bottom:0;">
+      <div class="adm-tab adm-nav-btn active" data-section="emails" onclick="admSwitchSection('emails')">📧 Valid Emails</div>
+      <div class="adm-tab adm-nav-btn" data-section="fraud" onclick="admSwitchSection('fraud')">🚨 Fraud Detector</div>
+    </div>
+
+    <!-- Email management section -->
+    <div id="admSectionEmails">
+
     <!-- Add emails card -->
     <div class="adm-card">
       <div class="adm-card-head">
@@ -4802,6 +4896,53 @@
 
       <div class="adm-pagination" id="admPagination"></div>
     </div>
+
+    </div><!-- /admSectionEmails -->
+
+    <!-- Fraud Detector section -->
+    <div id="admSectionFraud" style="display:none;">
+      <div class="adm-card">
+        <div class="adm-card-head">
+          <div class="adm-card-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Fraud Detector
+          </div>
+          <button class="btn-pill btn-outline btn-sm" onclick="admLoadFraud()" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
+            Refresh
+          </button>
+        </div>
+
+        <!-- Summary stats -->
+        <div class="fraud-stats">
+          <div class="fraud-stat red">
+            <div class="fs-val" id="fraudStatPerm">—</div>
+            <div class="fs-lbl">⛔ Permanent bans</div>
+          </div>
+          <div class="fraud-stat orange">
+            <div class="fs-val" id="fraudStatActive">—</div>
+            <div class="fs-lbl">🔴 Active blocks</div>
+          </div>
+          <div class="fraud-stat yellow">
+            <div class="fs-val" id="fraudStatWarned">—</div>
+            <div class="fs-lbl">⚠️ Warned</div>
+          </div>
+        </div>
+
+        <!-- Fraud log table -->
+        <div id="fraudList"><div class="adm-loading"><span class="adm-spinner"></span> Loading…</div></div>
+        <div class="adm-pagination" id="fraudPag"></div>
+
+        <!-- Legend -->
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="font-size:0.68rem;color:var(--text-muted);">Legend:</span>
+          <span class="fraud-chip ip">IP</span><span style="font-size:0.68rem;color:var(--text-muted);">= IP-range key</span>
+          <span class="fraud-chip permanent">Permanent</span>
+          <span class="fraud-chip blocked">Blocked</span>
+          <span class="fraud-chip warned">Warned</span>
+        </div>
+      </div>
+    </div><!-- /admSectionFraud -->
 
   </div>
 </div>
