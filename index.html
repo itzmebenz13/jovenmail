@@ -1877,18 +1877,23 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span id="recoverErrorMsg">Invalid alias.</span>
         </div>
-        <div id="securityNotice" style="margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);font-size:0.69rem;color:var(--text-dim);line-height:1.6;">
-          <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;color:#f87171;font-weight:600;font-size:0.7rem;">
+        <div id="securityNotice" style="margin-top:10px;border-radius:8px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);font-size:0.69rem;color:var(--text-dim);overflow:hidden;">
+          <!-- Collapsible header -->
+          <button onclick="(function(btn){var body=document.getElementById('secNoticeBody');var icon=document.getElementById('secNoticeChevron');var open=body.style.display!=='none';body.style.display=open?'none':'block';icon.style.transform=open?'rotate(0deg)':'rotate(180deg)';})(this)" style="width:100%;display:flex;align-items:center;gap:5px;padding:8px 10px;background:none;border:none;cursor:pointer;color:#f87171;font-weight:600;font-size:0.7rem;font-family:inherit;text-align:left;">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Security Notice
+            <svg id="secNoticeChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;transition:transform 0.2s ease;transform:rotate(0deg);"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <!-- Collapsible body (hidden by default) -->
+          <div id="secNoticeBody" style="display:none;padding:0 10px 10px;line-height:1.6;">
+            <span style="color:var(--text-muted);">Your access attempt is being recorded:</span><br/>
+            <span style="font-family:'JetBrains Mono',monospace;color:var(--text-main);font-size:0.68rem;">
+              IP: <span id="secIp" style="color:#f87171;">detecting…</span><br/>
+              Device: <span id="secDevice" style="color:#f87171;">—</span><br/>
+              Location: <span id="secLocation" style="color:#f87171;">detecting…</span>
+            </span><br/>
+            <span style="color:var(--text-muted);font-size:0.66rem;">Unauthorized access attempts are logged and may be reported.</span>
           </div>
-          <span style="color:var(--text-muted);">Your access attempt is being recorded:</span><br/>
-          <span style="font-family:'JetBrains Mono',monospace;color:var(--text-main);font-size:0.68rem;">
-            IP: <span id="secIp" style="color:#f87171;">detecting…</span><br/>
-            Device: <span id="secDevice" style="color:#f87171;">—</span><br/>
-            Location: <span id="secLocation" style="color:#f87171;">detecting…</span>
-          </span><br/>
-          <span style="color:var(--text-muted);font-size:0.66rem;">Unauthorized access attempts are logged and may be reported.</span>
         </div>
         <button class="btn-pill btn-outline btn-recover" id="recoverBtn" style="margin-top:10px;padding:10px 20px;width:100%;border-color:var(--border-strong);" onclick="recoverAlias()">
           <svg class="btn-recover-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
