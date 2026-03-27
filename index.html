@@ -3172,13 +3172,15 @@
     try {
       var ua = navigator.userAgent;
 
-      // ── OS Detection ──
+      // ── UA string fallback: parse OS ──
+      // Note: Chrome on Android intentionally freezes UA to "Android 10"
+      // regardless of real version. We override this below with Client Hints.
       var os = 'Unknown OS';
-      if (/Windows NT 10/.test(ua))      os = 'Windows 10/11';
+      if (/Windows NT 10/.test(ua))        os = 'Windows 10/11';
       else if (/Windows NT 6\.3/.test(ua)) os = 'Windows 8.1';
       else if (/Windows NT 6\.2/.test(ua)) os = 'Windows 8';
       else if (/Windows NT 6\.1/.test(ua)) os = 'Windows 7';
-      else if (/Windows NT/.test(ua))    os = 'Windows';
+      else if (/Windows NT/.test(ua))      os = 'Windows';
       else if (/Mac OS X/.test(ua)) {
         var mv = ua.match(/Mac OS X ([0-9_]+)/);
         os = 'macOS' + (mv ? ' ' + mv[1].replace(/_/g,'.') : '');
@@ -3186,7 +3188,6 @@
       else if (/Android/.test(ua)) {
         var av = ua.match(/Android\s([0-9]+(?:\.[0-9]+)*)/);
         var androidVer = av ? av[1] : '';
-        // Distinguish tablet (no "Mobile" token) vs phone
         var isTablet = !/Mobile/.test(ua);
         os = (isTablet ? 'Android Tablet' : 'Android') + (androidVer ? ' ' + androidVer : '');
       }
@@ -3198,22 +3199,56 @@
         var iv2 = ua.match(/OS ([0-9_]+)/);
         os = 'iPadOS' + (iv2 ? ' ' + iv2[1].replace(/_/g,'.') : '');
       }
-      else if (/CrOS/.test(ua))          os = 'Chrome OS';
-      else if (/Linux/.test(ua))         os = 'Linux';
+      else if (/CrOS/.test(ua))  os = 'Chrome OS';
+      else if (/Linux/.test(ua)) os = 'Linux';
 
       // ── Browser Detection (with version) ──
       var browser = 'Unknown Browser';
       var bv;
-      if (/Edg\//.test(ua))              { bv = ua.match(/Edg\/([\d.]+)/);   browser = 'Edge'    + (bv ? ' ' + bv[1].split('.')[0] : ''); }
-      else if (/OPR\/|Opera/.test(ua))   { bv = ua.match(/OPR\/([\d.]+)/);   browser = 'Opera'   + (bv ? ' ' + bv[1].split('.')[0] : ''); }
-      else if (/SamsungBrowser/.test(ua)){ bv = ua.match(/SamsungBrowser\/([\d.]+)/); browser = 'Samsung Internet' + (bv ? ' ' + bv[1].split('.')[0] : ''); }
-      else if (/Chrome\//.test(ua))      { bv = ua.match(/Chrome\/([\d.]+)/);  browser = 'Chrome'  + (bv ? ' ' + bv[1].split('.')[0] : ''); }
-      else if (/Firefox\//.test(ua))     { bv = ua.match(/Firefox\/([\d.]+)/); browser = 'Firefox' + (bv ? ' ' + bv[1].split('.')[0] : ''); }
-      else if (/Safari\//.test(ua))      { bv = ua.match(/Version\/([\d.]+)/); browser = 'Safari'  + (bv ? ' ' + bv[1].split('.')[0] : ''); }
+      if (/Edg\//.test(ua))               { bv = ua.match(/Edg\/([\d.]+)/);            browser = 'Edge'             + (bv ? ' ' + bv[1].split('.')[0] : ''); }
+      else if (/OPR\/|Opera/.test(ua))    { bv = ua.match(/OPR\/([\d.]+)/);            browser = 'Opera'            + (bv ? ' ' + bv[1].split('.')[0] : ''); }
+      else if (/SamsungBrowser/.test(ua)) { bv = ua.match(/SamsungBrowser\/([\d.]+)/); browser = 'Samsung Internet' + (bv ? ' ' + bv[1].split('.')[0] : ''); }
+      else if (/Chrome\//.test(ua))       { bv = ua.match(/Chrome\/([\d.]+)/);         browser = 'Chrome'           + (bv ? ' ' + bv[1].split('.')[0] : ''); }
+      else if (/Firefox\//.test(ua))      { bv = ua.match(/Firefox\/([\d.]+)/);        browser = 'Firefox'          + (bv ? ' ' + bv[1].split('.')[0] : ''); }
+      else if (/Safari\//.test(ua))       { bv = ua.match(/Version\/([\d.]+)/);        browser = 'Safari'           + (bv ? ' ' + bv[1].split('.')[0] : ''); }
 
-      // ── Device Type ──
+      // ── Device Type (UA fallback) ──
       var isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|Windows Phone/.test(ua);
       var deviceType = isMobile ? 'Mobile' : 'Desktop';
+
+      // ── UA Client Hints API (Chrome 90+ / Android Chrome) ──
+      // Chrome on Android freezes the UA string to "Android 10" for privacy.
+      // The REAL OS version is only available via getHighEntropyValues().
+      // This try-block overrides the UA-parsed os/deviceType with accurate values.
+      try {
+        if (navigator.userAgentData && typeof navigator.userAgentData.getHighEntropyValues === 'function') {
+          var hints = await navigator.userAgentData.getHighEntropyValues([
+            'platform', 'platformVersion', 'mobile', 'model'
+          ]);
+          var platform = hints.platform || '';
+          var platVer  = hints.platformVersion || '';
+          var majorVer = platVer ? parseInt(platVer.split('.')[0], 10) : null;
+
+          if (platform === 'Android') {
+            var isTab = !hints.mobile;
+            os         = (isTab ? 'Android Tablet' : 'Android') + (majorVer !== null ? ' ' + majorVer : '');
+            deviceType = 'Mobile';
+          } else if (platform === 'Windows') {
+            // platformVersion >= 13 = Windows 11, 1–12 = Windows 10
+            os         = majorVer >= 13 ? 'Windows 11' : (majorVer >= 1 ? 'Windows 10' : 'Windows');
+            deviceType = 'Desktop';
+          } else if (platform === 'macOS') {
+            os         = 'macOS' + (platVer ? ' ' + platVer : '');
+            deviceType = 'Desktop';
+          } else if (platform === 'iOS' || platform === 'iPadOS') {
+            var iType  = (hints.model && /iPad/i.test(hints.model)) ? 'iPad' : 'iPhone';
+            os         = (iType === 'iPad' ? 'iPadOS' : 'iOS (iPhone)') + (majorVer !== null ? ' ' + majorVer : '');
+            deviceType = 'Mobile';
+          } else if (platform === 'Linux') {
+            os = 'Linux'; deviceType = 'Desktop';
+          }
+        }
+      } catch(chErr) { /* Client Hints not supported — UA string values already set above */ }
 
       var deviceEl = document.getElementById('secDevice');
       if (deviceEl) deviceEl.textContent = deviceType + ' · ' + browser + ' · ' + os;
