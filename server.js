@@ -449,17 +449,61 @@ app.post('/api/validate-email', async function(req, res) {
     const baseUser = user.replace(/\./g, '');
     const isGmail  = domain === 'gmail.com' || domain === 'googlemail.com';
 
-    let hasEmails = false;
+    let hasEmails  = false;
+    let isHoneypot = false;
 
     // Exact match only — entered email must exist literally in the whitelist
     {
       const { data: rows, error: rowErr } = await supabase
-        .from('allowed_emails').select('id').eq('email', alias).limit(1);
+        .from('allowed_emails').select('id, honeypot').eq('email', alias).limit(1);
       if (rowErr) {
         console.error('validate-email DB error:', JSON.stringify(rowErr));
         return res.status(500).json({ valid: false, error: 'Database error' });
       }
-      hasEmails = !!(rows && rows.length > 0);
+      if (rows && rows.length > 0) {
+        hasEmails  = true;
+        isHoneypot = !!(rows[0].honeypot);
+      }
+    }
+
+    // ── 5b. HONEYPOT TRAP — alias exists but is marked as a trap ──
+    // Real users only recover emails assigned to them — probing unused/trap
+    // emails = immediate 12-hour block on both fingerprint and IP.
+    if (hasEmails && isHoneypot) {
+      const HONEYPOT_MS = 12 * 60 * 60 * 1000; // 12 hours
+      const now         = new Date();
+      const blockedUntil = new Date(now.getTime() + HONEYPOT_MS).toISOString();
+      const honeypotPayload = {
+        attempts:      (fpRow ? fpRow.attempts || 0 : 0) + 1,
+        block_level:   2,
+        blocked_until: blockedUntil,
+        permanent:     false,
+        last_attempt:  now.toISOString()
+      };
+      const honeypotIpPayload = {
+        attempts:      (ipRow ? ipRow.attempts || 0 : 0) + 1,
+        block_level:   2,
+        blocked_until: blockedUntil,
+        permanent:     false,
+        last_attempt:  now.toISOString()
+      };
+      // Upsert both rows
+      await Promise.all([
+        fpRow
+          ? supabase.from('recovery_attempts').update(honeypotPayload).eq('fingerprint', fp)
+          : supabase.from('recovery_attempts').insert(Object.assign({ fingerprint: fp }, honeypotPayload)),
+        ipRow
+          ? supabase.from('recovery_attempts').update(honeypotIpPayload).eq('fingerprint', ipKey)
+          : supabase.from('recovery_attempts').insert(Object.assign({ fingerprint: ipKey }, honeypotIpPayload))
+      ]);
+      console.log('[HONEYPOT] Trap triggered for alias:', alias, '| fp:', fp.slice(0, 8), '| ip-key:', ipKey.slice(0, 12));
+      await sleep(2000 + Math.random() * 1000);
+      return res.json({
+        valid:     false,
+        blocked:   true,
+        permanent: false,
+        message:   'Too many failed attempts. Try again in 12 hour(s).'
+      });
     }
 
     // ── 6. INVALID alias → record attempt, escalate block ──
@@ -927,5 +971,121 @@ cron.schedule('0 * * * *', async () => {
     else console.log('[CRON] Stale sessions cleared');
   } catch (e) {
     console.error('[CRON] session cleanup cron error:', e);
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+// ── ADMIN — FRAUD LOG ──
+// Returns all rows from recovery_attempts, ordered by
+// attempts desc. Supports ?limit=N&offset=N pagination.
+// ════════════════════════════════════════════════════════════
+app.get('/api/admin/fraud-log', requireAdminSecret, async function(req, res) {
+  try {
+    const limit  = Math.min(parseInt(req.query.limit  || '100', 10), 500);
+    const offset = parseInt(req.query.offset || '0',   10);
+
+    const { data: rows, error, count } = await supabase
+      .from('recovery_attempts')
+      .select('*', { count: 'exact' })
+      .order('attempts', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) return res.status(500).json({ error: 'Database error' });
+
+    // Summarise stats
+    const all = rows || [];
+    return res.json({
+      ok:      true,
+      total:   count || 0,
+      rows:    all,
+      stats: {
+        permanent:    all.filter(r => r.permanent).length,
+        activeBlocks: all.filter(r => !r.permanent && r.blocked_until && new Date(r.blocked_until) > new Date()).length,
+        warned:       all.filter(r => !r.permanent && (!r.blocked_until || new Date(r.blocked_until) <= new Date()) && (r.attempts || 0) >= 1).length
+      }
+    });
+  } catch (e) {
+    console.error('fraud-log error:', e);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+// ── ADMIN — FRAUD BAN (manual permanent ban) ──
+// ════════════════════════════════════════════════════════════
+app.post('/api/admin/fraud-ban', requireAdminSecret, async function(req, res) {
+  try {
+    const key = (req.body.fingerprint || '').trim();
+    if (!key) return res.status(400).json({ ok: false, error: 'Missing fingerprint key' });
+
+    const { data: existing } = await supabase
+      .from('recovery_attempts').select('*').eq('fingerprint', key).maybeSingle();
+
+    const payload = {
+      attempts:      (existing ? existing.attempts || 0 : 0) + 1,
+      block_level:   3,
+      blocked_until: null,
+      permanent:     true,
+      last_attempt:  new Date().toISOString()
+    };
+
+    if (existing) {
+      await supabase.from('recovery_attempts').update(payload).eq('fingerprint', key);
+    } else {
+      await supabase.from('recovery_attempts').insert(Object.assign({ fingerprint: key }, payload));
+    }
+
+    console.log('[ADMIN] Manual permanent ban:', key.slice(0, 16));
+    return res.json({ ok: true, message: 'Permanently banned.' });
+  } catch (e) {
+    console.error('fraud-ban error:', e);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+// ── ADMIN — FRAUD UNBAN (clear all blocks) ──
+// ════════════════════════════════════════════════════════════
+app.post('/api/admin/fraud-unban', requireAdminSecret, async function(req, res) {
+  try {
+    const key = (req.body.fingerprint || '').trim();
+    if (!key) return res.status(400).json({ ok: false, error: 'Missing fingerprint key' });
+
+    await supabase
+      .from('recovery_attempts')
+      .update({ attempts: 0, block_level: 0, blocked_until: null, permanent: false })
+      .eq('fingerprint', key);
+
+    console.log('[ADMIN] Unbanned:', key.slice(0, 16));
+    return res.json({ ok: true, message: 'Block cleared.' });
+  } catch (e) {
+    console.error('fraud-unban error:', e);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+// ── ADMIN — SET HONEYPOT FLAG ──
+// Sets or clears honeypot=true on an allowed_email row.
+// ════════════════════════════════════════════════════════════
+app.post('/api/admin/set-honeypot', requireAdminSecret, async function(req, res) {
+  try {
+    const email     = (req.body.email     || '').trim().toLowerCase();
+    const honeypot  = req.body.honeypot === true || req.body.honeypot === 'true';
+
+    if (!email) return res.status(400).json({ ok: false, error: 'Missing email' });
+
+    const { error } = await supabase
+      .from('allowed_emails')
+      .update({ honeypot: honeypot })
+      .eq('email', email);
+
+    if (error) { console.error('set-honeypot error:', error); return res.status(500).json({ ok: false, error: 'Database error' }); }
+
+    console.log('[ADMIN] Honeypot', honeypot ? 'SET' : 'CLEARED', 'for:', email);
+    return res.json({ ok: true, honeypot });
+  } catch (e) {
+    console.error('set-honeypot error:', e);
+    return res.status(500).json({ error: 'Server error' });
   }
 });
