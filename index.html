@@ -19,10 +19,11 @@
 
 <!-- Supabase & Lucide Icons -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <!-- lucide inlined -->
 
 <script>
-  const savedTheme = localStorage.getItem('theme') || 'dark';
+  const savedTheme = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
 </script>
 
@@ -1938,10 +1939,34 @@
     </div>
 
     <!-- No Alias State (before recover) -->
-    <div class="empty-state bordered" id="noAliasState" style="display:flex;">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35;margin-bottom:8px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <h3 style="font-size:0.95rem;">Recover your alias first</h3>
-      <p>Enter your assigned alias above and tap<br/><strong>Load Inbox (Recover)</strong> to get started.</p>
+    <div id="noAliasState" style="display:flex;flex-direction:column;align-items:center;gap:0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-card);overflow:hidden;box-shadow:var(--shadow-card);">
+
+      <!-- Lottie + Tips row -->
+      <div style="display:flex;flex-direction:column;align-items:center;width:100%;padding:20px 20px 0;">
+
+        <!-- Lottie container -->
+        <div id="recoveryLottie" style="width:140px;height:140px;flex-shrink:0;"></div>
+
+        <!-- Title -->
+        <div style="text-align:center;margin-top:4px;">
+          <h3 style="font-size:0.98rem;font-weight:700;color:var(--text-main);margin-bottom:4px;">Recover your alias first</h3>
+          <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.5;">Enter your assigned alias above and tap<br/><strong>Load Inbox (Recover)</strong> to get started.</p>
+        </div>
+      </div>
+
+      <!-- Security Tips Rotator -->
+      <div style="width:100%;margin-top:16px;border-top:1px solid var(--border);padding:14px 20px 18px;position:relative;min-height:72px;">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">Security Tip</span>
+          <span id="tipCounter" style="font-size:0.6rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-left:auto;">1 / 15</span>
+        </div>
+        <div id="securityTipsWrap" style="position:relative;overflow:hidden;">
+          <p id="secTipText" style="font-size:0.8rem;color:var(--text-dim);line-height:1.55;margin:0;transition:opacity 0.4s ease,transform 0.4s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></p>
+        </div>
+        <!-- Progress dots -->
+        <div id="tipDots" style="display:flex;gap:5px;margin-top:10px;justify-content:center;"></div>
+      </div>
     </div>
 
     <div id="emptyState" style="display:none;"></div>
@@ -5169,6 +5194,114 @@
   </div>
 </div>
 
+
+
+<script>
+  /* ─────────────────────────────────────────────────────────
+     LOTTIE ANIMATION + SECURITY TIPS ROTATOR
+     Initialised once the page is ready.
+  ───────────────────────────────────────────────────────── */
+  (function() {
+    var TIPS = [
+      "Once you recover an alias, no one else can recover it — you become the sole owner.",
+      "Alias ownership is tied to your browser fingerprint, not your account or IP address.",
+      "Your alias stays locked to you until you explicitly transfer or release ownership.",
+      "To give access to someone else, use the Transfer Ownership option and share the PIN.",
+      "Ownership transfer requires a 4-digit PIN — keep it private and don't share it publicly.",
+      "You can release an alias without a PIN if you want to make it claimable by anyone.",
+      "Once transferred, the previous owner loses all access — ownership is non-reversible.",
+      "Each alias has exactly one owner at a time — there is no shared or joint ownership.",
+      "If you lose access to your device, recover your alias from the new device using the alias address.",
+      "Recovering from a new device re-links ownership to your new browser fingerprint automatically.",
+      "Aliases are permanent — they don't expire as long as the system is active.",
+      "Emails sent to your alias arrive in real-time — no refresh needed when live-sync is on.",
+      "OTP codes detected in emails are highlighted and can be copied with a single tap.",
+      "The inbox is private — only the current alias owner can view incoming emails.",
+      "Use the alias exclusively — sharing it publicly may risk unwanted ownership claims."
+    ];
+
+    var _tipIdx = 0;
+    var _tipTimer = null;
+    var _lottieInited = false;
+
+    function initRecoveryPanel() {
+      // Only init once the panel is visible (in DOM)
+      var panel = document.getElementById('noAliasState');
+      if (!panel) return;
+
+      // ── Lottie ───────────────────────────────────────────
+      var lottieContainer = document.getElementById('recoveryLottie');
+      if (lottieContainer && !_lottieInited && typeof lottie !== 'undefined') {
+        _lottieInited = true;
+        lottie.loadAnimation({
+          container: lottieContainer,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          path: '/lottie/ai animation Flow 1.json'
+        });
+      }
+
+      // ── Dots ─────────────────────────────────────────────
+      var dotsEl = document.getElementById('tipDots');
+      if (dotsEl && dotsEl.children.length === 0) {
+        for (var i = 0; i < TIPS.length; i++) {
+          var d = document.createElement('span');
+          d.style.cssText = 'display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--border-strong);transition:background 0.3s,transform 0.3s;flex-shrink:0;';
+          d.dataset.idx = i;
+          dotsEl.appendChild(d);
+        }
+      }
+
+      // ── Tips ─────────────────────────────────────────────
+      renderTip(_tipIdx);
+      if (_tipTimer) clearInterval(_tipTimer);
+      _tipTimer = setInterval(function() {
+        _tipIdx = (_tipIdx + 1) % TIPS.length;
+        renderTip(_tipIdx);
+      }, 5000);
+    }
+
+    function renderTip(idx) {
+      var textEl = document.getElementById('secTipText');
+      var counterEl = document.getElementById('tipCounter');
+      var dotsEl = document.getElementById('tipDots');
+      if (!textEl) return;
+
+      // Fade-out
+      textEl.style.opacity = '0';
+      textEl.style.transform = 'translateY(6px)';
+
+      setTimeout(function() {
+        textEl.textContent = TIPS[idx];
+        textEl.style.opacity = '1';
+        textEl.style.transform = 'translateY(0)';
+        if (counterEl) counterEl.textContent = (idx + 1) + ' / ' + TIPS.length;
+        // Update dots
+        if (dotsEl) {
+          var dots = dotsEl.children;
+          for (var i = 0; i < dots.length; i++) {
+            if (i === idx) {
+              dots[i].style.background = 'var(--accent)';
+              dots[i].style.transform = 'scale(1.4)';
+            } else {
+              dots[i].style.background = 'var(--border-strong)';
+              dots[i].style.transform = 'scale(1)';
+            }
+          }
+        }
+      }, 220);
+    }
+
+    // Init when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initRecoveryPanel);
+    } else {
+      // Small timeout to allow lottie-web CDN script to fully execute
+      setTimeout(initRecoveryPanel, 100);
+    }
+  })();
+</script>
 
 </body>
 </html>
