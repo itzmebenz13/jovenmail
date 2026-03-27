@@ -38,23 +38,23 @@
     --border: #e4e4e7;
     --border-strong: #d4d4d8;
     
-    --accent: #d9f950;       /* Meiro Tea Green */
-    --accent-hover: #c4ec2a;
-    --accent-text: #09090b;
-    --code-text: #3d7a00;    /* Dark green for code in light mode */
+    --accent: #16a34a;       /* Forest green — readable on white */
+    --accent-hover: #15803d;
+    --accent-text: #ffffff;  /* White text on green button */
+    --code-text: #15803d;    /* Dark green for code in light mode */
     
     --text-main: #09090b;
     --text-dim: #71717a;
     --text-muted: #a1a1aa;
     
     --shadow-card: 0 2px 8px -2px rgba(0,0,0,0.05);
-    --radius-btn: 10px;      /* Smooth square buttons */
+    --radius-btn: 10px;
     --radius-card: 14px;
     --radius-input: 10px;
   }
 
   [data-theme="dark"] {
-    /* -- DARK MODE (Meiro Aesthetic) -- */
+    /* -- DARK MODE -- */
     --bg-app: #09090b;       /* Very deep background */
     --bg-card: #111113;      /* Card surface — slightly richer */
     --bg-input: #0e0e10;     /* Input background */
@@ -63,10 +63,10 @@
     --border: #232326;
     --border-strong: #3a3a40;
     
-    --accent: #d9f950;       /* Meiro Tea Green */
-    --accent-hover: #bef222;
-    --accent-text: #09090b;
-    --code-text: #d9f950;    /* Lime green for code in dark mode */
+    --accent: #22c55e;       /* Pure green — readable in dark mode */
+    --accent-hover: #16a34a;
+    --accent-text: #ffffff;  /* White text on green button */
+    --code-text: #22c55e;    /* Pure green for code in dark mode */
     
     --text-main: #f5f5f5;
     --text-dim: #a1a1aa;
@@ -77,6 +77,62 @@
     --radius-card: 14px;
     --radius-input: 10px;
   }
+
+  /* ─── Light mode: override hardcoded lime rgba glows with forest-green equivalents ─── */
+  :root .btn-primary:hover,
+  [data-theme="light"] .btn-primary:hover {
+    box-shadow: 0 4px 12px rgba(22,163,74,0.28) !important;
+  }
+  [data-theme="light"] .alias-field.has-alias {
+    border-color: rgba(22,163,74,0.35) !important;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.09) !important;
+  }
+  [data-theme="light"] .owner-badge {
+    background: rgba(22,163,74,0.12) !important;
+    border-color: rgba(22,163,74,0.35) !important;
+    color: #15803d !important;
+  }
+  [data-theme="light"] #ownerAliasBadge {
+    background: rgba(22,163,74,0.1) !important;
+    border-color: rgba(22,163,74,0.3) !important;
+    color: #15803d !important;
+  }
+  [data-theme="light"] .owner-action-btn.ql-btn {
+    border-color: rgba(22,163,74,0.3) !important;
+    background: rgba(22,163,74,0.07) !important;
+    color: #15803d !important;
+  }
+  [data-theme="light"] .owner-action-btn.ql-btn .oab-icon {
+    background: rgba(22,163,74,0.14) !important;
+  }
+  [data-theme="light"] .owner-action-btn.ql-btn:hover {
+    background: rgba(22,163,74,0.14) !important;
+    border-color: rgba(22,163,74,0.55) !important;
+    box-shadow: 0 5px 16px rgba(22,163,74,0.18) !important;
+  }
+  [data-theme="light"] #viewerBanner {
+    background: rgba(22,163,74,0.07) !important;
+    border-color: rgba(22,163,74,0.25) !important;
+  }
+  [data-theme="light"] .viewer-label { color: #15803d !important; }
+  [data-theme="light"] .sync-dot { background: #16a34a !important; }
+  [data-theme="light"] .ql-mode-btn.active {
+    border-color: #16a34a !important;
+    background: rgba(22,163,74,0.08) !important;
+    color: #15803d !important;
+  }
+  [data-theme="light"] .ql-loader-icon {
+    background: rgba(22,163,74,0.1) !important;
+    border-color: rgba(22,163,74,0.28) !important;
+    animation: qlPulseLM 1.6s ease-in-out infinite !important;
+  }
+  @keyframes qlPulseLM {
+    0%,100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.3); }
+    50%      { box-shadow: 0 0 0 14px rgba(22,163,74,0); }
+  }
+  [data-theme="light"] .ql-loader-dots span { background: #16a34a !important; }
+  [data-theme="light"] .adm-logo-dot { background: #16a34a !important; }
+  [data-theme="light"] .adm-stat .adm-val.accent { color: #16a34a !important; }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   
@@ -178,9 +234,18 @@
   .sync-status { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;}
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse-green 2s infinite; }
   @keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(217, 249, 80, 0.4); }
-    70% { box-shadow: 0 0 0 4px rgba(217, 249, 80, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(217, 249, 80, 0); }
+    0%   { box-shadow: 0 0 0 0   rgba(34, 197, 94, 0.4); }
+    70%  { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0   rgba(34, 197, 94, 0); }
+  }
+  @keyframes pulse-green-light {
+    0%   { box-shadow: 0 0 0 0   rgba(22, 163, 74, 0.45); }
+    70%  { box-shadow: 0 0 0 4px rgba(22, 163, 74, 0); }
+    100% { box-shadow: 0 0 0 0   rgba(22, 163, 74, 0); }
+  }
+  [data-theme="light"] .sync-dot,
+  [data-theme="light"] .adm-logo-dot {
+    animation: pulse-green-light 2s infinite !important;
   }
 
   /* Alias Display Field */
@@ -210,7 +275,7 @@
     transition: all 0.18s ease; border: none; outline: none; white-space: nowrap;
   }
   .btn-primary { background: var(--accent); color: var(--accent-text); }
-  .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(217,249,80,0.25); }
+  .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.25); }
   
   .btn-outline { background: transparent; border: 1px solid var(--border-strong); color: var(--text-main); }
   .btn-outline:hover { background: var(--bg-hover); border-color: var(--border-strong); }
@@ -229,7 +294,7 @@
     border-radius: var(--radius-input); padding: 10px 14px; font-family: 'JetBrains Mono', monospace;
     font-size: 0.85rem; color: var(--text-main); outline: none; transition: border-color 0.2s;
   }
-  .input-minimal:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(217,249,80,0.08); }
+  .input-minimal:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,197,94,0.08); }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
   /* -- INBOX -- */
@@ -255,7 +320,7 @@
     border-radius: 8px; font-size: 0.78rem; font-weight: 500; font-family: 'Inter', sans-serif;
     transition: all 0.2s; white-space: nowrap;
   }
-  .btn-refresh:hover { color: var(--accent); border-color: var(--accent); background: rgba(217,249,80,0.05); }
+  .btn-refresh:hover { color: var(--accent); border-color: var(--accent); background: rgba(34,197,94,0.05); }
   .btn-refresh:active { transform: scale(0.95); }
   .btn-refresh.spinning svg { animation: spin 0.6s linear infinite; }
   .btn-refresh.spinning { pointer-events: none; color: var(--accent); border-color: var(--accent); }
@@ -306,7 +371,7 @@
   .email-item:hover { border-color: var(--border-strong); transform: translateY(-1px); box-shadow: 0 4px 12px -4px rgba(0,0,0,0.15); }
   
   .email-dot { width: 7px; height: 7px; border-radius: 50%; background: transparent; margin-top: 5px; flex-shrink: 0; }
-  .email-item.unread .email-dot { background: var(--accent); box-shadow: 0 0 6px rgba(217, 249, 80, 0.4); }
+  .email-item.unread .email-dot { background: var(--accent); box-shadow: 0 0 6px rgba(34, 197, 94, 0.4); }
   
   .email-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .email-sender { font-weight: 600; font-size: 0.9rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -316,12 +381,12 @@
   /* OTP chip on email list */
   .otp-chip {
     display: inline-flex; align-items: center; gap: 5px;
-    background: rgba(217,249,80,0.12); border: 1px solid rgba(217,249,80,0.3);
+    background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
     color: var(--code-text); border-radius: 6px; padding: 2px 8px;
     font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700;
     cursor: pointer; transition: all 0.15s; margin-top: 4px; width: fit-content;
   }
-  [data-theme="light"] .otp-chip { background: #d9f950; border-color: #b8d930; color: #1a2000; }
+  [data-theme="light"] .otp-chip { background: rgba(22,163,74,0.12); border-color: rgba(22,163,74,0.3); color: #15803d; }
   .otp-chip:hover { opacity: 0.85; transform: scale(1.03); }
   .otp-chip svg { flex-shrink: 0; }
 
@@ -336,9 +401,9 @@
     min-width: 280px;
     max-width: min(380px, calc(100vw - 32px));
     background: var(--bg-card);
-    border: 1px solid rgba(217,249,80,0.3);
+    border: 1px solid rgba(34,197,94,0.3);
     border-radius: 12px;
-    box-shadow: 0 4px 24px -4px rgba(0,0,0,0.4), 0 0 0 1px rgba(217,249,80,0.06);
+    box-shadow: 0 4px 24px -4px rgba(0,0,0,0.4), 0 0 0 1px rgba(34,197,94,0.06);
     padding: 12px 14px 10px;
     opacity: 0;
     transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.25s ease;
@@ -385,7 +450,7 @@
     flex-shrink: 0;
   }
   .otp-notif-copy:hover { background: var(--accent-hover); }
-  .otp-notif-copy.copied { background: #4ade80; color: #000; }
+  .otp-notif-copy.copied { background: #16a34a; color: #ffffff; }
   .otp-notif-sender {
     font-size: 0.68rem; color: var(--text-muted); margin-top: 6px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -412,15 +477,15 @@
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
   @keyframes newEmailGlow {
-    0%   { box-shadow: 0 0 0 0 rgba(217,249,80,0.5); border-color: var(--accent); }
-    60%  { box-shadow: 0 0 16px 4px rgba(217,249,80,0.2); }
+    0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); border-color: var(--accent); }
+    60%  { box-shadow: 0 0 16px 4px rgba(34,197,94,0.2); }
     100% { box-shadow: none; border-color: var(--border); }
   }
 
   /* OTP banner inside modal */
   .otp-banner {
     display: flex; align-items: center; justify-content: space-between;
-    background: rgba(217,249,80,0.07); border: 1px solid rgba(217,249,80,0.25);
+    background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.25);
     border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; gap: 12px;
   }
   .otp-banner-left { display: flex; align-items: center; gap: 10px; }
@@ -428,7 +493,7 @@
   .otp-banner-code { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 800; color: #4a6000; letter-spacing: 0.15em; }
   [data-theme="dark"] .otp-banner-code { color: var(--accent); }
   .otp-copy-btn {
-    background: var(--accent); color: #000; border: none; border-radius: 8px;
+    background: var(--accent); color: var(--accent-text); border: none; border-radius: 8px;
     padding: 8px 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
     transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
   }
@@ -555,17 +620,17 @@
 
   #installBanner {
     display: none; align-items: center; justify-content: space-between;
-    gap: 12px; background: linear-gradient(135deg, rgba(217,249,80,0.07), rgba(217,249,80,0.02));
-    border: 1px solid rgba(217,249,80,0.2); border-radius: var(--radius-card);
+    gap: 12px; background: linear-gradient(135deg, rgba(34,197,94,0.07), rgba(34,197,94,0.02));
+    border: 1px solid rgba(34,197,94,0.2); border-radius: var(--radius-card);
     padding: 14px 16px; margin-bottom: 20px;
   }
   #installBanner.visible { display: flex; }
   .ib-left { display: flex; align-items: center; gap: 12px; }
-  .ib-icon { width: 36px; height: 36px; border-radius: 9px; background: rgba(217,249,80,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ib-icon { width: 36px; height: 36px; border-radius: 9px; background: rgba(34,197,94,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .ib-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
   .ib-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
   .ib-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .ib-btn { display: flex; align-items: center; gap: 5px; background: var(--accent); color: #111; border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.76rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+  .ib-btn { display: flex; align-items: center; gap: 5px; background: var(--accent); color: var(--accent-text); border: none; border-radius: 8px; padding: 7px 14px; font-size: 0.76rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
   .ib-btn:active { transform: scale(0.95); }
   .ib-dismiss { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; transition: color 0.15s; }
   .ib-dismiss:hover { color: var(--text-main); }
@@ -1295,7 +1360,99 @@
   }
   [data-theme="light"] .owner-badge { background: #d9f950; color: #1a2000; border-color: #b8d930; }
 
-  /* Transfer button */
+  /* ─── ANIMATIONS & MICRO-INTERACTIONS ─── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.75); }
+    70%  { transform: scale(1.06); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes aliasReveal {
+    from { opacity: 0; transform: translateX(-6px); filter: blur(4px); }
+    to   { opacity: 1; transform: translateX(0);   filter: blur(0); }
+  }
+  @keyframes ownerBarIn {
+    from { opacity: 0; transform: translateY(-8px) scaleY(0.93); }
+    to   { opacity: 1; transform: translateY(0) scaleY(1); }
+  }
+  @keyframes emailItemIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  /* Entrance animations */
+  .control-card  { animation: fadeSlideUp 0.42s cubic-bezier(0.16,1,0.3,1) both; }
+  .inbox-header  { animation: fadeSlideUp 0.42s 0.07s cubic-bezier(0.16,1,0.3,1) both; }
+  .hero          { animation: fadeSlideUp 0.42s 0.04s cubic-bezier(0.16,1,0.3,1) both; }
+  .alias-text.revealed { animation: aliasReveal 0.38s cubic-bezier(0.16,1,0.3,1) both; }
+  .alias-field.has-alias {
+    border-color: rgba(217,249,80,0.32);
+    box-shadow: 0 0 0 3px rgba(217,249,80,0.07);
+    transition: border-color 0.4s, box-shadow 0.4s;
+  }
+  /* Email list stagger */
+  .email-item { animation: emailItemIn 0.28s cubic-bezier(0.16,1,0.3,1) both; }
+  .email-item:nth-child(1) { animation-delay: 0.00s; }
+  .email-item:nth-child(2) { animation-delay: 0.04s; }
+  .email-item:nth-child(3) { animation-delay: 0.08s; }
+  .email-item:nth-child(4) { animation-delay: 0.11s; }
+  .email-item:nth-child(5) { animation-delay: 0.14s; }
+  .email-item:nth-child(n+6) { animation-delay: 0.16s; }
+  /* Press micro-interaction */
+  .btn-pill:active   { transform: scale(0.97) !important; }
+  .btn-primary:active { transform: scale(0.97) translateY(0) !important; }
+
+  /* ─── OWNER ACTION BAR ─── */
+  .owner-toprow {
+    display: flex; align-items: center; margin-bottom: 8px;
+    animation: ownerBarIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  .owner-actions {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px;
+    margin-bottom: 12px;
+    animation: ownerBarIn 0.35s 0.06s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  .owner-action-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; padding: 11px 6px;
+    border-radius: 11px; border: 1px solid var(--border);
+    background: var(--bg-input);
+    cursor: pointer; transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+    font-family: 'Inter', sans-serif; font-size: 0.69rem; font-weight: 700;
+    color: var(--text-dim); position: relative; overflow: hidden;
+    letter-spacing: 0.01em; text-transform: uppercase;
+  }
+  .owner-action-btn:hover { transform: translateY(-2px); }
+  .owner-action-btn:active { transform: scale(0.95) !important; }
+  .owner-action-btn svg { flex-shrink: 0; transition: transform 0.2s cubic-bezier(0.16,1,0.3,1); }
+  .owner-action-btn:hover svg { transform: scale(1.15); }
+  /* Icon bubble */
+  .oab-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s;
+  }
+  /* QuickLink — accent lime */
+  .owner-action-btn.ql-btn { border-color: rgba(217,249,80,0.28); color: var(--accent); background: rgba(217,249,80,0.06); }
+  .owner-action-btn.ql-btn .oab-icon { background: rgba(217,249,80,0.13); }
+  .owner-action-btn.ql-btn:hover { background: rgba(217,249,80,0.12); border-color: rgba(217,249,80,0.5); box-shadow: 0 5px 16px rgba(217,249,80,0.14); }
+  /* Save Link — sky blue */
+  .owner-action-btn.save-btn { border-color: rgba(96,165,250,0.25); color: #60a5fa; background: rgba(96,165,250,0.05); }
+  .owner-action-btn.save-btn .oab-icon { background: rgba(96,165,250,0.12); }
+  .owner-action-btn.save-btn:hover { background: rgba(96,165,250,0.11); border-color: rgba(96,165,250,0.45); box-shadow: 0 5px 16px rgba(96,165,250,0.12); }
+  /* Transfer — warning orange */
+  .owner-action-btn.transfer-btn { border-color: rgba(251,146,60,0.25); color: #fb923c; background: rgba(251,146,60,0.05); }
+  .owner-action-btn.transfer-btn .oab-icon { background: rgba(251,146,60,0.12); }
+  .owner-action-btn.transfer-btn:hover { background: rgba(251,146,60,0.11); border-color: rgba(251,146,60,0.45); box-shadow: 0 5px 16px rgba(251,146,60,0.12); }
+  /* Viewer banner slide-in */
+  #viewerBanner.visible { animation: fadeSlideDown 0.32s cubic-bezier(0.16,1,0.3,1) both; }
+  /* Keep legacy btn-transfer for modal buttons */
   .btn-transfer {
     display: flex; align-items: center; gap: 6px;
     background: transparent; border: 1px solid var(--border-strong);
@@ -1525,7 +1682,7 @@
   <main>
     <section class="hero">
       <h1>One Gmail. Infinite Aliases.</h1>
-      <p>Instantly generate temporary dot-variants. Messages route directly to your real inbox, keeping your actual address hidden.</p>
+      <p>Recover your assigned Gmail alias and access its inbox privately. Your alias, your messages — secure and isolated.</p>
     </section>
 
     <!-- PWA Install Banner -->
@@ -1558,28 +1715,35 @@
         </div>
       </div>
 
-      <div class="alias-field">
+      <div class="alias-field" id="aliasField">
         <div class="alias-text" id="aliasDisplay">—</div>
+        <span class="owner-badge" id="ownerAliasBadge" style="display:none;flex-shrink:0;margin-left:8px;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Yours
+        </span>
       </div>
 
-      <!-- Ownership badge — shown when this session owns the alias -->
-      <div id="ownershipBar" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
-        <span class="owner-badge">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          You own this alias
-        </span>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <button class="btn-transfer" onclick="openQuickLinkModal()" title="Share inbox access via QuickLink" style="background:rgba(217,249,80,0.08);border-color:rgba(217,249,80,0.3);color:var(--accent);font-size:0.72rem;padding:5px 10px;" id="quickLinkBtn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            QuickLink
+      <!-- Ownership action bar -->
+      <div id="ownershipBar" style="display:none;">
+        <!-- 3-button action grid -->
+        <div class="owner-actions">
+          <button class="owner-action-btn ql-btn" id="quickLinkBtn" onclick="openQuickLinkModal()" title="Share inbox access via QuickLink">
+            <div class="oab-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </div>
+            <span class="oab-label">QuickLink</span>
           </button>
-          <button class="btn-transfer" onclick="copySessionLink()" title="Generate a restore link to open this session in any browser" style="background:rgba(217,249,80,0.10);border-color:rgba(217,249,80,0.3);color:var(--accent);font-size:0.72rem;padding:5px 10px;" id="sessionLinkBtn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            Save link
+          <button class="owner-action-btn save-btn" id="sessionLinkBtn" onclick="copySessionLink()" title="Generate a restore link to open this session in any browser">
+            <div class="oab-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <span class="oab-label">Save Link</span>
           </button>
-          <button class="btn-transfer" onclick="openTransferModal()" title="Transfer ownership to another user">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-            Transfer Access
+          <button class="owner-action-btn transfer-btn" onclick="openTransferModal()" title="Transfer ownership to another user">
+            <div class="oab-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            </div>
+            <span class="oab-label">Transfer</span>
           </button>
         </div>
       </div>
@@ -1678,8 +1842,8 @@
 
     <!-- Latest Code Bar -->
     <div id="latestCodeBar" style="display:none;margin-bottom:12px;border-radius:10px;overflow:hidden;">
-      <div style="display:flex;align-items:center;gap:10px;background:rgba(217,249,80,0.06);border:1px solid rgba(217,249,80,0.2);border-radius:10px;padding:8px 12px;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a3c900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:8px 12px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>
         <div style="flex:1;min-width:0;">
           <span style="font-size:0.67rem;color:var(--text-muted);">Your latest code &mdash; tap to copy</span>
           <div style="display:flex;align-items:center;gap:6px;margin-top:1px;">
@@ -1687,7 +1851,7 @@
             <span id="latestCodeSender" style="font-size:0.67rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;"></span>
           </div>
         </div>
-        <button id="latestCodeCopyBtn" onclick="copyLatestCode()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:var(--accent);color:#111;border:none;border-radius:7px;padding:5px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all 0.15s;font-family:'Inter',sans-serif;">
+        <button id="latestCodeCopyBtn" onclick="copyLatestCode()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:var(--accent);color:var(--accent-text);border:none;border-radius:7px;padding:5px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all 0.15s;font-family:'Inter',sans-serif;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           Copy
         </button>
@@ -1943,7 +2107,15 @@
 
   function setAlias(alias) {
     currentAlias = alias;
-    document.getElementById('aliasDisplay').textContent = alias;
+    var aliasEl = document.getElementById('aliasDisplay');
+    aliasEl.textContent = alias;
+    // Trigger pop-in animation
+    aliasEl.classList.remove('revealed');
+    void aliasEl.offsetWidth; // force reflow
+    aliasEl.classList.add('revealed');
+    // Glow the alias field
+    var fieldEl = aliasEl.closest('.alias-field');
+    if (fieldEl) fieldEl.classList.add('has-alias');
     localStorage.setItem(STORAGE_KEY, alias);
     addToHistory(alias); // track across sessions
 
@@ -3179,10 +3351,21 @@
     return 'taken';
   }
 
-  /* ── Show / hide ownership bar ── */
   function showOwnershipBar(show) {
     var bar = document.getElementById('ownershipBar');
-    if (bar) bar.style.display = show ? 'flex' : 'none';
+    if (bar) bar.style.display = show ? 'block' : 'none';
+    // Toggle the inline "Yours" badge inside the alias field
+    var badge = document.getElementById('ownerAliasBadge');
+    if (badge) {
+      if (show) {
+        badge.style.display = 'inline-flex';
+        badge.style.animation = 'none';
+        void badge.offsetWidth;
+        badge.style.animation = 'popIn 0.32s cubic-bezier(0.16,1,0.3,1) both';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
   }
 
   function showEmailTaken(show) {
