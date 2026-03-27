@@ -3128,6 +3128,13 @@
     const pass = document.getElementById('loginPass').value;
     if (!pass) { showToast('Please enter password'); return; }
     if (pass === 'JM-2026') {
+      // Store the entered password as ADMIN_SECRET for server API calls.
+      // This must match the ADMIN_SECRET environment variable set on the server.
+      if (typeof ADMIN_SECRET !== 'undefined') {
+        // ADMIN_SECRET is declared in the admin panel script block;
+        // we'll set it on the window object so handleLogin (earlier in the page) can reach it.
+      }
+      window._adminSecret = pass;
       closeLoginModal();
       document.getElementById('loginPass').value = '';
       openAdminPanel();
@@ -4098,6 +4105,217 @@
   var ADM_PAGE_SIZE   = 50;
   var _admSb          = null;
 
+  // Admin API secret — set to whatever was entered as the login password.
+  // This must match the ADMIN_SECRET environment variable on the Railway server.
+  // At login time, window._adminSecret is set; we read it here via a getter.
+  var ADMIN_SECRET = (function() { return window._adminSecret || 'JM-2026'; })();
+  // Refresh getter — called lazily just before each API request so
+  // the value is always up to date even if the admin panel opens
+  // before window._adminSecret is set.
+  function getAdminSecret() { return window._adminSecret || ADMIN_SECRET; }
+
+  // ── SECTION SWITCHER ──
+  function admSwitchSection(name) {
+    // Update nav button active state
+    document.querySelectorAll('.adm-nav-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.section === name);
+    });
+    // Show/hide sections
+    var emailSec = document.getElementById('admSectionEmails');
+    var fraudSec = document.getElementById('admSectionFraud');
+    if (emailSec) emailSec.style.display = name === 'emails' ? '' : 'none';
+    if (fraudSec) fraudSec.style.display = name === 'fraud'  ? '' : 'none';
+    // Auto-load data for the selected section
+    if (name === 'fraud') admLoadFraud();
+  }
+
+  // ── CLEAR SEARCH ──
+  function admClearSearch() {
+    document.getElementById('admSearch').value = '';
+    _admSearch = '';
+    _admPage   = 1;
+    admApplyFilter();
+  }
+
+  // ── HONEYPOT TOGGLE ──
+  async function admToggleHoneypot(email, currentlyHp) {
+    var newVal = !currentlyHp;
+    try {
+      var r = await fetch(RAILWAY_URL + '/api/admin/set-honeypot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+        body: JSON.stringify({ email: email, honeypot: newVal })
+      });
+      var data = await r.json();
+      if (!data.ok) throw new Error(data.error || 'Server error');
+      showToast(newVal ? '🪤 Trap set for ' + email : '✓ Trap removed from ' + email);
+      await admLoadEmails(false);
+    } catch(e) {
+      showToast('Error: ' + e.message);
+    }
+  }
+
+  // ── FRAUD DETECTOR ──
+  var _fraudPage    = 1;
+  var _fraudRows    = [];
+  var FRAUD_PAGE_SIZE = 25;
+
+  async function admLoadFraud() {
+    var list = document.getElementById('fraudList');
+    if (!list) return;
+    list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading fraud data…</div>';
+    document.getElementById('fraudStatPerm').textContent   = '—';
+    document.getElementById('fraudStatActive').textContent = '—';
+    document.getElementById('fraudStatWarned').textContent = '—';
+
+    try {
+      var r = await fetch(RAILWAY_URL + '/api/admin/fraud-log?limit=500&offset=0', {
+        headers: { 'x-admin-secret': getAdminSecret() }
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' — check ADMIN_SECRET in .env');
+      var data = await r.json();
+      if (!data.ok) throw new Error(data.error || 'Unknown error');
+
+      _fraudRows = data.rows || [];
+      _fraudPage = 1;
+
+      // Update stats
+      var s = data.stats || {};
+      document.getElementById('fraudStatPerm').textContent   = s.permanent    || 0;
+      document.getElementById('fraudStatActive').textContent = s.activeBlocks || 0;
+      document.getElementById('fraudStatWarned').textContent = s.warned       || 0;
+
+      admRenderFraudPage();
+    } catch(e) {
+      list.innerHTML = '<div class="adm-empty" style="color:#f87171">Error: ' + escHtml(e.message) + '</div>';
+      showToast('Fraud load failed: ' + e.message);
+    }
+  }
+
+  function admRenderFraudPage() {
+    var list  = document.getElementById('fraudList');
+    var pag   = document.getElementById('fraudPag');
+    var start = (_fraudPage - 1) * FRAUD_PAGE_SIZE;
+    var slice = _fraudRows.slice(start, start + FRAUD_PAGE_SIZE);
+    var total = Math.ceil(_fraudRows.length / FRAUD_PAGE_SIZE);
+
+    if (!slice.length) {
+      list.innerHTML = '<div class="fraud-empty">No fraud records found. Clean slate! 🎉</div>';
+      if (pag) pag.innerHTML = '';
+      return;
+    }
+
+    var now = new Date();
+    var rows = slice.map(function(row) {
+      var isIp   = row.fingerprint && row.fingerprint.startsWith('ip:');
+      var isPerm = !!row.permanent;
+      var isBlocked = !isPerm && row.blocked_until && new Date(row.blocked_until) > now;
+      var isWarned  = !isPerm && !isBlocked && (row.attempts || 0) >= 1;
+      var statusChip = isPerm
+        ? '<span class="fraud-chip permanent">⛔ Permanent</span>'
+        : isBlocked
+          ? '<span class="fraud-chip blocked">🔴 Blocked</span>'
+          : isWarned
+            ? '<span class="fraud-chip warned">⚠️ Warned</span>'
+            : '<span class="fraud-chip clean">Clean</span>';
+
+      var typeChip = isIp ? '<span class="fraud-chip ip">IP</span> ' : '';
+
+      var fp = row.fingerprint || '';
+      var fpShort = fp.length > 20 ? fp.slice(0, 8) + '…' + fp.slice(-6) : fp;
+
+      var blockedUntilStr = '';
+      if (row.blocked_until) {
+        var d = new Date(row.blocked_until);
+        blockedUntilStr = isBlocked
+          ? '<br/><span style="font-size:0.65rem;color:var(--text-muted);">until ' + d.toLocaleString() + '</span>'
+          : '';
+      }
+
+      var lastAttempt = row.last_attempt
+        ? new Date(row.last_attempt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : '—';
+
+      // Ban/Unban actions
+      var banAction = isPerm
+        ? '<button class="fraud-unban-btn" onclick="admFraudUnban(\'' + escHtml(fp) + '\')">✓ Unban</button>'
+        : '<button class="fraud-ban-btn" onclick="admFraudBan(\'' + escHtml(fp) + '\')">⛔ Ban</button>';
+
+      return '<tr>' +
+        '<td><div class="fraud-fp" title="' + escHtml(fp) + '">' + typeChip + escHtml(fpShort) + '</div></td>' +
+        '<td>' + statusChip + blockedUntilStr + '</td>' +
+        '<td style="font-family:\'JetBrains Mono\',monospace;font-size:0.8rem;">' + (row.attempts || 0) + '</td>' +
+        '<td style="font-size:0.72rem;color:var(--text-muted);">' + lastAttempt + '</td>' +
+        '<td><div class="fraud-actions">' + banAction + '</div></td>' +
+        '</tr>';
+    }).join('');
+
+    list.innerHTML =
+      '<div class="fraud-table-wrap">' +
+        '<table class="fraud-table">' +
+          '<thead><tr>' +
+            '<th>Fingerprint</th>' +
+            '<th>Status</th>' +
+            '<th>Attempts</th>' +
+            '<th>Last Activity</th>' +
+            '<th>Actions</th>' +
+          '</tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+      '</div>';
+
+    // Pagination
+    if (pag) {
+      if (total <= 1) { pag.innerHTML = ''; return; }
+      pag.innerHTML =
+        '<button class="btn-pill btn-outline btn-sm" onclick="admFraudGoPage(' + (_fraudPage-1) + ')" ' +
+          (_fraudPage===1 ? 'disabled' : '') + ' style="padding:5px 10px;font-size:0.78rem;">←</button>' +
+        '<span class="adm-page-info">' + _fraudPage + ' / ' + total + ' · ' + _fraudRows.length + ' records</span>' +
+        '<button class="btn-pill btn-outline btn-sm" onclick="admFraudGoPage(' + (_fraudPage+1) + ')" ' +
+          (_fraudPage===total ? 'disabled' : '') + ' style="padding:5px 10px;font-size:0.78rem;">→</button>';
+    }
+  }
+
+  function admFraudGoPage(n) {
+    var total = Math.ceil(_fraudRows.length / FRAUD_PAGE_SIZE);
+    _fraudPage = Math.max(1, Math.min(n, total));
+    admRenderFraudPage();
+  }
+
+  async function admFraudBan(fp) {
+    if (!confirm('Permanently ban fingerprint: ' + fp.slice(0, 16) + '…?')) return;
+    try {
+      var r = await fetch(RAILWAY_URL + '/api/admin/fraud-ban', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+        body: JSON.stringify({ fingerprint: fp })
+      });
+      var data = await r.json();
+      if (!data.ok) throw new Error(data.error || 'Failed');
+      showToast('⛔ Permanently banned');
+      await admLoadFraud();
+    } catch(e) {
+      showToast('Ban failed: ' + e.message);
+    }
+  }
+
+  async function admFraudUnban(fp) {
+    if (!confirm('Clear all blocks for: ' + fp.slice(0, 16) + '…?')) return;
+    try {
+      var r = await fetch(RAILWAY_URL + '/api/admin/fraud-unban', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+        body: JSON.stringify({ fingerprint: fp })
+      });
+      var data = await r.json();
+      if (!data.ok) throw new Error(data.error || 'Failed');
+      showToast('✓ Block cleared');
+      await admLoadFraud();
+    } catch(e) {
+      showToast('Unban failed: ' + e.message);
+    }
+  }
+
   function openAdminPanel() {
     if (!_admSb) _admSb = sb; // reuse existing supabase client
     document.getElementById('adminOverlay').classList.add('open');
@@ -4118,10 +4336,14 @@
     document.getElementById('adminOverlay').classList.remove('open');
   }
 
-  // ── TABS ──
+  // ── TABS (manual vs upload within the email-adding card) ──
   function admSwitchTab(name) {
-    document.querySelectorAll('.adm-tab').forEach(function(t,i){
-      t.classList.toggle('active', (i===0&&name==='manual')||(i===1&&name==='upload'));
+    // Only target tabs within the add-emails card (excludes section nav buttons)
+    var card = document.getElementById('admSectionEmails');
+    if (!card) return;
+    var tabs = card.querySelectorAll('.adm-card .adm-tab:not(.adm-nav-btn)');
+    tabs.forEach(function(t, i) {
+      t.classList.toggle('active', (i===0 && name==='manual') || (i===1 && name==='upload'));
     });
     document.getElementById('admTabManual').classList.toggle('active', name==='manual');
     document.getElementById('admTabUpload').classList.toggle('active', name==='upload');
