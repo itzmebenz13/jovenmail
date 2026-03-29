@@ -3,7 +3,7 @@ const cron     = require('node-cron');
 const crypto   = require('crypto');
 const bcrypt   = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
-const { getAuthUrl, saveToken, fetchEmails, registerWatch } = require('./gmail');
+const { getAuthUrl, saveToken, fetchEmails, registerWatch, scheduleFetch } = require('./gmail');
 require('dotenv').config();
 
 const app = express();
@@ -299,13 +299,15 @@ app.post('/gmail/push', async (req, res) => {
   try {
     const data = req.body?.message?.data;
     if (!data) return;
-    const emails = await fetchEmails(10);
-    if (!emails.length) return;
-    const { error } = await supabase
-      .from('emails')
-      .upsert(emails, { onConflict: 'gmail_id', ignoreDuplicates: true });
-    if (error) console.error('Supabase upsert error:', JSON.stringify(error));
-    else console.log(`[PUSH] Synced ${emails.length} email(s)`);
+    console.log('Gmail push received — scheduling debounced fetch');
+    scheduleFetch(async function(emails) {
+      if (!emails || !emails.length) return;
+      const { error } = await supabase
+        .from('emails')
+        .upsert(emails, { onConflict: 'gmail_id', ignoreDuplicates: true });
+      if (error) console.error('Supabase upsert error:', JSON.stringify(error));
+      else console.log('[PUSH] Synced ' + emails.length + ' email(s)');
+    });
   } catch (e) {
     console.error('Push handler error:', e.message);
   }

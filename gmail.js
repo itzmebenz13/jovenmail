@@ -22,6 +22,37 @@ const oAuth2Client = new google.auth.OAuth2(
   client_id, client_secret, redirectUri
 );
 
+// ── Supabase client (for persisting fetch state) ──
+const { createClient } = require('@supabase/supabase-js');
+const _sb = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+// ── Persist/restore lastFetchTime from Supabase ──
+async function saveLastFetchTime(ts) {
+  try {
+    await _sb.from('system_state').upsert(
+      { key: 'last_fetch_time', value: String(ts) },
+      { onConflict: 'key' }
+    );
+  } catch(e) {
+    console.error('saveLastFetchTime error:', e.message);
+  }
+}
+
+async function loadLastFetchTime() {
+  try {
+    const { data } = await _sb.from('system_state').select('value').eq('key', 'last_fetch_time').single();
+    if (data && data.value) {
+      _lastFetchTime = parseInt(data.value, 10);
+      console.log('Restored lastFetchTime:', new Date(_lastFetchTime).toISOString());
+    }
+  } catch(e) {
+    console.log('No saved lastFetchTime — will fetch recent emails on first run');
+  }
+}
+
 // ── Load token from env var (Railway) or file (local) ──
 function loadToken() {
   if (process.env.TOKEN_JSON) {
@@ -44,6 +75,7 @@ function loadToken() {
 }
 
 loadToken();
+loadLastFetchTime();
 
 function getAuthUrl() {
   return oAuth2Client.generateAuthUrl({
@@ -69,32 +101,126 @@ function normalizeGmail(address) {
   return user.replace(/\./g, '') + '@' + domain;
 }
 
-var _rateLimitedUntil = 0;
+// ── Last fetch timestamp — only fetch emails newer than this ──
+var _lastFetchTime = null;
 
-async function fetchEmails(maxResults = 30) {
-  // If we're rate limited, skip until cooldown expires
-  if (Date.now() < _rateLimitedUntil) {
-    console.log('Rate limit cooldown active, skipping fetch');
-    return [];
-  }
+// ── Debounce + Exponential Backoff ──
+var _fetchTimer    = null;
+var _fetchRetries  = 0;
+var _maxRetries    = 5;
+var _baseDelay     = 3000;
+var _isFetching    = false;
+var _pendingCb     = null;
+
+function scheduleFetch(callback) {
+  if (callback) _pendingCb = callback;
+  if (_fetchTimer) clearTimeout(_fetchTimer);
+  var delay = Math.min(_baseDelay * Math.pow(2, _fetchRetries), 60000);
+  console.log('Fetch scheduled in ' + (delay / 1000) + 's');
+  _fetchTimer = setTimeout(async function() {
+    _fetchTimer = null;
+    if (_isFetching) { scheduleFetch(null); return; }
+    _isFetching = true;
+    try {
+      const emails = await fetchEmails(20);
+      _fetchRetries = 0;
+      _isFetching = false;
+      if (_pendingCb && emails.length > 0) {
+        var cb = _pendingCb;
+        _pendingCb = null;
+        await cb(emails);
+      }
+    } catch(e) {
+      _isFetching = false;
+      if (e.message && (
+        e.message.includes('rate limit') ||
+        e.message.includes('Rate Limit') ||
+        e.message.includes('429') ||
+        e.message.includes('User Rate Limit')
+      )) {
+        _fetchRetries = Math.min(_fetchRetries + 1, _maxRetries);
+        console.log('Rate limited — backoff retry #' + _fetchRetries);
+        scheduleFetch(null);
+      } else {
+        console.error('Fetch error:', e.message);
+        _fetchRetries = 0;
+      }
+    }
+  }, delay);
+}
+
+
+// ── OTP/Verification Email Filter ──
+// Only saves emails that look like OTP or verification emails
+// Discards promotions, order confirmations, newsletters, etc.
+const OTP_SUBJECT_KEYWORDS = [
+  'verif', 'otp', 'one-time', 'one time', 'passcode', 'pass code',
+  'security code', 'confirmation code', 'auth code', 'authentication',
+  'login code', 'sign in code', 'access code', '2fa', 'two-factor',
+  'your code', 'enter code', 'your pin', 'temporary', 'activate',
+  'validate', 'validation'
+];
+
+const PROMO_SUBJECT_KEYWORDS = [
+  'sale', 'off', 'discount', 'promo', 'deal', 'offer', 'coupon',
+  'shop', 'order', 'shipped', 'delivered', 'invoice', 'receipt',
+  'newsletter', 'unsubscribe', 'subscription', 'welcome', 'thank you',
+  'thanks for', 'update', 'news', 'announcement', 'invitation',
+  'reminder', 'notification', 'alert', 'bill', 'payment', 'refund',
+  'reward', 'points', 'voucher', 'flash', 'limited time', 'exclusive',
+  'member', 'account created', 'successfully', 'tracking'
+];
+
+// Regex to detect short numeric codes (4-8 digits) in body
+const OTP_CODE_REGEX = /\d{4,8}/;
+
+function isOTPEmail(subject, body) {
+  const subjectLower = (subject || '').toLowerCase();
+  const bodyLower   = (body || '').toLowerCase().slice(0, 1000); // only check first 1000 chars
+
+  // If subject matches a promo keyword and NOT an OTP keyword — skip it
+  const hasPromoKeyword = PROMO_SUBJECT_KEYWORDS.some(k => subjectLower.includes(k));
+  const hasOTPKeyword   = OTP_SUBJECT_KEYWORDS.some(k => subjectLower.includes(k));
+  const hasOTPCode      = OTP_CODE_REGEX.test(body || '');
+
+  // Definitely OTP if subject has OTP keyword
+  if (hasOTPKeyword) return true;
+
+  // Has a numeric code in body — likely OTP even without keyword in subject
+  if (hasOTPCode && !hasPromoKeyword) return true;
+
+  // Promo with no OTP signal — skip
+  if (hasPromoKeyword && !hasOTPKeyword && !hasOTPCode) return false;
+
+  // Default: include (better to show extra than miss an OTP)
+  return true;
+}
+
+async function fetchEmails(maxResults = 20) {
   const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
   const base  = process.env.GMAIL_BASE + '@' + process.env.GMAIL_DOMAIN;
   const normalizedBase = normalizeGmail(base);
 
-  console.log(`Fetching emails for base: ${normalizedBase}`);
+  // Only fetch emails newer than last fetch — saves massive quota
+  var query = 'in:inbox';
+  if (_lastFetchTime) {
+    // Gmail 'after' uses Unix timestamp in seconds
+    var afterSec = Math.floor(_lastFetchTime / 1000) - 60; // 60s buffer
+    query += ' after:' + afterSec;
+  }
+
+  console.log('Fetching emails, query: ' + query);
 
   let list;
   try {
-    list = await gmail.users.messages.list({ userId: 'me', maxResults });
+    list = await gmail.users.messages.list({ userId: 'me', maxResults, q: query });
   } catch(e) {
-    if (e.message && e.message.includes('User-rate limit')) {
-      // Extract retry time from error if available
-      _rateLimitedUntil = Date.now() + (15 * 60 * 1000); // 15 min cooldown
-      console.log('Rate limited — cooling down for 15 minutes');
-      return [];
-    }
     throw e;
   }
+
+  // Update last fetch time BEFORE processing so we don't miss emails
+  _lastFetchTime = Date.now();
+  saveLastFetchTime(_lastFetchTime);
   if (!list.data.messages) {
     console.log('No messages found in Gmail');
     return [];
@@ -157,7 +283,13 @@ async function fetchEmails(maxResults = 30) {
     const aliasMatch = toField.match(/[\w.]+@[\w.]+/);
     const alias = aliasMatch ? aliasMatch[0].toLowerCase() : toField.toLowerCase();
 
-    console.log(`Found email: to=${alias}, subject=${subject}`);
+    // Filter — only save OTP/verification emails
+    if (!isOTPEmail(subject, body)) {
+      console.log('Skipped non-OTP email: ' + subject);
+      continue;
+    }
+
+    console.log(`Found OTP email: to=${alias}, subject=${subject}`);
 
     emails.push({
       gmail_id:     msg.id,
@@ -186,4 +318,4 @@ async function registerWatch() {
   console.log('Gmail watch registered');
 }
 
-module.exports = { getAuthUrl, saveToken, fetchEmails, registerWatch };
+module.exports = { getAuthUrl, saveToken, fetchEmails, registerWatch, scheduleFetch };
