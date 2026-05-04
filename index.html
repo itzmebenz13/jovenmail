@@ -7316,7 +7316,7 @@
         var all = [];
         var CHUNK = 1000, from = 0;
         while (true) {
-          var r = await _admSb.from('email_sessions').select('*').order('created_at', { ascending: false }).range(from, from + CHUNK - 1);
+          var r = await _admSb.from('email_sessions').select('*').order('claimed_at', { ascending: false }).range(from, from + CHUNK - 1);
           if (r.error) throw r.error;
           var rows = r.data || [];
           all = all.concat(rows);
