@@ -4,10 +4,9 @@ const crypto   = require('crypto');
 const bcrypt   = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
 const {
-  getAuthUrl, saveToken, fetchEmails,
-  registerWatch, registerAllWatches,
-  listAccounts, removeAccount,
-  getAccountBySubscription
+  loadAllAccounts, getAuthUrl, saveToken, fetchEmails,
+  registerWatch, registerAllWatches, scheduleFetch,
+  listAccounts, removeAccount
 } = require('./gmail');
 require('dotenv').config();
 
@@ -287,83 +286,78 @@ function isInboxExpired(alias) {
 
 // ════════════════════════════════════════════════════════════
 // ── AUTH ──
-//
-// Multi-account flow:
-//   GET /auth/login?account=user@gmail.com
-//     → Generates an OAuth URL with login_hint + state=accountEmail
-//     → Admin opens URL in a browser already signed into that Gmail
-//
-//   GET /auth/callback?code=...&state=accountEmail
-//     → Exchanges code for token, saves under accountEmail in Supabase
-//     → Registers a Pub/Sub watch for that account
 // ════════════════════════════════════════════════════════════
-app.get('/auth/login', requireAdminSecret, (req, res) => {
-  const account = (req.query.account || '').trim();
-  if (!account) return res.status(400).send('Missing ?account=user@gmail.com parameter');
-  res.redirect(getAuthUrl(account));
+// ── AUTH — multi-account: ?account=user@gmail.com ──
+app.get('/auth/login', (req, res) => {
+  // Require admin secret for security
+  const secret = req.query.secret || req.headers['x-admin-secret'] || '';
+  if (process.env.ADMIN_SECRET && secret !== process.env.ADMIN_SECRET) {
+    return res.status(401).send('Unauthorized — include ?secret=ADMIN_SECRET in the URL');
+  }
+  const accountEmail = (req.query.account || '').trim().toLowerCase() || undefined;
+  res.redirect(getAuthUrl(accountEmail));
 });
 
 app.get('/auth/callback', async (req, res) => {
   try {
-    const code    = req.query.code;
-    const account = (req.query.state || '').trim();
-    if (!code || !account) return res.status(400).send('Missing code or state param');
-    await saveToken(code, account);
-    await registerWatch(account);
-    res.send(`<html><body style="font-family:sans-serif;padding:32px;background:#09090b;color:#f5f5f5">
-      <h2 style="color:#22c55e">✓ Gmail Connected</h2>
-      <p><strong>${account}</strong> has been connected successfully.</p>
-      <p style="color:#a1a1aa">You can close this tab and return to the admin panel.</p>
-    </body></html>`);
+    // ?state= carries the accountEmail set in getAuthUrl()
+    const accountEmail = (req.query.state || '').trim().toLowerCase() || undefined;
+    const savedEmail = await saveToken(req.query.code, accountEmail);
+    await registerWatch(savedEmail);
+    res.send(`
+      <html><body style="font-family:sans-serif;text-align:center;padding:60px;">
+        <h2 style="color:#22c55e">✓ ${savedEmail} connected!</h2>
+        <p>Gmail account added successfully. You can close this tab.</p>
+      </body></html>
+    `);
   } catch (e) {
-    console.error('Auth callback error:', e.message);
-    res.status(500).send('OAuth error: ' + e.message);
+    console.error('auth/callback error:', e.message);
+    res.status(500).send('Authentication failed: ' + e.message);
   }
 });
 
 // ════════════════════════════════════════════════════════════
 // ── GMAIL PUSH ──
-//
-// Option A: one Pub/Sub subscription per Gmail account.
-// The `subscription` field in the Pub/Sub envelope identifies
-// which account sent the notification. We look it up in the
-// subscriptionMap and fetch emails for that account only.
 // ════════════════════════════════════════════════════════════
+// ── GMAIL PUSH — Option A: ?account=user@gmail.com identifies the source ──
 app.post('/gmail/push', async (req, res) => {
-  res.sendStatus(200);
+  res.sendStatus(200); // acknowledge immediately
   try {
-    const data         = req.body?.message?.data;
-    const subscription = req.body?.subscription || '';
+    const data = req.body?.message?.data;
     if (!data) return;
 
-    // Resolve which Gmail account this push is for
-    let accountEmail = getAccountBySubscription(subscription);
+    // Which Gmail account triggered this push?
+    const accountEmail = (req.query.account || '').trim().toLowerCase();
     if (!accountEmail) {
-      // Fallback: try ?account= query param (useful for manual testing)
-      accountEmail = (req.query.account || '').trim() || null;
-    }
-    if (!accountEmail) {
-      console.warn('[PUSH] Could not resolve account for subscription:', subscription, '— using first account');
+      console.warn('[PUSH] No ?account= param — cannot route push notification');
+      return;
     }
 
-    const emails = await fetchEmails(10, accountEmail);
-    if (!emails.length) return;
-    const { error } = await supabase
-      .from('emails')
-      .upsert(emails, { onConflict: 'gmail_id', ignoreDuplicates: true });
-    if (error) console.error('Supabase upsert error:', JSON.stringify(error));
-    else console.log(`[PUSH] Synced ${emails.length} email(s) for ${accountEmail || 'unknown'}`);
+    // Debounce: schedule a fetch for this account (handles rate-limit backoff)
+    scheduleFetch(accountEmail, async (emails) => {
+      if (!emails.length) return;
+      const { error } = await supabase
+        .from('emails')
+        .upsert(emails, { onConflict: 'gmail_id', ignoreDuplicates: true });
+      if (error) console.error('[PUSH] Supabase upsert error:', JSON.stringify(error));
+      else console.log(`[PUSH] Synced ${emails.length} email(s) for ${accountEmail}`);
+    });
   } catch (e) {
-    console.error('Push handler error:', e.message);
+    console.error('[PUSH] Handler error:', e.message);
   }
 });
 
 // ════════════════════════════════════════════════════════════
 // ── CRON JOBS ──
 // ════════════════════════════════════════════════════════════
+// Refresh watches for ALL Gmail accounts every 6 hours
 cron.schedule('0 0 */6 * *', async () => {
-  try { await registerAllWatches(); console.log('[CRON] All Gmail watches refreshed'); }
-  catch (e) { console.error('Watch refresh error:', e.message); }
+  try {
+    await registerAllWatches();
+    console.log('[CRON] All Gmail watches refreshed');
+  } catch (e) {
+    console.error('[CRON] Watch refresh error:', e.message);
+  }
 });
 
 // Daily cleanup: clear expired (non-permanent) blocks older than 24h
@@ -654,10 +648,11 @@ app.post('/api/inbox-access', async function(req, res) {
 // ════════════════════════════════════════════════════════════
 // ── START ──
 // ════════════════════════════════════════════════════════════
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
-  // Register watches for all connected accounts on startup
-  registerAllWatches().catch(e => console.error('Initial watch error:', e.message));
+app.listen(process.env.PORT || 3000, async () => {
+  console.log(`Server running on port ${process.env.PORT || 3000}`);
+  // Load all Gmail accounts into memory, then register watches
+  await loadAllAccounts();
+  await registerAllWatches().catch(e => console.error('[START] Watch registration error:', e.message));
 });
 
 // ════════════════════════════════════════════════════════════
@@ -1140,55 +1135,87 @@ app.post('/api/admin/set-honeypot', requireAdminSecret, async function(req, res)
 
 // ════════════════════════════════════════════════════════════
 // ── ADMIN — GMAIL ACCOUNTS ──
+// List, connect, and remove Gmail accounts for multi-account routing.
 // ════════════════════════════════════════════════════════════
 
 /**
  * GET /api/admin/gmail-accounts
- * Returns all connected Gmail accounts with their status.
+ * Returns all connected Gmail accounts with their watch status.
  */
 app.get('/api/admin/gmail-accounts', requireAdminSecret, async function(req, res) {
   try {
     const accounts = await listAccounts();
-    return res.json({ ok: true, accounts });
+    // Enrich with alias counts
+    const emailsResult = await supabase
+      .from('allowed_emails')
+      .select('gmail_account');
+    const emailRows = emailsResult.data || [];
+    const aliasCounts = {};
+    for (const row of emailRows) {
+      if (row.gmail_account) {
+        aliasCounts[row.gmail_account] = (aliasCounts[row.gmail_account] || 0) + 1;
+      }
+    }
+    const now = new Date();
+    const enriched = accounts.map(acc => ({
+      email:         acc.email,
+      watch_expiry:  acc.watch_expiry,
+      watch_active:  acc.watch_expiry ? new Date(acc.watch_expiry) > now : false,
+      alias_count:   aliasCounts[acc.email] || 0,
+      added_at:      acc.added_at
+    }));
+    return res.json({ ok: true, accounts: enriched });
   } catch (e) {
-    console.error('gmail-accounts list error:', e);
-    return res.status(500).json({ ok: false, error: 'Server error' });
+    console.error('admin/gmail-accounts error:', e.message);
+    return res.status(500).json({ ok: false, error: e.message });
   }
 });
 
 /**
  * GET /api/admin/gmail-connect-url?account=user@gmail.com
- * Returns the OAuth URL for the admin to open and authorize.
+ * Returns an OAuth URL the admin opens to connect a new Gmail account.
  */
-app.get('/api/admin/gmail-connect-url', requireAdminSecret, function(req, res) {
+app.get('/api/admin/gmail-connect-url', requireAdminSecret, async function(req, res) {
   try {
-    const account = (req.query.account || '').trim().toLowerCase();
-    if (!account || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account)) {
-      return res.status(400).json({ ok: false, error: 'Valid Gmail address required' });
+    const accountEmail = (req.query.account || '').trim().toLowerCase();
+    if (!accountEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(accountEmail)) {
+      return res.status(400).json({ ok: false, error: 'Provide a valid Gmail address as ?account=' });
     }
-    const url = getAuthUrl(account);
-    return res.json({ ok: true, url, account });
+    // Embed admin secret in the login URL so the callback is also protected
+    const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN
+      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+      : 'http://localhost:3000';
+    const loginUrl = `${baseUrl}/auth/login?account=${encodeURIComponent(accountEmail)}&secret=${encodeURIComponent(process.env.ADMIN_SECRET || '')}`;
+    return res.json({ ok: true, url: loginUrl, account: accountEmail });
   } catch (e) {
-    console.error('gmail-connect-url error:', e);
-    return res.status(500).json({ ok: false, error: 'Server error' });
+    console.error('admin/gmail-connect-url error:', e.message);
+    return res.status(500).json({ ok: false, error: e.message });
   }
 });
 
 /**
  * POST /api/admin/gmail-accounts/remove
  * Body: { account: "user@gmail.com" }
- * Disconnects a Gmail account.
+ * Removes a Gmail account. Aliases assigned to it lose their gmail_account mapping.
  */
 app.post('/api/admin/gmail-accounts/remove', requireAdminSecret, async function(req, res) {
   try {
-    const account = (req.body.account || '').trim().toLowerCase();
-    if (!account) return res.status(400).json({ ok: false, error: 'Missing account' });
-    await removeAccount(account);
-    console.log('[ADMIN] Gmail account removed:', account);
-    return res.json({ ok: true, message: `${account} disconnected.` });
+    const accountEmail = (req.body.account || '').trim().toLowerCase();
+    if (!accountEmail) return res.status(400).json({ ok: false, error: 'Missing account' });
+
+    await removeAccount(accountEmail);
+
+    // Clear gmail_account on aliases that were assigned to this account
+    await supabase
+      .from('allowed_emails')
+      .update({ gmail_account: null })
+      .eq('gmail_account', accountEmail);
+
+    console.log('[ADMIN] Removed Gmail account:', accountEmail);
+    return res.json({ ok: true, message: `${accountEmail} removed.` });
   } catch (e) {
-    console.error('gmail-accounts remove error:', e);
-    return res.status(500).json({ ok: false, error: 'Server error' });
+    console.error('admin/gmail-accounts/remove error:', e.message);
+    return res.status(500).json({ ok: false, error: e.message });
   }
 });
 
@@ -1199,37 +1226,38 @@ app.post('/api/admin/gmail-accounts/remove', requireAdminSecret, async function(
  */
 app.post('/api/admin/gmail-accounts/refresh-watch', requireAdminSecret, async function(req, res) {
   try {
-    const account = (req.body.account || '').trim().toLowerCase();
-    if (!account) return res.status(400).json({ ok: false, error: 'Missing account' });
-    await registerWatch(account);
-    return res.json({ ok: true, message: `Watch refreshed for ${account}.` });
+    const accountEmail = (req.body.account || '').trim().toLowerCase();
+    if (!accountEmail) return res.status(400).json({ ok: false, error: 'Missing account' });
+    await registerWatch(accountEmail);
+    console.log('[ADMIN] Watch refreshed for:', accountEmail);
+    return res.json({ ok: true, message: `Watch refreshed for ${accountEmail}` });
   } catch (e) {
-    console.error('gmail-accounts refresh-watch error:', e);
-    return res.status(500).json({ ok: false, error: e.message || 'Server error' });
+    console.error('admin/gmail-accounts/refresh-watch error:', e.message);
+    return res.status(500).json({ ok: false, error: e.message });
   }
 });
 
 /**
- * POST /api/admin/allowed-emails/assign-account
- * Body: { email: "alias@gmail.com", gmail_account: "source@gmail.com" }
- * Assigns which Gmail account an alias belongs to.
+ * POST /api/admin/set-alias-account
+ * Body: { email: "alias@gmail.com", gmail_account: "source@gmail.com" | null }
+ * Assigns or clears the gmail_account for a specific alias.
  */
-app.post('/api/admin/allowed-emails/assign-account', requireAdminSecret, async function(req, res) {
+app.post('/api/admin/set-alias-account', requireAdminSecret, async function(req, res) {
   try {
-    const alias   = (req.body.email         || '').trim().toLowerCase();
-    const account = (req.body.gmail_account || '').trim().toLowerCase();
-    if (!alias) return res.status(400).json({ ok: false, error: 'Missing email' });
+    const aliasEmail    = (req.body.email         || '').trim().toLowerCase();
+    const gmailAccount  = req.body.gmail_account ? (req.body.gmail_account || '').trim().toLowerCase() : null;
+    if (!aliasEmail) return res.status(400).json({ ok: false, error: 'Missing email' });
 
     const { error } = await supabase
       .from('allowed_emails')
-      .update({ gmail_account: account || null })
-      .eq('email', alias);
+      .update({ gmail_account: gmailAccount })
+      .eq('email', aliasEmail);
 
-    if (error) { console.error('assign-account error:', error); return res.status(500).json({ ok: false, error: 'Database error' }); }
+    if (error) return res.status(500).json({ ok: false, error: 'Database error' });
+    console.log(`[ADMIN] ${aliasEmail} → gmail_account=${gmailAccount}`);
     return res.json({ ok: true });
   } catch (e) {
-    console.error('assign-account error:', e);
-    return res.status(500).json({ ok: false, error: 'Server error' });
+    console.error('admin/set-alias-account error:', e.message);
+    return res.status(500).json({ ok: false, error: e.message });
   }
 });
-
