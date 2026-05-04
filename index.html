@@ -6566,15 +6566,21 @@
       document.querySelectorAll('.adm-nav-btn').forEach(function (btn) {
         btn.classList.toggle('active', btn.dataset.section === name);
       });
-      var sections = { emails: 'admSectionEmails', fraud: 'admSectionFraud', sessions: 'admSectionSessions', ownership: 'admSectionOwnership', gmail: 'admSectionGmail' };
+      var sections = {
+        emails:    'admSectionEmails',
+        fraud:     'admSectionFraud',
+        sessions:  'admSectionSessions',
+        ownership: 'admSectionOwnership',
+        gmail:     'admSectionGmail'
+      };
       Object.keys(sections).forEach(function (k) {
         var el = document.getElementById(sections[k]);
         if (el) el.style.display = k === name ? '' : 'none';
       });
-      if (name === 'fraud') admLoadFraud();
-      if (name === 'sessions') admLoadSessions();
+      if (name === 'fraud')     admLoadFraud();
+      if (name === 'sessions')  admLoadSessions();
       if (name === 'ownership') admLoadOwnership();
-      if (name === 'gmail') admLoadGmailAccounts();
+      if (name === 'gmail')     admLoadGmailAccounts();
     }
 
     // ── CLEAR SEARCH ──
@@ -6597,23 +6603,6 @@
         var data = await r.json();
         if (!data.ok) throw new Error(data.error || 'Server error');
         showToast(newVal ? '🪤 Trap set for ' + email : '✓ Trap removed from ' + email);
-        await admLoadEmails(false);
-      } catch (e) {
-        showToast('Error: ' + e.message);
-      }
-    }
-
-    // ── GMAIL ASSIGNMENT TOGGLE ──
-    async function admAssignGmailAccount(email, account) {
-      try {
-        var r = await fetch(RAILWAY_URL + '/api/admin/allowed-emails/assign-account', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
-          body: JSON.stringify({ email: email, gmail_account: account })
-        });
-        var data = await r.json();
-        if (!data.ok) throw new Error(data.error || 'Server error');
-        showToast('✓ Assigned ' + (account || 'Default') + ' to ' + email);
         await admLoadEmails(false);
       } catch (e) {
         showToast('Error: ' + e.message);
@@ -6822,19 +6811,6 @@
       if (resetPage) _admPage = 1;
       document.getElementById('admEmailList').innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading&hellip;</div>';
       try {
-        // Ensure Gmail accounts are loaded for the dropdowns
-        if (!_admGmailAccounts || _admGmailAccounts.length === 0) {
-          try {
-            var r2 = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts', { headers: { 'x-admin-secret': getAdminSecret() } });
-            if (r2.ok) {
-              var data2 = await r2.json();
-              if (data2.ok) _admGmailAccounts = data2.accounts || [];
-            }
-          } catch (err) {
-            console.warn('Could not load gmail accounts for dropdowns:', err);
-          }
-        }
-
         var all = [];
         var CHUNK = 1000;
         var from = 0;
@@ -6874,17 +6850,9 @@
         list.innerHTML = slice.map(function (row) {
           var d = new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           var isHp = !!(row.honeypot);
-          var ga = row.gmail_account || '';
-          
-          var selectHtml = '<select class="adm-input" style="padding:2px 6px;font-size:0.7rem;width:auto;margin:0 8px;border-color:var(--border-strong);" onchange="admAssignGmailAccount(\'' + escHtml(row.email) + '\', this.value)">' +
-            '<option value="">(Default Gmail)</option>' +
-            _admGmailAccounts.map(function(a) { return '<option value="' + escHtml(a.email) + '"' + (ga === a.email ? ' selected' : '') + '>' + escHtml(a.email) + '</option>'; }).join('') +
-            '</select>';
-
           return '<div class="adm-email-row" data-id="' + row.id + '">' +
             '<input type="checkbox" style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;background:var(--bg-input);cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;" onchange="admToggleCheck(\'' + row.id + '\',this)"/>' +
             '<span class="adm-email-addr">' + escHtml(row.email) + '</span>' +
-            selectHtml +
             (isHp ? '<span class="adm-honeypot-badge">\ud83e\udea4 TRAP</span>' : '') +
             '<span class="adm-email-date">' + d + '</span>' +
             '<button class="adm-trap-btn' + (isHp ? ' active' : '') + '" onclick="admToggleHoneypot(\'' + escHtml(row.email) + '\',' + isHp + ')" title="' + (isHp ? 'Remove trap' : 'Set as honeypot trap') + '">' +
@@ -7316,7 +7284,7 @@
         var all = [];
         var CHUNK = 1000, from = 0;
         while (true) {
-          var r = await _admSb.from('email_sessions').select('*').order('claimed_at', { ascending: false }).range(from, from + CHUNK - 1);
+          var r = await _admSb.from('email_sessions').select('*').order('created_at', { ascending: false }).range(from, from + CHUNK - 1);
           if (r.error) throw r.error;
           var rows = r.data || [];
           all = all.concat(rows);
@@ -7546,18 +7514,15 @@
       admOwnerApplyFilter();
     }
 
-    // ════════════════════════════════════════════════════════
-    // ── GMAIL ACCOUNTS TAB ──
-    // ════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════
+    // ── GMAIL ACCOUNTS MANAGEMENT ──
+    // ══════════════════════════════════════════════════
     var _admGmailAccounts = [];
-    var _admGmailAuthUrl  = '';
 
     async function admLoadGmailAccounts() {
       var list = document.getElementById('admGmailList');
-      var cnt  = document.getElementById('admGmailCount');
       if (!list) return;
-      list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>';
-
+      list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading&hellip;</div>';
       try {
         var r = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts', {
           headers: { 'x-admin-secret': getAdminSecret() }
@@ -7565,128 +7530,94 @@
         if (!r.ok) throw new Error('HTTP ' + r.status);
         var data = await r.json();
         if (!data.ok) throw new Error(data.error || 'Unknown error');
-
         _admGmailAccounts = data.accounts || [];
-        if (cnt) cnt.textContent = _admGmailAccounts.length;
         admRenderGmailAccounts();
       } catch (e) {
         list.innerHTML = '<div class="adm-empty" style="color:#f87171">Error: ' + escHtml(e.message) + '</div>';
-        showToast('Gmail load failed: ' + e.message);
+        showToast('Gmail accounts load failed: ' + e.message);
       }
     }
 
     function admRenderGmailAccounts() {
       var list = document.getElementById('admGmailList');
       if (!list) return;
-
-      if (!_admGmailAccounts.length) {
-        list.innerHTML = '<div class="adm-empty">No Gmail accounts connected yet. Add one below.</div>';
+      var accounts = _admGmailAccounts;
+      if (!accounts.length) {
+        list.innerHTML = '<div class="adm-empty">No Gmail accounts connected yet. Use the form below to add one.</div>';
         return;
       }
-
-      var now = new Date();
-      list.innerHTML = _admGmailAccounts.map(function (acc) {
+      list.innerHTML = accounts.map(function (acc) {
         var watchActive = acc.watch_active;
-        var expiry = acc.watch_expiry ? new Date(acc.watch_expiry) : null;
-        var expiryStr = expiry
-          ? (expiry > now
-            ? 'Watch expires ' + expiry.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-            : '<span style="color:#f87171;">Watch expired ' + expiry.toLocaleDateString() + '</span>')
-          : '<span style="color:var(--text-muted);">No watch registered</span>';
-
-        var tokenBadge = acc.token_loaded
-          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(34,197,94,0.1);color:#22c55e;border:1px solid rgba(34,197,94,0.25);">🟢 Connected</span>'
-          : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.25);">🔴 No token</span>';
-
-        var watchBadge = watchActive
-          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.25);">📡 Watch active</span>'
-          : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(251,146,60,0.1);color:#fb923c;border:1px solid rgba(251,146,60,0.25);">⚠️ Watch inactive</span>';
-
-        var addedStr = acc.added_at ? new Date(acc.added_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-
-        return '<div class="adm-email-row" style="flex-direction:column;align-items:flex-start;gap:8px;padding:12px 14px;">' +
-          '<div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">' +
-            '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.82rem;color:var(--code-text);font-weight:700;flex:1;word-break:break-all;">' + escHtml(acc.email) + '</span>' +
-            tokenBadge + watchBadge +
-          '</div>' +
-          '<div style="font-size:0.68rem;color:var(--text-muted);display:flex;gap:12px;flex-wrap:wrap;">' +
-            '<span>' + expiryStr + '</span>' +
-            '<span>Added: ' + addedStr + '</span>' +
-          '</div>' +
-          '<div style="display:flex;gap:6px;margin-top:2px;flex-wrap:wrap;">' +
-            '<button class="btn-pill btn-outline btn-sm" onclick="admGmailRefreshWatch(\'' + escHtml(acc.email) + '\')" style="padding:5px 10px;font-size:0.72rem;display:flex;align-items:center;gap:4px;">' +
-              '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>' +
-              'Refresh Watch' +
+        var watchChip = watchActive
+          ? '<span style="font-size:0.68rem;background:rgba(34,197,94,0.12);color:#22c55e;border:1px solid rgba(34,197,94,0.25);padding:2px 8px;border-radius:20px;font-weight:700;">✓ Watch active</span>'
+          : '<span style="font-size:0.68rem;background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.25);padding:2px 8px;border-radius:20px;font-weight:700;">⚠ Watch expired</span>';
+        var expiry = acc.watch_expiry
+          ? new Date(acc.watch_expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : '—';
+        var added = acc.added_at
+          ? new Date(acc.added_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          : '—';
+        return '<div class="adm-email-row" style="flex-wrap:wrap;gap:6px;align-items:center;">' +
+          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.8rem;font-weight:600;flex:1;min-width:180px;color:var(--code-text);">' + escHtml(acc.email) + '</span>' +
+          watchChip +
+          '<span style="font-size:0.68rem;color:var(--text-muted);white-space:nowrap;">' + (acc.alias_count || 0) + ' aliases</span>' +
+          '<span class="adm-email-date">' + added + '</span>' +
+          '<div style="display:flex;gap:5px;">' +
+            '<button class="btn-pill btn-outline btn-sm" onclick="admRefreshWatch(\'' + escHtml(acc.email) + '\')" title="Refresh Pub/Sub watch" style="padding:4px 9px;font-size:0.7rem;display:flex;align-items:center;gap:4px;">' +
+              '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>' +
+              'Refresh'
             '</button>' +
-            '<button class="btn-pill btn-sm adm-btn-del" onclick="admGmailRemove(\'' + escHtml(acc.email) + '\')" style="padding:5px 10px;font-size:0.72rem;display:flex;align-items:center;gap:4px;background:transparent;border:1px solid #f87171;color:#f87171;">' +
+            '<button class="adm-btn-del" onclick="admRemoveGmailAccount(\'' + escHtml(acc.email) + '\')" title="Remove this Gmail account">' +
               '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
-              'Disconnect' +
             '</button>' +
           '</div>' +
         '</div>';
       }).join('');
     }
 
-    async function admGmailGenerateLink() {
-      var input = document.getElementById('admGmailConnectInput');
-      var email = (input ? input.value.trim().toLowerCase() : '');
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    var _admOAuthUrl = '';
+
+    async function admGenerateOAuthLink() {
+      var account = (document.getElementById('admGmailInput').value || '').trim().toLowerCase();
+      if (!account || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account)) {
         showToast('Enter a valid Gmail address first');
-        if (input) input.focus();
         return;
       }
       var btn = document.getElementById('admGmailConnectBtn');
-      if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+      var orig = btn.innerHTML;
+      btn.innerHTML = '<span class="adm-spinner"></span>';
+      btn.disabled = true;
       try {
-        var r = await fetch(RAILWAY_URL + '/api/admin/gmail-connect-url?account=' + encodeURIComponent(email), {
+        var r = await fetch(RAILWAY_URL + '/api/admin/gmail-connect-url?account=' + encodeURIComponent(account), {
           headers: { 'x-admin-secret': getAdminSecret() }
         });
         var data = await r.json();
         if (!data.ok) throw new Error(data.error || 'Failed');
-        _admGmailAuthUrl = data.url;
-        var box = document.getElementById('admGmailLinkBox');
-        var linkInput = document.getElementById('admGmailLinkInput');
-        if (box) box.style.display = '';
-        if (linkInput) linkInput.value = data.url;
+        _admOAuthUrl = data.url;
+        document.getElementById('admOAuthLinkText').textContent = data.url;
+        var hint = document.getElementById('admOAuthAccountHint');
+        if (hint) hint.textContent = account;
+        document.getElementById('admOAuthLinkWrap').style.display = '';
+        showToast('OAuth link generated — open it in a browser signed into ' + account);
       } catch (e) {
         showToast('Error: ' + e.message);
       } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Get Auth Link'; }
+        btn.innerHTML = orig;
+        btn.disabled = false;
       }
     }
 
-    function admGmailCopyLink() {
-      if (!_admGmailAuthUrl) return;
-      navigator.clipboard.writeText(_admGmailAuthUrl).then(function () {
-        var btn = document.getElementById('admGmailCopyBtn');
-        if (btn) { var orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = orig; }, 2000); }
-        showToast('Auth link copied');
+    function admCopyOAuthLink() {
+      if (!_admOAuthUrl) return;
+      navigator.clipboard.writeText(_admOAuthUrl).then(function () {
+        showToast('OAuth link copied to clipboard');
+      }).catch(function () {
+        window.prompt('Copy this OAuth link:', _admOAuthUrl);
       });
     }
 
-    function admGmailOpenLink() {
-      if (_admGmailAuthUrl) window.open(_admGmailAuthUrl, '_blank');
-    }
-
-    async function admGmailRefreshWatch(email) {
-      showToast('Refreshing watch for ' + email + '…');
-      try {
-        var r = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts/refresh-watch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
-          body: JSON.stringify({ account: email })
-        });
-        var data = await r.json();
-        if (!data.ok) throw new Error(data.error || 'Failed');
-        showToast('✓ Watch refreshed for ' + email);
-        await admLoadGmailAccounts();
-      } catch (e) {
-        showToast('Error: ' + e.message);
-      }
-    }
-
-    async function admGmailRemove(email) {
-      if (!confirm('Disconnect ' + email + '? This will remove the token and stop email sync for this account.')) return;
+    async function admRemoveGmailAccount(email) {
+      if (!confirm('Remove Gmail account: ' + email + '?\n\nAliases assigned to this account will lose their mapping.')) return;
       try {
         var r = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts/remove', {
           method: 'POST',
@@ -7695,10 +7626,26 @@
         });
         var data = await r.json();
         if (!data.ok) throw new Error(data.error || 'Failed');
-        showToast('✓ ' + email + ' disconnected');
+        showToast('\u2713 ' + email + ' removed');
         await admLoadGmailAccounts();
       } catch (e) {
-        showToast('Error: ' + e.message);
+        showToast('Remove failed: ' + e.message);
+      }
+    }
+
+    async function admRefreshWatch(email) {
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts/refresh-watch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ account: email })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('\u2713 Watch refreshed for ' + email);
+        await admLoadGmailAccounts();
+      } catch (e) {
+        showToast('Refresh failed: ' + e.message);
       }
     }
 
@@ -8051,12 +7998,89 @@
         <div class="adm-tab adm-nav-btn" data-section="fraud" onclick="admSwitchSection('fraud')">🚨 Fraud Detector</div>
         <div class="adm-tab adm-nav-btn" data-section="sessions" onclick="admSwitchSection('sessions')">🔐 Sessions</div>
         <div class="adm-tab adm-nav-btn" data-section="ownership" onclick="admSwitchSection('ownership')">🏷️ Ownership</div>
-        <div class="adm-tab adm-nav-btn" data-section="gmail" onclick="admSwitchSection('gmail')">📮 Gmail Accounts</div>
+        <div class="adm-tab adm-nav-btn" data-section="gmail" onclick="admSwitchSection('gmail')">📬 Gmail Accounts</div>
       </div>
 
       <!-- Email management section -->
       <div id="admSectionEmails">
 
+      <!-- ── GMAIL ACCOUNTS SECTION ── -->
+      <div id="admSectionGmail" style="display:none;">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              Connected Gmail Accounts
+            </div>
+            <button class="btn-pill btn-outline btn-sm" onclick="admLoadGmailAccounts()" style="display:flex;align-items:center;gap:5px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Refresh
+            </button>
+          </div>
+          <div id="admGmailList" style="min-height:60px;">
+            <div class="adm-loading"><span class="adm-spinner"></span> Loading accounts&hellip;</div>
+          </div>
+        </div>
+
+        <!-- Add Gmail Account card -->
+        <div class="adm-card" style="margin-top:12px;">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              Add Gmail Account
+            </div>
+          </div>
+          <p style="font-size:0.78rem;color:var(--text-dim);line-height:1.55;margin-bottom:12px;">
+            Enter the Gmail address you want to connect, then click <strong>Generate OAuth Link</strong>. Open that link in a browser signed into that Google account and grant access.
+          </p>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+            <input id="admGmailInput" type="email" placeholder="newaccount@gmail.com"
+              class="adm-search" style="flex:1;font-size:0.83rem;"
+              onkeydown="if(event.key==='Enter')admGenerateOAuthLink()" />
+            <button class="btn-pill btn-primary btn-sm" onclick="admGenerateOAuthLink()" id="admGmailConnectBtn" style="white-space:nowrap;display:flex;align-items:center;gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Generate OAuth Link
+            </button>
+          </div>
+          <div id="admOAuthLinkWrap" style="display:none;margin-top:8px;">
+            <div style="background:var(--bg-input);border:1px solid rgba(217,249,80,0.25);border-radius:9px;padding:12px 14px;">
+              <div style="font-size:0.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">OAuth Link Ready</div>
+              <div id="admOAuthLinkText" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--code-text);word-break:break-all;margin-bottom:10px;"></div>
+              <div style="display:flex;gap:7px;">
+                <button class="btn-pill btn-primary btn-sm" onclick="admCopyOAuthLink()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy Link
+                </button>
+                <button class="btn-pill btn-outline btn-sm" onclick="window.open(document.getElementById('admOAuthLinkText').textContent,'_blank')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Open Link
+                </button>
+              </div>
+              <p style="font-size:0.7rem;color:var(--text-muted);margin-top:8px;line-height:1.5;">⚠️ Open this link in a browser signed into <strong id="admOAuthAccountHint"></strong>. After authorizing, this tab will show a success message and the account will appear in the list above.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SQL setup card -->
+        <div class="adm-card" style="margin-top:12px;background:rgba(96,165,250,0.04);border-color:rgba(96,165,250,0.18);">
+          <div style="font-size:0.72rem;font-weight:700;color:#60a5fa;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            One-time Supabase setup (run in SQL editor if not done)
+          </div>
+          <pre style="font-family:'JetBrains Mono',monospace;font-size:0.66rem;color:var(--text-dim);white-space:pre-wrap;line-height:1.7;background:var(--bg-input);border-radius:7px;padding:10px;overflow-x:auto;">-- 1. Create gmail_accounts table
+CREATE TABLE IF NOT EXISTS gmail_accounts (
+  email          TEXT PRIMARY KEY,
+  tokens         JSONB NOT NULL DEFAULT '{}',
+  watch_expiry   TIMESTAMPTZ,
+  watch_resource TEXT,
+  added_at       TIMESTAMPTZ DEFAULT now()
+);
+
+-- 2. Add gmail_account column to allowed_emails
+ALTER TABLE allowed_emails
+  ADD COLUMN IF NOT EXISTS gmail_account TEXT;</pre>
+        </div>
+      </div>
         <!-- Add emails card -->
         <div class="adm-card">
           <div class="adm-card-head">
@@ -8312,77 +8336,6 @@
           <div class="adm-pagination" id="admOwnerPag"></div>
         </div>
       </div><!-- /admSectionOwnership -->
-
-      <!-- ═══════════════ GMAIL ACCOUNTS section ═══════════════ -->
-      <div id="admSectionGmail" style="display:none;">
-        <div class="adm-card">
-          <div class="adm-card-head">
-            <div class="adm-card-title">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="4" width="20" height="16" rx="2"/>
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-              </svg>
-              Gmail Accounts
-              <span class="adm-count" id="admGmailCount">0</span>
-            </div>
-            <button class="btn-pill btn-outline btn-sm" onclick="admLoadGmailAccounts()" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
-              Refresh
-            </button>
-          </div>
-
-          <!-- Info banner -->
-          <div style="background:rgba(217,249,80,0.05);border:1px solid rgba(217,249,80,0.18);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:0.75rem;color:var(--text-dim);line-height:1.6;">
-            <strong style="color:var(--accent);">Option A — one Pub/Sub subscription per Gmail.</strong><br>
-            Each Gmail account gets its own subscription (e.g. <code style="font-size:0.7rem;color:var(--code-text);">joven-mail-user1-at-gmail-com</code>).
-            Create the subscription in Google Cloud Pub/Sub pointing to <code style="font-size:0.7rem;color:var(--code-text);">POST /gmail/push</code> before connecting a new account.
-          </div>
-
-          <!-- Account list -->
-          <div id="admGmailList"><div class="adm-loading"><span class="adm-spinner"></span> Loading…</div></div>
-        </div>
-
-        <!-- Add Gmail Account card -->
-        <div class="adm-card" id="admGmailConnectCard">
-          <div class="adm-card-head">
-            <div class="adm-card-title">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="16"/>
-                <line x1="8" y1="12" x2="16" y2="12"/>
-              </svg>
-              Add Gmail Account
-            </div>
-          </div>
-          <p style="font-size:0.75rem;color:var(--text-dim);line-height:1.6;margin-bottom:12px;">
-            Generate an OAuth link for a Gmail address. Open the link in a browser <strong>already signed into that Gmail account</strong>, then authorize access. The token will be saved automatically.
-          </p>
-          <div style="display:flex;gap:8px;margin-bottom:10px;">
-            <input class="adm-input" type="email" id="admGmailConnectInput" placeholder="newaccount@gmail.com" style="flex:1;" />
-            <button class="btn-pill btn-primary btn-sm" id="admGmailConnectBtn" onclick="admGmailGenerateLink()" style="white-space:nowrap;padding:8px 14px;display:flex;align-items:center;gap:5px;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              Get Auth Link
-            </button>
-          </div>
-          <!-- Auth link result box -->
-          <div id="admGmailLinkBox" style="display:none;background:var(--bg-input);border:1px solid var(--border);border-radius:9px;padding:12px 14px;">
-            <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:8px;">Open this link in the browser logged into the Gmail you want to connect:</div>
-            <div style="display:flex;gap:6px;align-items:center;">
-              <input id="admGmailLinkInput" type="text" readonly style="flex:1;font-family:'JetBrains Mono',monospace;font-size:0.65rem;background:var(--bg-app);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--code-text);outline:none;" />
-              <button class="btn-pill btn-outline btn-sm" onclick="admGmailCopyLink()" id="admGmailCopyBtn" style="padding:6px 12px;white-space:nowrap;">Copy</button>
-              <button class="btn-pill btn-primary btn-sm" onclick="admGmailOpenLink()" style="padding:6px 12px;white-space:nowrap;display:flex;align-items:center;gap:4px;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                Open
-              </button>
-            </div>
-            <div style="margin-top:10px;font-size:0.69rem;color:var(--text-muted);background:rgba(217,249,80,0.04);border:1px solid rgba(217,249,80,0.14);border-radius:7px;padding:8px 10px;line-height:1.6;">
-              ① Open the link → sign in with the target Gmail<br>
-              ② Click <strong>Allow</strong> → you'll see a green confirmation page<br>
-              ③ Come back here and click <strong>Refresh</strong> to see the new account
-            </div>
-          </div>
-        </div>
-      </div><!-- /admSectionGmail -->
 
     </div>
   </div>
