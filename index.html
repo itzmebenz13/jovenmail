@@ -6824,10 +6824,14 @@
       try {
         // Ensure Gmail accounts are loaded for the dropdowns
         if (!_admGmailAccounts || _admGmailAccounts.length === 0) {
-          var r2 = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts', { headers: { 'x-admin-secret': getAdminSecret() } });
-          if (r2.ok) {
-            var data2 = await r2.json();
-            if (data2.ok) _admGmailAccounts = data2.accounts || [];
+          try {
+            var r2 = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts', { headers: { 'x-admin-secret': getAdminSecret() } });
+            if (r2.ok) {
+              var data2 = await r2.json();
+              if (data2.ok) _admGmailAccounts = data2.accounts || [];
+            }
+          } catch (err) {
+            console.warn('Could not load gmail accounts for dropdowns:', err);
           }
         }
 
