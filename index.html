@@ -6603,6 +6603,23 @@
       }
     }
 
+    // ── GMAIL ASSIGNMENT TOGGLE ──
+    async function admAssignGmailAccount(email, account) {
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/allowed-emails/assign-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ email: email, gmail_account: account })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Server error');
+        showToast('✓ Assigned ' + (account || 'Default') + ' to ' + email);
+        await admLoadEmails(false);
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      }
+    }
+
     // ── FRAUD DETECTOR ──
     var _fraudPage = 1;
     var _fraudRows = [];
@@ -6805,6 +6822,15 @@
       if (resetPage) _admPage = 1;
       document.getElementById('admEmailList').innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading&hellip;</div>';
       try {
+        // Ensure Gmail accounts are loaded for the dropdowns
+        if (!_admGmailAccounts || _admGmailAccounts.length === 0) {
+          var r2 = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts', { headers: { 'x-admin-secret': getAdminSecret() } });
+          if (r2.ok) {
+            var data2 = await r2.json();
+            if (data2.ok) _admGmailAccounts = data2.accounts || [];
+          }
+        }
+
         var all = [];
         var CHUNK = 1000;
         var from = 0;
@@ -6844,9 +6870,17 @@
         list.innerHTML = slice.map(function (row) {
           var d = new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           var isHp = !!(row.honeypot);
+          var ga = row.gmail_account || '';
+          
+          var selectHtml = '<select class="adm-input" style="padding:2px 6px;font-size:0.7rem;width:auto;margin:0 8px;border-color:var(--border-strong);" onchange="admAssignGmailAccount(\'' + escHtml(row.email) + '\', this.value)">' +
+            '<option value="">(Default Gmail)</option>' +
+            _admGmailAccounts.map(function(a) { return '<option value="' + escHtml(a.email) + '"' + (ga === a.email ? ' selected' : '') + '>' + escHtml(a.email) + '</option>'; }).join('') +
+            '</select>';
+
           return '<div class="adm-email-row" data-id="' + row.id + '">' +
             '<input type="checkbox" style="appearance:none;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:3px;background:var(--bg-input);cursor:pointer;position:relative;flex-shrink:0;transition:all 0.15s;" onchange="admToggleCheck(\'' + row.id + '\',this)"/>' +
             '<span class="adm-email-addr">' + escHtml(row.email) + '</span>' +
+            selectHtml +
             (isHp ? '<span class="adm-honeypot-badge">\ud83e\udea4 TRAP</span>' : '') +
             '<span class="adm-email-date">' + d + '</span>' +
             '<button class="adm-trap-btn' + (isHp ? ' active' : '') + '" onclick="admToggleHoneypot(\'' + escHtml(row.email) + '\',' + isHp + ')" title="' + (isHp ? 'Remove trap' : 'Set as honeypot trap') + '">' +
