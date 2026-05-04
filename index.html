@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="joven.mail" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>joven.mail — Recover your alias!</title>
+  <title>joven.mail — Temporary Gmail Aliases</title>
 
   <!-- Compact, crisp fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3885,7 +3885,7 @@
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg></i>
         <div class="logo">joven.mail</div>
-        <div class="badge">2026</div>
+        <div class="badge">Beta</div>
       </div>
       <div class="header-actions">
         <nav class="header-nav">
@@ -3979,10 +3979,8 @@
 
     <main>
       <section class="hero">
-        <h1>One Gmail. Infinite Aliases.</h1>
+        <h1>Multiple Gmails. Infinite Aliases.</h1>
         <p>Recover your assigned Gmail alias and access its inbox privately. Your alias, your messages!</p>
-        <br>
-        <p><b>Made with ❤️ by J O V Ξ N.</b></p>
       </section>
 
       <!-- PWA Install Banner -->
@@ -4815,7 +4813,7 @@
        · Inbox TTL: 15 min inactivity → server may return empty
     ════════════════════════════════════════════════════════ */
 
-    var RAILWAY_URL = 'https://jovenmail-production.up.railway.app';
+    var RAILWAY_URL = 'https://maildot-production.up.railway.app';
 
     // ── SESSION ID ──
     // Stable per-browser identifier. Stored in localStorage so it
@@ -6565,17 +6563,18 @@
 
     // ── SECTION SWITCHER ──
     function admSwitchSection(name) {
-      // Update nav button active state
       document.querySelectorAll('.adm-nav-btn').forEach(function (btn) {
         btn.classList.toggle('active', btn.dataset.section === name);
       });
-      // Show/hide sections
-      var emailSec = document.getElementById('admSectionEmails');
-      var fraudSec = document.getElementById('admSectionFraud');
-      if (emailSec) emailSec.style.display = name === 'emails' ? '' : 'none';
-      if (fraudSec) fraudSec.style.display = name === 'fraud' ? '' : 'none';
-      // Auto-load data for the selected section
+      var sections = { emails: 'admSectionEmails', fraud: 'admSectionFraud', sessions: 'admSectionSessions', ownership: 'admSectionOwnership', gmail: 'admSectionGmail' };
+      Object.keys(sections).forEach(function (k) {
+        var el = document.getElementById(sections[k]);
+        if (el) el.style.display = k === name ? '' : 'none';
+      });
       if (name === 'fraud') admLoadFraud();
+      if (name === 'sessions') admLoadSessions();
+      if (name === 'ownership') admLoadOwnership();
+      if (name === 'gmail') admLoadGmailAccounts();
     }
 
     // ── CLEAR SEARCH ──
@@ -7259,7 +7258,414 @@
       } catch (e) { showToast('Delete failed: ' + e.message); }
     }
 
+
+    // ══════════════════════════════════════════════════
+    // ── EMAIL SESSIONS MANAGEMENT ──
+    // Table: email_sessions (alias, session_id, created_at, etc.)
+    // ══════════════════════════════════════════════════
+    var _admSessions = [];
+    var _admSessionsFiltered = [];
+    var _admSessionPage = 1;
+    var _admSessionSearch = '';
+    var _admSessionSearchTimer = null;
+    var ADM_SESSION_PAGE = 50;
+
+    async function admLoadSessions() {
+      var list = document.getElementById('admSessionList');
+      if (!list) return;
+      list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading\u2026</div>';
+      try {
+        var all = [];
+        var CHUNK = 1000, from = 0;
+        while (true) {
+          var r = await _admSb.from('email_sessions').select('*').order('created_at', { ascending: false }).range(from, from + CHUNK - 1);
+          if (r.error) throw r.error;
+          var rows = r.data || [];
+          all = all.concat(rows);
+          if (rows.length < CHUNK) break;
+          from += CHUNK;
+        }
+        _admSessions = all;
+        _admSessionSearch = '';
+        document.getElementById('admSessionSearch').value = '';
+        _admSessionPage = 1;
+        admSessionApplyFilter();
+      } catch (e) {
+        list.innerHTML = '<div class="adm-empty" style="color:#f87171">Error: ' + escHtml(e.message) + '</div>';
+        showToast('Sessions load failed: ' + e.message);
+      }
+    }
+
+    function admSessionApplyFilter() {
+      var q = _admSessionSearch.toLowerCase().trim();
+      _admSessionsFiltered = q
+        ? _admSessions.filter(function (r) {
+            var alias = (r.alias || '').toLowerCase();
+            var sid = (r.session_id || r.sid || '').toLowerCase();
+            return alias.includes(q) || sid.includes(q);
+          })
+        : _admSessions;
+      var countEl = document.getElementById('admSessionCount');
+      if (countEl) countEl.textContent = _admSessionsFiltered.length;
+      _admSessionPage = 1;
+      admSessionRenderPage();
+    }
+
+    function admSessionRenderPage() {
+      var list = document.getElementById('admSessionList');
+      var pag = document.getElementById('admSessionPag');
+      var start = (_admSessionPage - 1) * ADM_SESSION_PAGE;
+      var slice = _admSessionsFiltered.slice(start, start + ADM_SESSION_PAGE);
+
+      if (!slice.length) {
+        list.innerHTML = '<div class="adm-empty">' + (_admSessionSearch ? 'No sessions match.' : 'No sessions found.') + '</div>';
+        if (pag) pag.innerHTML = '';
+        return;
+      }
+
+      list.innerHTML = slice.map(function (row) {
+        var alias = row.alias || '—';
+        var sid = row.session_id || row.sid || row.fingerprint || '—';
+        var sidShort = sid.length > 20 ? sid.slice(0, 10) + '\u2026' + sid.slice(-6) : sid;
+        var d = row.created_at ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+        return '<div class="adm-email-row" data-id="' + row.id + '">' +
+          '<span class="adm-email-addr" style="max-width:200px;" title="' + escHtml(alias) + '">' + escHtml(alias) + '</span>' +
+          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--text-muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escHtml(sid) + '">' + escHtml(sidShort) + '</span>' +
+          '<span class="adm-email-date">' + d + '</span>' +
+          '<button class="adm-btn-del" onclick="admDeleteSession(\'' + escHtml(String(row.id)) + '\',\'' + escHtml(alias) + '\')" title="Delete this session">' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
+          '</button>' +
+          '</div>';
+      }).join('');
+
+      // Pagination
+      var total = Math.ceil(_admSessionsFiltered.length / ADM_SESSION_PAGE);
+      if (pag) {
+        if (total <= 1) { pag.innerHTML = ''; return; }
+        pag.innerHTML =
+          '<button class="btn-pill btn-outline btn-sm" onclick="admSessionGoPage(' + (_admSessionPage - 1) + ')" ' + (_admSessionPage === 1 ? 'disabled' : '') + ' style="padding:5px 10px;font-size:0.78rem;">\u2190</button>' +
+          '<span class="adm-page-info">' + _admSessionPage + ' / ' + total + ' \u00b7 ' + _admSessionsFiltered.length + ' records</span>' +
+          '<button class="btn-pill btn-outline btn-sm" onclick="admSessionGoPage(' + (_admSessionPage + 1) + ')" ' + (_admSessionPage === total ? 'disabled' : '') + ' style="padding:5px 10px;font-size:0.78rem;">\u2192</button>';
+      }
+    }
+
+    function admSessionGoPage(n) {
+      var total = Math.ceil(_admSessionsFiltered.length / ADM_SESSION_PAGE);
+      _admSessionPage = Math.max(1, Math.min(n, total));
+      admSessionRenderPage();
+    }
+
+    async function admDeleteSession(id, alias) {
+      if (!confirm('Delete session for alias:\n' + alias + '\n\nThis allows the alias to be re-recovered by anyone.')) return;
+      try {
+        var r = await _admSb.from('email_sessions').delete().eq('id', id);
+        if (r.error) throw r.error;
+        showToast('\u2713 Session deleted for ' + alias);
+        await admLoadSessions();
+      } catch (e) {
+        showToast('Delete failed: ' + e.message);
+      }
+    }
+
+    function admSessionDebounceSearch() {
+      clearTimeout(_admSessionSearchTimer);
+      _admSessionSearchTimer = setTimeout(function () {
+        _admSessionSearch = document.getElementById('admSessionSearch').value;
+        admSessionApplyFilter();
+      }, 220);
+    }
+
+    function admClearSessionSearch() {
+      document.getElementById('admSessionSearch').value = '';
+      _admSessionSearch = '';
+      _admSessionPage = 1;
+      admSessionApplyFilter();
+    }
+
+
+    // ══════════════════════════════════════════════════
+    // ── ALIAS OWNERSHIP MANAGEMENT ──
+    // Table: alias_ownership (alias, owner_sid, pin, created_at)
+    // ══════════════════════════════════════════════════
+    var _admOwnerships = [];
+    var _admOwnershipsFiltered = [];
+    var _admOwnerPage = 1;
+    var _admOwnerSearch = '';
+    var _admOwnerSearchTimer = null;
+    var ADM_OWNER_PAGE = 50;
+
+    async function admLoadOwnership() {
+      var list = document.getElementById('admOwnerList');
+      if (!list) return;
+      list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading\u2026</div>';
+      try {
+        var all = [];
+        var CHUNK = 1000, from = 0;
+        while (true) {
+          var r = await _admSb.from('alias_ownership').select('*').order('created_at', { ascending: false }).range(from, from + CHUNK - 1);
+          if (r.error) throw r.error;
+          var rows = r.data || [];
+          all = all.concat(rows);
+          if (rows.length < CHUNK) break;
+          from += CHUNK;
+        }
+        _admOwnerships = all;
+        _admOwnerSearch = '';
+        document.getElementById('admOwnerSearch').value = '';
+        _admOwnerPage = 1;
+        admOwnerApplyFilter();
+      } catch (e) {
+        list.innerHTML = '<div class="adm-empty" style="color:#f87171">Error: ' + escHtml(e.message) + '</div>';
+        showToast('Ownership load failed: ' + e.message);
+      }
+    }
+
+    function admOwnerApplyFilter() {
+      var q = _admOwnerSearch.toLowerCase().trim();
+      _admOwnershipsFiltered = q
+        ? _admOwnerships.filter(function (r) {
+            var alias = (r.alias || '').toLowerCase();
+            var sid = (r.owner_sid || '').toLowerCase();
+            return alias.includes(q) || sid.includes(q);
+          })
+        : _admOwnerships;
+      var countEl = document.getElementById('admOwnerCount');
+      if (countEl) countEl.textContent = _admOwnershipsFiltered.length;
+      _admOwnerPage = 1;
+      admOwnerRenderPage();
+    }
+
+    function admOwnerRenderPage() {
+      var list = document.getElementById('admOwnerList');
+      var pag = document.getElementById('admOwnerPag');
+      var start = (_admOwnerPage - 1) * ADM_OWNER_PAGE;
+      var slice = _admOwnershipsFiltered.slice(start, start + ADM_OWNER_PAGE);
+
+      if (!slice.length) {
+        list.innerHTML = '<div class="adm-empty">' + (_admOwnerSearch ? 'No records match.' : 'No ownership records found.') + '</div>';
+        if (pag) pag.innerHTML = '';
+        return;
+      }
+
+      list.innerHTML = slice.map(function (row) {
+        var alias = row.alias || '—';
+        var sid = row.owner_sid || '—';
+        var sidShort = sid.length > 20 ? sid.slice(0, 10) + '\u2026' + sid.slice(-6) : sid;
+        var hasPin = row.pin ? '\u2713 PIN set' : 'No PIN';
+        var pinColor = row.pin ? 'color:#22c55e;' : 'color:var(--text-muted);';
+        var d = row.created_at ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+        return '<div class="adm-email-row" data-id="' + escHtml(alias) + '">' +
+          '<span class="adm-email-addr" style="max-width:180px;" title="' + escHtml(alias) + '">' + escHtml(alias) + '</span>' +
+          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--text-muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escHtml(sid) + '">' + escHtml(sidShort) + '</span>' +
+          '<span style="font-size:0.7rem;white-space:nowrap;' + pinColor + '">' + hasPin + '</span>' +
+          '<span class="adm-email-date">' + d + '</span>' +
+          '<button class="adm-btn-del" onclick="admDeleteOwnership(\'' + escHtml(alias) + '\')" title="Release ownership of this alias">' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
+          '</button>' +
+          '</div>';
+      }).join('');
+
+      var total = Math.ceil(_admOwnershipsFiltered.length / ADM_OWNER_PAGE);
+      if (pag) {
+        if (total <= 1) { pag.innerHTML = ''; return; }
+        pag.innerHTML =
+          '<button class="btn-pill btn-outline btn-sm" onclick="admOwnerGoPage(' + (_admOwnerPage - 1) + ')" ' + (_admOwnerPage === 1 ? 'disabled' : '') + ' style="padding:5px 10px;font-size:0.78rem;">\u2190</button>' +
+          '<span class="adm-page-info">' + _admOwnerPage + ' / ' + total + ' \u00b7 ' + _admOwnershipsFiltered.length + ' records</span>' +
+          '<button class="btn-pill btn-outline btn-sm" onclick="admOwnerGoPage(' + (_admOwnerPage + 1) + ')" ' + (_admOwnerPage === total ? 'disabled' : '') + ' style="padding:5px 10px;font-size:0.78rem;">\u2192</button>';
+      }
+    }
+
+    function admOwnerGoPage(n) {
+      var total = Math.ceil(_admOwnershipsFiltered.length / ADM_OWNER_PAGE);
+      _admOwnerPage = Math.max(1, Math.min(n, total));
+      admOwnerRenderPage();
+    }
+
+    async function admDeleteOwnership(alias) {
+      if (!confirm('Release ownership of:\n' + alias + '\n\nThe alias will be free — the next person to recover it becomes the new owner.')) return;
+      try {
+        var r = await _admSb.from('alias_ownership').delete().eq('alias', alias);
+        if (r.error) throw r.error;
+        showToast('\u2713 Ownership released for ' + alias);
+        await admLoadOwnership();
+      } catch (e) {
+        showToast('Delete failed: ' + e.message);
+      }
+    }
+
+    function admOwnerDebounceSearch() {
+      clearTimeout(_admOwnerSearchTimer);
+      _admOwnerSearchTimer = setTimeout(function () {
+        _admOwnerSearch = document.getElementById('admOwnerSearch').value;
+        admOwnerApplyFilter();
+      }, 220);
+    }
+
+    function admClearOwnerSearch() {
+      document.getElementById('admOwnerSearch').value = '';
+      _admOwnerSearch = '';
+      _admOwnerPage = 1;
+      admOwnerApplyFilter();
+    }
+
+    // ════════════════════════════════════════════════════════
+    // ── GMAIL ACCOUNTS TAB ──
+    // ════════════════════════════════════════════════════════
+    var _admGmailAccounts = [];
+    var _admGmailAuthUrl  = '';
+
+    async function admLoadGmailAccounts() {
+      var list = document.getElementById('admGmailList');
+      var cnt  = document.getElementById('admGmailCount');
+      if (!list) return;
+      list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>';
+
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts', {
+          headers: { 'x-admin-secret': getAdminSecret() }
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Unknown error');
+
+        _admGmailAccounts = data.accounts || [];
+        if (cnt) cnt.textContent = _admGmailAccounts.length;
+        admRenderGmailAccounts();
+      } catch (e) {
+        list.innerHTML = '<div class="adm-empty" style="color:#f87171">Error: ' + escHtml(e.message) + '</div>';
+        showToast('Gmail load failed: ' + e.message);
+      }
+    }
+
+    function admRenderGmailAccounts() {
+      var list = document.getElementById('admGmailList');
+      if (!list) return;
+
+      if (!_admGmailAccounts.length) {
+        list.innerHTML = '<div class="adm-empty">No Gmail accounts connected yet. Add one below.</div>';
+        return;
+      }
+
+      var now = new Date();
+      list.innerHTML = _admGmailAccounts.map(function (acc) {
+        var watchActive = acc.watch_active;
+        var expiry = acc.watch_expiry ? new Date(acc.watch_expiry) : null;
+        var expiryStr = expiry
+          ? (expiry > now
+            ? 'Watch expires ' + expiry.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            : '<span style="color:#f87171;">Watch expired ' + expiry.toLocaleDateString() + '</span>')
+          : '<span style="color:var(--text-muted);">No watch registered</span>';
+
+        var tokenBadge = acc.token_loaded
+          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(34,197,94,0.1);color:#22c55e;border:1px solid rgba(34,197,94,0.25);">🟢 Connected</span>'
+          : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.25);">🔴 No token</span>';
+
+        var watchBadge = watchActive
+          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.25);">📡 Watch active</span>'
+          : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(251,146,60,0.1);color:#fb923c;border:1px solid rgba(251,146,60,0.25);">⚠️ Watch inactive</span>';
+
+        var addedStr = acc.added_at ? new Date(acc.added_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+
+        return '<div class="adm-email-row" style="flex-direction:column;align-items:flex-start;gap:8px;padding:12px 14px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">' +
+            '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.82rem;color:var(--code-text);font-weight:700;flex:1;word-break:break-all;">' + escHtml(acc.email) + '</span>' +
+            tokenBadge + watchBadge +
+          '</div>' +
+          '<div style="font-size:0.68rem;color:var(--text-muted);display:flex;gap:12px;flex-wrap:wrap;">' +
+            '<span>' + expiryStr + '</span>' +
+            '<span>Added: ' + addedStr + '</span>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;margin-top:2px;flex-wrap:wrap;">' +
+            '<button class="btn-pill btn-outline btn-sm" onclick="admGmailRefreshWatch(\'' + escHtml(acc.email) + '\')" style="padding:5px 10px;font-size:0.72rem;display:flex;align-items:center;gap:4px;">' +
+              '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>' +
+              'Refresh Watch' +
+            '</button>' +
+            '<button class="btn-pill btn-sm adm-btn-del" onclick="admGmailRemove(\'' + escHtml(acc.email) + '\')" style="padding:5px 10px;font-size:0.72rem;display:flex;align-items:center;gap:4px;background:transparent;border:1px solid #f87171;color:#f87171;">' +
+              '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
+              'Disconnect' +
+            '</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    async function admGmailGenerateLink() {
+      var input = document.getElementById('admGmailConnectInput');
+      var email = (input ? input.value.trim().toLowerCase() : '');
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showToast('Enter a valid Gmail address first');
+        if (input) input.focus();
+        return;
+      }
+      var btn = document.getElementById('admGmailConnectBtn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/gmail-connect-url?account=' + encodeURIComponent(email), {
+          headers: { 'x-admin-secret': getAdminSecret() }
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        _admGmailAuthUrl = data.url;
+        var box = document.getElementById('admGmailLinkBox');
+        var linkInput = document.getElementById('admGmailLinkInput');
+        if (box) box.style.display = '';
+        if (linkInput) linkInput.value = data.url;
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Get Auth Link'; }
+      }
+    }
+
+    function admGmailCopyLink() {
+      if (!_admGmailAuthUrl) return;
+      navigator.clipboard.writeText(_admGmailAuthUrl).then(function () {
+        var btn = document.getElementById('admGmailCopyBtn');
+        if (btn) { var orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = orig; }, 2000); }
+        showToast('Auth link copied');
+      });
+    }
+
+    function admGmailOpenLink() {
+      if (_admGmailAuthUrl) window.open(_admGmailAuthUrl, '_blank');
+    }
+
+    async function admGmailRefreshWatch(email) {
+      showToast('Refreshing watch for ' + email + '…');
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts/refresh-watch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ account: email })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('✓ Watch refreshed for ' + email);
+        await admLoadGmailAccounts();
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      }
+    }
+
+    async function admGmailRemove(email) {
+      if (!confirm('Disconnect ' + email + '? This will remove the token and stop email sync for this account.')) return;
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ account: email })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('✓ ' + email + ' disconnected');
+        await admLoadGmailAccounts();
+      } catch (e) {
+        showToast('Error: ' + e.message);
+      }
+    }
+
   </script>
+
 
   <!-- ═══════════════════════════════════════════
      SET PIN MODAL  (first-time owner setup)
@@ -7602,11 +8008,12 @@
       </div>
 
       <!-- Section nav -->
-      <div class="adm-tabs" style="margin-bottom:0;">
-        <div class="adm-tab adm-nav-btn active" data-section="emails" onclick="admSwitchSection('emails')">📧 Valid
-          Emails</div>
-        <div class="adm-tab adm-nav-btn" data-section="fraud" onclick="admSwitchSection('fraud')">🚨 Fraud Detector
-        </div>
+      <div class="adm-tabs" style="margin-bottom:0;flex-wrap:wrap;">
+        <div class="adm-tab adm-nav-btn active" data-section="emails" onclick="admSwitchSection('emails')">📧 Valid Emails</div>
+        <div class="adm-tab adm-nav-btn" data-section="fraud" onclick="admSwitchSection('fraud')">🚨 Fraud Detector</div>
+        <div class="adm-tab adm-nav-btn" data-section="sessions" onclick="admSwitchSection('sessions')">🔐 Sessions</div>
+        <div class="adm-tab adm-nav-btn" data-section="ownership" onclick="admSwitchSection('ownership')">🏷️ Ownership</div>
+        <div class="adm-tab adm-nav-btn" data-section="gmail" onclick="admSwitchSection('gmail')">📮 Gmail Accounts</div>
       </div>
 
       <!-- Email management section -->
@@ -7806,6 +8213,138 @@
           </div>
         </div>
       </div><!-- /admSectionFraud -->
+
+      <!-- ═══════════════ SESSIONS section ═══════════════ -->
+      <div id="admSectionSessions" style="display:none;">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/>
+              </svg>
+              Email Sessions
+              <span class="adm-count" id="admSessionCount">0</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-pill btn-outline btn-sm" onclick="admLoadSessions()" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
+                Refresh
+              </button>
+            </div>
+          </div>
+          <div class="adm-search-row">
+            <input class="adm-input" type="text" id="admSessionSearch" placeholder="Search by alias or session ID…" oninput="admSessionDebounceSearch()" />
+            <button class="btn-pill btn-outline btn-sm" onclick="admClearSessionSearch()" style="padding:8px 11px;" title="Clear">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">Delete a session row to allow a user to re-recover their alias from any device. This does <strong>not</strong> delete their emails.</p>
+          <div id="admSessionList" class="adm-email-list"><div class="adm-loading"><span class="adm-spinner"></span> Loading…</div></div>
+          <div class="adm-pagination" id="admSessionPag"></div>
+        </div>
+      </div><!-- /admSectionSessions -->
+
+      <!-- ═══════════════ OWNERSHIP section ═══════════════ -->
+      <div id="admSectionOwnership" style="display:none;">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Alias Ownership
+              <span class="adm-count" id="admOwnerCount">0</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-pill btn-outline btn-sm" onclick="admLoadOwnership()" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
+                Refresh
+              </button>
+            </div>
+          </div>
+          <div class="adm-search-row">
+            <input class="adm-input" type="text" id="admOwnerSearch" placeholder="Search by alias or owner SID…" oninput="admOwnerDebounceSearch()" />
+            <button class="btn-pill btn-outline btn-sm" onclick="admClearOwnerSearch()" style="padding:8px 11px;" title="Clear">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">Delete an ownership record to fully release an alias — the next user who recovers it becomes the new owner.</p>
+          <div id="admOwnerList" class="adm-email-list"><div class="adm-loading"><span class="adm-spinner"></span> Loading…</div></div>
+          <div class="adm-pagination" id="admOwnerPag"></div>
+        </div>
+      </div><!-- /admSectionOwnership -->
+
+      <!-- ═══════════════ GMAIL ACCOUNTS section ═══════════════ -->
+      <div id="admSectionGmail" style="display:none;">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+              Gmail Accounts
+              <span class="adm-count" id="admGmailCount">0</span>
+            </div>
+            <button class="btn-pill btn-outline btn-sm" onclick="admLoadGmailAccounts()" style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-4.5"/></svg>
+              Refresh
+            </button>
+          </div>
+
+          <!-- Info banner -->
+          <div style="background:rgba(217,249,80,0.05);border:1px solid rgba(217,249,80,0.18);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:0.75rem;color:var(--text-dim);line-height:1.6;">
+            <strong style="color:var(--accent);">Option A — one Pub/Sub subscription per Gmail.</strong><br>
+            Each Gmail account gets its own subscription (e.g. <code style="font-size:0.7rem;color:var(--code-text);">joven-mail-user1-at-gmail-com</code>).
+            Create the subscription in Google Cloud Pub/Sub pointing to <code style="font-size:0.7rem;color:var(--code-text);">POST /gmail/push</code> before connecting a new account.
+          </div>
+
+          <!-- Account list -->
+          <div id="admGmailList"><div class="adm-loading"><span class="adm-spinner"></span> Loading…</div></div>
+        </div>
+
+        <!-- Add Gmail Account card -->
+        <div class="adm-card" id="admGmailConnectCard">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              Add Gmail Account
+            </div>
+          </div>
+          <p style="font-size:0.75rem;color:var(--text-dim);line-height:1.6;margin-bottom:12px;">
+            Generate an OAuth link for a Gmail address. Open the link in a browser <strong>already signed into that Gmail account</strong>, then authorize access. The token will be saved automatically.
+          </p>
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <input class="adm-input" type="email" id="admGmailConnectInput" placeholder="newaccount@gmail.com" style="flex:1;" />
+            <button class="btn-pill btn-primary btn-sm" id="admGmailConnectBtn" onclick="admGmailGenerateLink()" style="white-space:nowrap;padding:8px 14px;display:flex;align-items:center;gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Get Auth Link
+            </button>
+          </div>
+          <!-- Auth link result box -->
+          <div id="admGmailLinkBox" style="display:none;background:var(--bg-input);border:1px solid var(--border);border-radius:9px;padding:12px 14px;">
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:8px;">Open this link in the browser logged into the Gmail you want to connect:</div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input id="admGmailLinkInput" type="text" readonly style="flex:1;font-family:'JetBrains Mono',monospace;font-size:0.65rem;background:var(--bg-app);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--code-text);outline:none;" />
+              <button class="btn-pill btn-outline btn-sm" onclick="admGmailCopyLink()" id="admGmailCopyBtn" style="padding:6px 12px;white-space:nowrap;">Copy</button>
+              <button class="btn-pill btn-primary btn-sm" onclick="admGmailOpenLink()" style="padding:6px 12px;white-space:nowrap;display:flex;align-items:center;gap:4px;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Open
+              </button>
+            </div>
+            <div style="margin-top:10px;font-size:0.69rem;color:var(--text-muted);background:rgba(217,249,80,0.04);border:1px solid rgba(217,249,80,0.14);border-radius:7px;padding:8px 10px;line-height:1.6;">
+              ① Open the link → sign in with the target Gmail<br>
+              ② Click <strong>Allow</strong> → you'll see a green confirmation page<br>
+              ③ Come back here and click <strong>Refresh</strong> to see the new account
+            </div>
+          </div>
+        </div>
+      </div><!-- /admSectionGmail -->
 
     </div>
   </div>
