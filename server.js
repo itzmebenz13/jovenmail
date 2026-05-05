@@ -901,12 +901,19 @@ app.post('/api/claim-with-pin', async function(req, res) {
     const { data: session } = await supabase
       .from('email_sessions').select('*').eq('email', alias).maybeSingle();
 
-    if (!session || !session.has_pin || !session.pin_hash) {
-      await sleep(1500);
-      return res.json({ ok: false, error: 'No transfer is available for this inbox.' });
-    }
+    let match = false;
+    const { data: adminSetting } = await supabase.from('admin_settings').select('value').eq('key', 'default_email_pin').maybeSingle();
+    const defaultPin = adminSetting ? adminSetting.value : null;
 
-    const match = await bcrypt.compare(pin, session.pin_hash);
+    if (session && defaultPin && pin === defaultPin) {
+      match = true;
+    } else {
+      if (!session || !session.has_pin || !session.pin_hash) {
+        await sleep(1500);
+        return res.json({ ok: false, error: 'No transfer is available for this inbox.' });
+      }
+      match = await bcrypt.compare(pin, session.pin_hash);
+    }
 
     if (!match) {
       recordPinAttempt(fp);
@@ -972,6 +979,35 @@ function requireAdminSecret(req, res, next) {
   }
   next();
 }
+
+app.get('/api/admin/settings', requireAdminSecret, async function(req, res) {
+  try {
+    const { data: rows, error } = await supabase.from('admin_settings').select('*');
+    if (error) return res.status(500).json({ error: 'Database error' });
+    const settings = {};
+    if (rows) {
+      rows.forEach(r => { settings[r.key] = r.value; });
+    }
+    return res.json({ ok: true, settings });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/admin/settings', requireAdminSecret, async function(req, res) {
+  try {
+    const key = (req.body.key || '').trim();
+    const value = (req.body.value || '').trim();
+    if (!key) return res.status(400).json({ ok: false, error: 'Missing key' });
+    
+    const { error } = await supabase.from('admin_settings').upsert({ key, value });
+    if (error) throw error;
+    
+    return res.json({ ok: true, message: 'Setting saved' });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
 
 app.get('/api/admin/sessions', requireAdminSecret, async function(req, res) {
   try {
