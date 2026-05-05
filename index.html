@@ -6655,7 +6655,10 @@
         if (el) el.style.display = k === name ? '' : 'none';
       });
       if (name === 'fraud')     admLoadFraud();
-      if (name === 'sessions')  admLoadSessions();
+      if (name === 'sessions') {
+        admLoadSessions();
+        admLoadSettings();
+      }
       if (name === 'ownership') admLoadOwnership();
       if (name === 'gmail')     admLoadGmailAccounts();
     }
@@ -7664,6 +7667,56 @@
       }).join('');
     }
 
+    // ── ADMIN SETTINGS ──
+    async function admLoadSettings() {
+      var input = document.getElementById('admMasterPin');
+      if (!input) return;
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/settings', {
+          headers: { 'x-admin-secret': getAdminSecret() }
+        });
+        if (r.ok) {
+          var data = await r.json();
+          if (data.ok && data.settings) {
+            input.value = data.settings.default_email_pin || '';
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load settings:', e);
+      }
+    }
+
+    async function admSaveMasterPin() {
+      var btn = document.getElementById('admSavePinBtn');
+      var input = document.getElementById('admMasterPin');
+      var pin = input.value.trim();
+      
+      if (pin !== '' && !/^\d{4}$/.test(pin)) {
+        showToast('PIN must be exactly 4 digits, or left blank to disable.');
+        return;
+      }
+
+      var orig = btn.innerHTML;
+      btn.innerHTML = '<span class="adm-spinner"></span>';
+      btn.disabled = true;
+
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ key: 'default_email_pin', value: pin })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Unknown error');
+        showToast('✓ Default PIN saved successfully');
+      } catch (e) {
+        showToast('Save failed: ' + e.message);
+      } finally {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+      }
+    }
+
     var _admOAuthUrl = '';
 
     async function admGenerateOAuthLink() {
@@ -8173,7 +8226,13 @@ ALTER TABLE allowed_emails
 
 -- 3. Add gmail_account column to emails (required for routing)
 ALTER TABLE emails
-  ADD COLUMN IF NOT EXISTS gmail_account TEXT;</pre>
+  ADD COLUMN IF NOT EXISTS gmail_account TEXT;
+
+-- 4. Create admin_settings table for dynamic configs (like Backup PIN)
+CREATE TABLE IF NOT EXISTS admin_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);</pre>
         </div>
       </div>
 
@@ -8376,6 +8435,32 @@ ALTER TABLE emails
 
       <!-- ═══════════════ SESSIONS section ═══════════════ -->
       <div id="admSectionSessions" style="display:none;">
+        <!-- SECURITY SETTINGS -->
+        <div class="adm-card" style="margin-bottom: 12px;">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Security Settings
+            </div>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">Set a master fallback PIN. If an email is owned but the user forgets their PIN, this Backup PIN can be used to bypass the lock.</p>
+          <div style="display:flex; gap: 6px; align-items: center; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 5px; padding-left: 14px; transition: all 0.2s;" 
+               onfocusin="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 0 2px rgba(217,249,80,0.1)'" 
+               onfocusout="this.style.borderColor='var(--border)'; this.style.boxShadow='none'">
+            <input id="admMasterPin" type="text" placeholder="e.g. 9999 (Leave blank to disable)" maxlength="4"
+              style="flex:1; border:none; background:transparent; font-size:0.85rem; color:var(--text); outline:none; font-family:'JetBrains Mono',monospace;"
+              onkeydown="if(event.key==='Enter')admSaveMasterPin()" />
+            <button class="btn-pill btn-primary" onclick="admSaveMasterPin()" id="admSavePinBtn"
+              style="white-space:nowrap; display:flex; align-items:center; gap:6px; padding:8px 16px; font-size:0.8rem; font-weight:700; border-radius: 8px; height: 34px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Save PIN
+            </button>
+          </div>
+        </div>
+
         <div class="adm-card">
           <div class="adm-card-head">
             <div class="adm-card-title">
