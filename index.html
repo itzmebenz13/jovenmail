@@ -4507,7 +4507,7 @@
 
   <!-- SUBSCRIPTION MODAL -->
   <div class="modal-overlay" id="subscriptionModalOverlay" onclick="closeSubscriptionOutside(event)">
-    <div class="modal" id="subscriptionModal" onclick="event.stopPropagation()">
+    <div class="modal" id="subscriptionModal" onclick="event.stopPropagation()" style="max-width: 500px;">
       <div class="modal-head">
         <button class="modal-close" onclick="closeSubscriptionModal()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -4518,42 +4518,68 @@
         </button>
       </div>
       <div class="modal-body" style="text-align:center;">
-        <h2 style="font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:8px;">Unlock More Accounts</h2>
-        <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:20px;line-height:1.5;">Get a subscription key to connect your own Gmail accounts and receive emails directly here.</p>
+        <h2 style="font-size:1.8rem;font-weight:900;letter-spacing:-0.04em;margin-bottom:6px;">Level Up Your Inbox</h2>
+        <p style="color:var(--text-dim);font-size:0.95rem;margin-bottom:24px;line-height:1.5;">Connect your personal Gmail accounts and manage everything in one unified dashboard.</p>
         
-        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
-          <!-- Basic Plan -->
-          <div style="border: 2px solid var(--border-strong); border-radius: 12px; padding: 15px; text-align: left; background: var(--bg-card); position: relative;">
-            <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 4px;">Basic Plan</div>
-            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px;">Connect up to <strong>1 Gmail account</strong></div>
-            <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent);">₱99<span style="font-size:0.8rem; color:var(--text-dim); font-weight: 600;">/month</span></div>
+        <!-- Billing Toggle -->
+        <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-bottom: 24px;">
+          <span id="lblMonthly" style="font-weight:700; color:var(--text-main); transition:color 0.2s;">Monthly</span>
+          <div class="billing-toggle" onclick="toggleBillingCycle()" style="width:50px; height:28px; background:var(--bg-input); border:2px solid var(--border-strong); border-radius:14px; position:relative; cursor:pointer; transition:all 0.2s;">
+            <div id="billingKnob" style="width:20px; height:20px; background:var(--text-main); border-radius:50%; position:absolute; top:2px; left:2px; transition:transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);"></div>
           </div>
-          <!-- Pro Plan -->
-          <div style="border: 2px solid var(--accent); border-radius: 12px; padding: 15px; text-align: left; background: var(--bg-card); position: relative;">
-            <div style="position: absolute; top: -10px; right: 15px; background: var(--accent); color: var(--accent-text); font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Popular</div>
-            <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 4px;">Pro Plan</div>
-            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px;">Connect up to <strong>2 Gmail accounts</strong></div>
-            <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent);">₱299<span style="font-size:0.8rem; color:var(--text-dim); font-weight: 600;">/month</span></div>
-          </div>
-          <!-- Team Plan -->
-          <div style="border: 2px solid var(--border-strong); border-radius: 12px; padding: 15px; text-align: left; background: var(--bg-card); position: relative;">
-            <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 4px;">Team Plan</div>
-            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px;">Connect up to <strong>3 Gmail accounts</strong></div>
-            <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent);">₱499<span style="font-size:0.8rem; color:var(--text-dim); font-weight: 600;">/month</span></div>
-          </div>
+          <span id="lblAnnual" style="font-weight:600; color:var(--text-dim); transition:color 0.2s; display:flex; align-items:center; gap:6px;">
+            Annual
+            <span style="background:#22c55e; color:#fff; font-size:0.65rem; padding:2px 6px; border-radius:8px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">Save 20%</span>
+          </span>
         </div>
 
-        <button class="btn-pill btn-outline" style="width:100%;padding:12px;font-size:0.95rem;justify-content:center;margin-bottom:15px;background:var(--bg-app);" onclick="purchaseSubscriptionKey()">
-          Purchase Key via Email
+        <!-- Pricing Cards -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-bottom:24px;" id="planCardsContainer">
+          
+          <!-- Basic Plan -->
+          <div class="plan-card" id="cardBasic" onclick="selectPlan('basic')" style="border: 2px solid var(--border-strong); border-radius: 14px; padding: 18px 14px; text-align: left; background: var(--bg-card); cursor: pointer; transition: all 0.2s; position:relative;">
+            <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 6px;">Basic</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 14px; line-height:1.4;"><strong>1</strong> connected account</div>
+            <div class="price-display" style="font-size: 1.6rem; font-weight: 900; color: var(--text-main); letter-spacing:-0.03em;">
+              <span class="currency" style="font-size:1rem; vertical-align:top;">₱</span><span id="priceBasic">99</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;" class="billing-text">per month</div>
+          </div>
+
+          <!-- Pro Plan -->
+          <div class="plan-card active" id="cardPro" onclick="selectPlan('pro')" style="border: 2px solid var(--accent); border-radius: 14px; padding: 18px 14px; text-align: left; background: var(--bg-hover); cursor: pointer; transition: all 0.2s; position:relative; transform: scale(1.02); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div style="position: absolute; top: -12px; right: 12px; background: var(--accent); color: var(--accent-text); font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">Popular</div>
+            <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 6px;">Pro</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 14px; line-height:1.4;"><strong>2</strong> connected accounts</div>
+            <div class="price-display" style="font-size: 1.6rem; font-weight: 900; color: var(--text-main); letter-spacing:-0.03em;">
+              <span class="currency" style="font-size:1rem; vertical-align:top;">₱</span><span id="pricePro">299</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;" class="billing-text">per month</div>
+          </div>
+
+          <!-- Team Plan -->
+          <div class="plan-card" id="cardTeam" onclick="selectPlan('team')" style="border: 2px solid var(--border-strong); border-radius: 14px; padding: 18px 14px; text-align: left; background: var(--bg-card); cursor: pointer; transition: all 0.2s; position:relative;">
+            <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 6px;">Team</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 14px; line-height:1.4;"><strong>3</strong> connected accounts</div>
+            <div class="price-display" style="font-size: 1.6rem; font-weight: 900; color: var(--text-main); letter-spacing:-0.03em;">
+              <span class="currency" style="font-size:1rem; vertical-align:top;">₱</span><span id="priceTeam">499</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;" class="billing-text">per month</div>
+          </div>
+
+        </div>
+
+        <button class="btn-pill btn-primary" id="btnPurchase" style="width:100%;padding:14px;font-size:1rem;justify-content:center;margin-bottom:20px; font-weight:800; box-shadow: 0 4px 14px var(--accent-glow, rgba(217,249,80,0.3)); transition:all 0.2s;" onclick="purchaseSubscriptionKey()">
+          Purchase Pro Plan (Monthly)
         </button>
 
-        <div style="margin-top:20px; border-top: 1px dashed var(--border-strong); padding-top: 20px;">
-          <div style="font-size:0.9rem; font-weight:700; margin-bottom:10px;">Already have a key?</div>
-          <div style="display:flex; gap:8px;">
-            <input type="text" id="subKeyInput" placeholder="Enter your key here..." style="flex:1; border-radius: 8px; border: 1px solid var(--border); padding: 10px; font-family: monospace; font-size: 0.9rem; background: var(--bg-input); color: var(--text);" />
-            <button class="btn-pill btn-primary" onclick="redeemSubscriptionKey()" style="padding: 10px 16px;">Redeem</button>
+        <div style="margin-top:24px; border-top: 1px dashed var(--border-strong); padding-top: 24px; text-align:left;">
+          <div style="font-size:0.95rem; font-weight:800; margin-bottom:12px;">Got a Subscription Key?</div>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="subKeyInput" placeholder="e.g. JM-PRO-A1B2C3" style="flex:1; border-radius: 10px; border: 2px solid var(--border-strong); padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; background: var(--bg-input); color: var(--text-main); outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-strong)'" />
+            <button class="btn-pill" style="background:var(--text-main); color:var(--bg-app); border:none; padding: 0 20px; font-weight:800;" onclick="redeemSubscriptionKey()">Redeem</button>
           </div>
-          <div id="subKeyMessage" style="margin-top: 10px; font-size: 0.8rem; display:none;"></div>
+          <div id="subKeyMessage" style="margin-top: 12px; font-size: 0.85rem; font-weight:600; display:none;"></div>
         </div>
       </div>
     </div>
@@ -6667,8 +6693,87 @@
       if (e.target.id === 'subscriptionModalOverlay') closeSubscriptionModal();
     }
 
+    var _subPlan = 'pro';
+    var _subCycle = 'monthly';
+
+    function selectPlan(plan) {
+      _subPlan = plan;
+      
+      // Reset styles
+      ['basic', 'pro', 'team'].forEach(p => {
+        var card = document.getElementById('card' + p.charAt(0).toUpperCase() + p.slice(1));
+        if (!card) return;
+        card.classList.remove('active');
+        card.style.borderColor = 'var(--border-strong)';
+        card.style.background = 'var(--bg-card)';
+        card.style.transform = 'scale(1)';
+        card.style.boxShadow = 'none';
+      });
+
+      // Set active styles
+      var activeCard = document.getElementById('card' + plan.charAt(0).toUpperCase() + plan.slice(1));
+      if (activeCard) {
+        activeCard.classList.add('active');
+        activeCard.style.borderColor = 'var(--accent)';
+        activeCard.style.background = 'var(--bg-hover)';
+        activeCard.style.transform = 'scale(1.02)';
+        activeCard.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+      }
+
+      updatePurchaseBtn();
+    }
+
+    function toggleBillingCycle() {
+      _subCycle = _subCycle === 'monthly' ? 'annual' : 'monthly';
+      
+      var knob = document.getElementById('billingKnob');
+      var lblM = document.getElementById('lblMonthly');
+      var lblA = document.getElementById('lblAnnual');
+
+      if (_subCycle === 'annual') {
+        knob.style.transform = 'translateX(22px)';
+        lblM.style.color = 'var(--text-dim)';
+        lblA.style.color = 'var(--text-main)';
+        
+        document.getElementById('priceBasic').textContent = '990';
+        document.getElementById('pricePro').textContent = '2990';
+        document.getElementById('priceTeam').textContent = '4990';
+        document.querySelectorAll('.billing-text').forEach(el => el.textContent = 'per year');
+      } else {
+        knob.style.transform = 'translateX(0)';
+        lblM.style.color = 'var(--text-main)';
+        lblA.style.color = 'var(--text-dim)';
+
+        document.getElementById('priceBasic').textContent = '99';
+        document.getElementById('pricePro').textContent = '299';
+        document.getElementById('priceTeam').textContent = '499';
+        document.querySelectorAll('.billing-text').forEach(el => el.textContent = 'per month');
+      }
+
+      updatePurchaseBtn();
+    }
+
+    function updatePurchaseBtn() {
+      var btn = document.getElementById('btnPurchase');
+      if (!btn) return;
+      var planName = _subPlan.charAt(0).toUpperCase() + _subPlan.slice(1);
+      var cycleName = _subCycle.charAt(0).toUpperCase() + _subCycle.slice(1);
+      btn.textContent = 'Purchase ' + planName + ' Plan (' + cycleName + ')';
+    }
+
     function purchaseSubscriptionKey() {
-      window.location.href = "mailto:koreomailph@gmail.com?subject=Purchase Subscription Key&body=Hi, I would like to purchase a subscription key for JovenMail.%0D%0A%0D%0APreferred Tier (Basic/Pro/Team):%0D%0ABilling Cycle (Monthly/Annual):%0D%0A%0D%0AThank you!";
+      var planName = _subPlan.charAt(0).toUpperCase() + _subPlan.slice(1);
+      var cycleName = _subCycle.charAt(0).toUpperCase() + _subCycle.slice(1);
+      var subject = encodeURIComponent("Purchase Subscription Key: " + planName + " Plan");
+      var body = encodeURIComponent(
+        "Hi JovenMail Team,\n\n" +
+        "I would like to purchase a subscription key.\n\n" +
+        "Preferred Tier: " + planName + "\n" +
+        "Billing Cycle: " + cycleName + "\n\n" +
+        "Please let me know how to proceed with the payment.\n\n" +
+        "Thank you!"
+      );
+      window.location.href = "mailto:koreomailph@gmail.com?subject=" + subject + "&body=" + body;
     }
 
     async function redeemSubscriptionKey() {
