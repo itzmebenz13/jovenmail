@@ -4106,6 +4106,22 @@
         <p>Recover your assigned Gmail alias and access its inbox privately. Your alias, your messages!</p>
       </section>
 
+      <!-- Subscription Offer Banner -->
+      <div id="subOfferBanner" style="display:none; justify-content:space-between; align-items:center; background: linear-gradient(135deg, rgba(217, 249, 80, 0.1), rgba(217, 249, 80, 0.02)); border: 1px solid var(--accent); border-radius: var(--radius-card); padding: 14px 16px; margin-bottom: 20px; transition: all 0.3s ease;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width: 36px; height: 36px; border-radius: 9px; background: rgba(217, 249, 80, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--accent);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          </div>
+          <div>
+            <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">Use Your Own Gmail</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;">Connect up to 3 personal accounts. <a href="#" onclick="openSubscriptionModal(); return false;" style="color:var(--accent); text-decoration:underline;">View Plans</a></div>
+          </div>
+        </div>
+        <button onclick="dismissSubOffer()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; transition: color 0.15s; flex-shrink: 0;" title="Dismiss">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
       <!-- PWA Install Banner -->
       <div id="installBanner">
         <div class="ib-left">
@@ -6693,6 +6709,12 @@
       if (e.target.id === 'subscriptionModalOverlay') closeSubscriptionModal();
     }
 
+    function dismissSubOffer() {
+      var el = document.getElementById('subOfferBanner');
+      if (el) el.style.display = 'none';
+      localStorage.setItem('hideSubOffer', 'true');
+    }
+
     var _subPlan = 'pro';
     var _subCycle = 'monthly';
 
@@ -6897,8 +6919,14 @@
       var savedUi = localStorage.getItem('ui-theme') || 'meiro';
       setUiTheme(savedUi);
 
-      // ── Check subscription status ──
+      // Check subscription status
       checkSubscriptionStatus();
+
+      // Check sub offer banner
+      if (localStorage.getItem('hideSubOffer') !== 'true') {
+        var subOffer = document.getElementById('subOfferBanner');
+        if (subOffer) subOffer.style.display = 'flex';
+      }
 
       // ── Check for QuickLink (?q=) FIRST — viewer mode, no ownership involved ──
       if (tryLoadQuickLink()) return;
