@@ -327,11 +327,22 @@ app.post('/gmail/push', async (req, res) => {
     if (!data) return;
 
     // Which Gmail account triggered this push?
-    const accountEmail = (req.query.account || '').trim().toLowerCase();
+    // Prefer ?account= query param; fall back to emailAddress in the Pub/Sub message body.
+    let accountEmail = (req.query.account || '').trim().toLowerCase();
     if (!accountEmail) {
-      console.warn('[PUSH] No ?account= param — cannot route push notification');
+      try {
+        const decoded = JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
+        accountEmail = (decoded.emailAddress || '').trim().toLowerCase();
+      } catch (decodeErr) {
+        console.warn('[PUSH] Failed to decode message data:', decodeErr.message);
+      }
+    }
+    if (!accountEmail) {
+      console.warn('[PUSH] No account email found in push notification — dropping');
       return;
     }
+
+    console.log(`[PUSH] Received notification for ${accountEmail}`);
 
     // Debounce: schedule a fetch for this account (handles rate-limit backoff)
     scheduleFetch(accountEmail, async (emails) => {
