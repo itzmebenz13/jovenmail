@@ -8119,14 +8119,16 @@
           <p style="font-size:0.78rem;color:var(--text-dim);line-height:1.55;margin-bottom:12px;">
             Enter the Gmail address you want to connect, then click <strong>Generate OAuth Link</strong>. Open that link in a browser signed into that Google account and grant access.
           </p>
-          <div class="gmail-input-group">
-            <input id="admGmailInput" type="email" placeholder="newaccount@gmail.com"
-              class="adm-search" style="width:100%;box-sizing:border-box;font-size:0.84rem;"
+          <div style="display:flex; gap: 6px; align-items: center; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 5px; padding-left: 14px; transition: all 0.2s;" 
+               onfocusin="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 0 2px rgba(217,249,80,0.1)'" 
+               onfocusout="this.style.borderColor='var(--border)'; this.style.boxShadow='none'">
+            <input id="admGmailInput" type="email" placeholder="account@gmail.com"
+              style="flex:1; border:none; background:transparent; font-size:0.85rem; color:var(--text); outline:none;"
               onkeydown="if(event.key==='Enter')admGenerateOAuthLink()" />
             <button class="btn-pill btn-primary" onclick="admGenerateOAuthLink()" id="admGmailConnectBtn"
-              style="width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;font-size:0.85rem;font-weight:700;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              Generate OAuth Link
+              style="white-space:nowrap; display:flex; align-items:center; gap:6px; padding:8px 16px; font-size:0.8rem; font-weight:700; border-radius: 8px; height: 34px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Generate Link
             </button>
           </div>
           <div id="admOAuthLinkWrap" style="display:none;margin-top:12px;">
