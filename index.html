@@ -2725,6 +2725,83 @@
       font-size: 0.82rem;
     }
 
+    /* ── Gmail Account Cards ── */
+    .gmail-account-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 13px;
+      border-radius: 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+      margin-bottom: 7px;
+    }
+    .gmail-account-card:last-child { margin-bottom: 0; }
+    .gmail-account-card:hover { border-color: var(--border-strong); }
+    .gmail-account-info { flex: 1; min-width: 0; }
+    .gmail-account-email {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.81rem;
+      font-weight: 600;
+      color: var(--code-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 5px;
+    }
+    .gmail-account-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+    }
+    .gmail-watch-badge {
+      font-size: 0.64rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .gmail-watch-badge.active {
+      background: rgba(34,197,94,0.12);
+      color: #22c55e;
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+    .gmail-watch-badge.expired {
+      background: rgba(248,113,113,0.1);
+      color: #f87171;
+      border: 1px solid rgba(248,113,113,0.25);
+    }
+    .gmail-meta-sep { color: var(--border-strong); font-size: 0.75rem; }
+    .gmail-meta-text { font-size: 0.67rem; color: var(--text-muted); white-space: nowrap; }
+    .gmail-account-actions { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+    .gmail-input-group { display: flex; flex-direction: column; gap: 8px; }
+    .gmail-oauth-card {
+      background: var(--bg-input);
+      border: 1px solid rgba(217,249,80,0.2);
+      border-radius: 10px;
+      padding: 13px 14px;
+    }
+    .gmail-oauth-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .gmail-oauth-badge {
+      font-size: 0.63rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--accent);
+      background: rgba(217,249,80,0.1);
+      border: 1px solid rgba(217,249,80,0.25);
+      border-radius: 20px;
+      padding: 2px 8px;
+    }
+
     .adm-search-row {
       display: flex;
       gap: 8px;
@@ -7497,7 +7574,7 @@
     }
 
     async function admDeleteOwnership(alias) {
-      if (!confirm('Release ownership of:\n' + alias + '\n\nThe alias will be free — the next person to recover it becomes the new owner.')) return;
+      if (!confirm('Release ownership of:\n' + alias + '\n\nThe alias will be free \u2014 the next person to recover it becomes the new owner.')) return;
       try {
         var r = await _admSb.from('alias_ownership').delete().eq('alias', alias);
         if (r.error) throw r.error;
@@ -7520,7 +7597,6 @@
       document.getElementById('admOwnerSearch').value = '';
       _admOwnerSearch = '';
       _admOwnerPage = 1;
-      admOwnerApplyFilter();
     }
 
     // ══════════════════════════════════════════════════
@@ -7557,26 +7633,30 @@
       }
       list.innerHTML = accounts.map(function (acc) {
         var watchActive = acc.watch_active;
-        var watchChip = watchActive
-          ? '<span style="font-size:0.68rem;background:rgba(34,197,94,0.12);color:#22c55e;border:1px solid rgba(34,197,94,0.25);padding:2px 8px;border-radius:20px;font-weight:700;">✓ Watch active</span>'
-          : '<span style="font-size:0.68rem;background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.25);padding:2px 8px;border-radius:20px;font-weight:700;">⚠ Watch expired</span>';
-        var expiry = acc.watch_expiry
-          ? new Date(acc.watch_expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-          : '—';
+        var badgeClass = watchActive ? 'active' : 'expired';
+        var badgeLabel = watchActive ? '\u2713 Watch active' : '\u26a0 Watch expired';
         var added = acc.added_at
           ? new Date(acc.added_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          : '—';
-        return '<div class="adm-email-row" style="flex-wrap:wrap;gap:6px;align-items:center;">' +
-          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.8rem;font-weight:600;flex:1;min-width:180px;color:var(--code-text);">' + escHtml(acc.email) + '</span>' +
-          watchChip +
-          '<span style="font-size:0.68rem;color:var(--text-muted);white-space:nowrap;">' + (acc.alias_count || 0) + ' aliases</span>' +
-          '<span class="adm-email-date">' + added + '</span>' +
-          '<div style="display:flex;gap:5px;">' +
-            '<button class="btn-pill btn-outline btn-sm" onclick="admRefreshWatch(\'' + escHtml(acc.email) + '\')" title="Refresh Pub/Sub watch" style="padding:4px 9px;font-size:0.7rem;display:flex;align-items:center;gap:4px;">' +
+          : null;
+        var aliasCount = acc.alias_count || 0;
+        var email = escHtml(acc.email);
+        var emailJs = acc.email.replace(/'/g, "\\'");
+        return '<div class="gmail-account-card">' +
+          '<div class="gmail-account-info">' +
+            '<div class="gmail-account-email">' + email + '</div>' +
+            '<div class="gmail-account-meta">' +
+              '<span class="gmail-watch-badge ' + badgeClass + '">' + badgeLabel + '</span>' +
+              '<span class="gmail-meta-sep">\u00b7</span>' +
+              '<span class="gmail-meta-text">' + aliasCount + ' alias' + (aliasCount !== 1 ? 'es' : '') + '</span>' +
+              (added ? '<span class="gmail-meta-sep">\u00b7</span><span class="gmail-meta-text">Added ' + added + '</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="gmail-account-actions">' +
+            '<button class="btn-pill btn-outline btn-sm" onclick="admRefreshWatch(\'' + emailJs + '\')" style="padding:4px 10px;font-size:0.7rem;display:flex;align-items:center;gap:4px;">' +
               '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>' +
-              'Refresh'
+              'Renew' +
             '</button>' +
-            '<button class="adm-btn-del" onclick="admRemoveGmailAccount(\'' + escHtml(acc.email) + '\')" title="Remove this Gmail account">' +
+            '<button class="adm-btn-del" onclick="admRemoveGmailAccount(\'' + emailJs + '\')" title="Remove" style="padding:5px 8px;">' +
               '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
             '</button>' +
           '</div>' +
@@ -8039,19 +8119,23 @@
           <p style="font-size:0.78rem;color:var(--text-dim);line-height:1.55;margin-bottom:12px;">
             Enter the Gmail address you want to connect, then click <strong>Generate OAuth Link</strong>. Open that link in a browser signed into that Google account and grant access.
           </p>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+          <div class="gmail-input-group">
             <input id="admGmailInput" type="email" placeholder="newaccount@gmail.com"
-              class="adm-search" style="flex:1;font-size:0.83rem;"
+              class="adm-search" style="width:100%;box-sizing:border-box;font-size:0.84rem;"
               onkeydown="if(event.key==='Enter')admGenerateOAuthLink()" />
-            <button class="btn-pill btn-primary btn-sm" onclick="admGenerateOAuthLink()" id="admGmailConnectBtn" style="white-space:nowrap;display:flex;align-items:center;gap:5px;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <button class="btn-pill btn-primary" onclick="admGenerateOAuthLink()" id="admGmailConnectBtn"
+              style="width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;font-size:0.85rem;font-weight:700;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               Generate OAuth Link
             </button>
           </div>
-          <div id="admOAuthLinkWrap" style="display:none;margin-top:8px;">
-            <div style="background:var(--bg-input);border:1px solid rgba(217,249,80,0.25);border-radius:9px;padding:12px 14px;">
-              <div style="font-size:0.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">OAuth Link Ready</div>
-              <div id="admOAuthLinkText" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--code-text);word-break:break-all;margin-bottom:10px;"></div>
+          <div id="admOAuthLinkWrap" style="display:none;margin-top:12px;">
+            <div class="gmail-oauth-card">
+              <div class="gmail-oauth-header">
+                <span class="gmail-oauth-badge">OAuth Link Ready</span>
+                <span style="font-size:0.69rem;color:var(--text-muted);">Sign into <strong id="admOAuthAccountHint" style="color:var(--text-dim);font-weight:700;"></strong> to authorize</span>
+              </div>
+              <div id="admOAuthLinkText" style="font-family:'JetBrains Mono',monospace;font-size:0.67rem;color:var(--code-text);word-break:break-all;margin-bottom:10px;line-height:1.65;background:var(--bg-app);border-radius:7px;padding:9px 11px;border:1px solid var(--border);"></div>
               <div style="display:flex;gap:7px;">
                 <button class="btn-pill btn-primary btn-sm" onclick="admCopyOAuthLink()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -8062,7 +8146,6 @@
                   Open Link
                 </button>
               </div>
-              <p style="font-size:0.7rem;color:var(--text-muted);margin-top:8px;line-height:1.5;">⚠️ Open this link in a browser signed into <strong id="admOAuthAccountHint"></strong>. After authorizing, this tab will show a success message and the account will appear in the list above.</p>
             </div>
           </div>
         </div>
