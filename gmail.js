@@ -1,5 +1,5 @@
 /**
- * gmail.js — Multi-account Gmail manager for JovenMail
+ * gmail.js — Multi-account Gmail manager for KoreoMail
  *
  * Architecture (Option A):
  *   - One Pub/Sub subscription per Gmail account
