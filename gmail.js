@@ -140,13 +140,14 @@ async function loadAllAccounts() {
  * Generate an OAuth URL for a specific Gmail account.
  * Uses login_hint so Google pre-selects that account.
  */
-function getAuthUrl(accountEmail) {
+function getAuthUrl(accountEmail, ownerFp) {
   const tempClient = new google.auth.OAuth2(client_id, client_secret, redirectUri);
+  const statePayload = { a: accountEmail || '', f: ownerFp || '' };
   const params = {
     access_type: 'offline',
     prompt: 'consent',
     scope: SCOPES,
-    state: accountEmail  // passed back in ?state= on callback
+    state: Buffer.from(JSON.stringify(statePayload)).toString('base64') // passed back in ?state= on callback
   };
   if (accountEmail) params.login_hint = accountEmail;
   return tempClient.generateAuthUrl(params);
@@ -156,9 +157,19 @@ function getAuthUrl(accountEmail) {
  * Exchange auth code for tokens and persist to Supabase.
  * accountEmail comes from the ?state= callback parameter.
  */
-async function saveToken(code, accountEmail) {
+async function saveToken(code, stateStr) {
   const tempClient = new google.auth.OAuth2(client_id, client_secret, redirectUri);
   const { tokens } = await tempClient.getToken(code);
+
+  let accountEmail = '';
+  let ownerFp = null;
+  try {
+    const parsed = JSON.parse(Buffer.from(stateStr, 'base64').toString('utf8'));
+    accountEmail = parsed.a;
+    ownerFp = parsed.f || null;
+  } catch (e) {
+    accountEmail = stateStr; // fallback for old format
+  }
 
   // Determine actual account email from token if not provided
   let email = accountEmail;
@@ -176,8 +187,11 @@ async function saveToken(code, accountEmail) {
   }
 
   // Upsert into Supabase
+  const upsertData = { email, tokens };
+  if (ownerFp) upsertData.owner_fp = ownerFp;
+
   const { error } = await _sb.from('gmail_accounts').upsert(
-    { email, tokens },
+    upsertData,
     { onConflict: 'email' }
   );
   if (error) throw error;
