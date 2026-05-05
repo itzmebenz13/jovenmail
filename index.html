@@ -4813,7 +4813,7 @@
        · Inbox TTL: 15 min inactivity → server may return empty
     ════════════════════════════════════════════════════════ */
 
-    var RAILWAY_URL = 'https://maildot-production.up.railway.app';
+    var RAILWAY_URL = 'https://jovenmail-production.up.railway.app';
 
     // ── SESSION ID ──
     // Stable per-browser identifier. Stored in localStorage so it
@@ -7281,17 +7281,21 @@
       if (!list) return;
       list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading\u2026</div>';
       try {
-        var all = [];
-        var CHUNK = 1000, from = 0;
-        while (true) {
-          var r = await _admSb.from('email_sessions').select('*').order('created_at', { ascending: false }).range(from, from + CHUNK - 1);
-          if (r.error) throw r.error;
-          var rows = r.data || [];
-          all = all.concat(rows);
-          if (rows.length < CHUNK) break;
-          from += CHUNK;
-        }
-        _admSessions = all;
+        var r = await fetch(RAILWAY_URL + '/api/admin/sessions', {
+          headers: { 'x-admin-secret': getAdminSecret() }
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Unknown error');
+        _admSessions = (data.sessions || []).map(function(s) {
+          return {
+            email:      s.email,
+            alias:      s.email,
+            claimed_at: s.claimed_at,
+            has_pin:    s.has_pin,
+            pin_set_at: s.pin_set_at
+          };
+        });
         _admSessionSearch = '';
         document.getElementById('admSessionSearch').value = '';
         _admSessionPage = 1;
@@ -7330,15 +7334,15 @@
       }
 
       list.innerHTML = slice.map(function (row) {
-        var alias = row.alias || '—';
-        var sid = row.session_id || row.sid || row.fingerprint || '—';
-        var sidShort = sid.length > 20 ? sid.slice(0, 10) + '\u2026' + sid.slice(-6) : sid;
-        var d = row.created_at ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-        return '<div class="adm-email-row" data-id="' + row.id + '">' +
+        var alias = row.alias || row.email || '—';
+        var pinStatus = row.has_pin ? '\uD83D\uDD12 PIN set' : 'No PIN';
+        var pinColor = row.has_pin ? 'color:#22c55e;' : 'color:var(--text-muted);';
+        var d = row.claimed_at ? new Date(row.claimed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+        return '<div class="adm-email-row" data-id="' + escHtml(alias) + '">' +
           '<span class="adm-email-addr" style="max-width:200px;" title="' + escHtml(alias) + '">' + escHtml(alias) + '</span>' +
-          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.72rem;color:var(--text-muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escHtml(sid) + '">' + escHtml(sidShort) + '</span>' +
+          '<span style="font-size:0.7rem;white-space:nowrap;' + pinColor + '">' + pinStatus + '</span>' +
           '<span class="adm-email-date">' + d + '</span>' +
-          '<button class="adm-btn-del" onclick="admDeleteSession(\'' + escHtml(String(row.id)) + '\',\'' + escHtml(alias) + '\')" title="Delete this session">' +
+          '<button class="adm-btn-del" onclick="admDeleteSession(\'' + escHtml(alias) + '\',\'' + escHtml(alias) + '\')" title="Delete this session">' +
           '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>' +
           '</button>' +
           '</div>';
@@ -7364,8 +7368,13 @@
     async function admDeleteSession(id, alias) {
       if (!confirm('Delete session for alias:\n' + alias + '\n\nThis allows the alias to be re-recovered by anyone.')) return;
       try {
-        var r = await _admSb.from('email_sessions').delete().eq('id', id);
-        if (r.error) throw r.error;
+        var r = await fetch(RAILWAY_URL + '/api/admin/release-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ alias: alias })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
         showToast('\u2713 Session deleted for ' + alias);
         await admLoadSessions();
       } catch (e) {
