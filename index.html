@@ -8010,9 +8010,6 @@
         <div class="adm-tab adm-nav-btn" data-section="gmail" onclick="admSwitchSection('gmail')">📬 Gmail Accounts</div>
       </div>
 
-      <!-- Email management section -->
-      <div id="admSectionEmails">
-
       <!-- ── GMAIL ACCOUNTS SECTION ── -->
       <div id="admSectionGmail" style="display:none;">
         <div class="adm-card">
@@ -8090,6 +8087,9 @@ ALTER TABLE allowed_emails
   ADD COLUMN IF NOT EXISTS gmail_account TEXT;</pre>
         </div>
       </div>
+
+      <!-- Email management section -->
+      <div id="admSectionEmails">
         <!-- Add emails card -->
         <div class="adm-card">
           <div class="adm-card-head">
