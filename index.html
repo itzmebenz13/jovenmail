@@ -8084,6 +8084,10 @@ CREATE TABLE IF NOT EXISTS gmail_accounts (
 
 -- 2. Add gmail_account column to allowed_emails
 ALTER TABLE allowed_emails
+  ADD COLUMN IF NOT EXISTS gmail_account TEXT;
+
+-- 3. Add gmail_account column to emails (required for routing)
+ALTER TABLE emails
   ADD COLUMN IF NOT EXISTS gmail_account TEXT;</pre>
         </div>
       </div>
