@@ -1,7 +1,7 @@
-const express  = require('express');
-const cron     = require('node-cron');
-const crypto   = require('crypto');
-const bcrypt   = require('bcryptjs');
+const express = require('express');
+const cron = require('node-cron');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
 const {
   loadAllAccounts, getAuthUrl, saveToken, fetchEmails,
@@ -15,7 +15,7 @@ app.use(express.json());
 
 // ── CORS ──
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   const origin = req.headers['origin'] || '';
   if (!ALLOWED_ORIGINS.length || ALLOWED_ORIGINS.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin || '*');
@@ -50,8 +50,8 @@ const supabase = createClient(
 const BLOCK_DURATIONS = [60, 1440]; // level 1 → 1h, level 2 → 24h, level 3 → permanent
 
 // Per-minute burst guard (in-memory, resets on process restart)
-const burstMap    = {};
-const BURST_LIMIT  = 5;
+const burstMap = {};
+const BURST_LIMIT = 5;
 const BURST_WINDOW = 60 * 1000; // 1 minute
 
 // Progressive delays shown to user on invalid attempts (ms)
@@ -89,7 +89,7 @@ function getIPKey(req) {
 function isBurstBlocked(req) {
   const key = hashIP(getRawIP(req));
   const now = Date.now();
-  const e   = burstMap[key];
+  const e = burstMap[key];
   if (!e || now - e.windowStart > BURST_WINDOW) {
     burstMap[key] = { count: 1, windowStart: now };
     return false;
@@ -120,7 +120,7 @@ function evaluateRow(row) {
   if (row.blocked_until) {
     const until = new Date(row.blocked_until);
     if (until > new Date()) {
-      const mins    = Math.ceil((until - new Date()) / 60000);
+      const mins = Math.ceil((until - new Date()) / 60000);
       const timeStr = mins >= 60
         ? Math.ceil(mins / 60) + ' hour(s)'
         : mins + ' minute(s)';
@@ -179,36 +179,36 @@ async function recordFailedAttempt(key, existingRow, now) {
   // Increment the total attempt count
   const newAttempts = (existingRow ? existingRow.attempts || 0 : 0) + 1;
 
-  let newBlockLevel  = existingRow ? existingRow.block_level || 0 : 0;
+  let newBlockLevel = existingRow ? existingRow.block_level || 0 : 0;
   let newBlockedUntil = null;
-  let newPermanent   = false;
+  let newPermanent = false;
 
   // Determine block based on total attempt count
   if (newAttempts >= 4) {
     // 4th+ invalid → permanent
-    newBlockLevel   = 3;
-    newPermanent    = true;
+    newBlockLevel = 3;
+    newPermanent = true;
     newBlockedUntil = null;
   } else if (newAttempts === 3) {
     // 3rd invalid → 24h
-    newBlockLevel   = 2;
+    newBlockLevel = 2;
     newBlockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[1] * 60000).toISOString();
   } else if (newAttempts === 2) {
     // 2nd invalid → 1h
-    newBlockLevel   = 1;
+    newBlockLevel = 1;
     newBlockedUntil = new Date(now.getTime() + BLOCK_DURATIONS[0] * 60000).toISOString();
   } else {
     // 1st invalid → warning only, no ban
-    newBlockLevel   = 0;
+    newBlockLevel = 0;
     newBlockedUntil = null;
   }
 
   const payload = {
-    attempts:      newAttempts,
-    block_level:   newBlockLevel,
+    attempts: newAttempts,
+    block_level: newBlockLevel,
     blocked_until: newBlockedUntil,
-    permanent:     newPermanent,
-    last_attempt:  now.toISOString()
+    permanent: newPermanent,
+    last_attempt: now.toISOString()
   };
 
   if (existingRow) {
@@ -289,20 +289,48 @@ function isInboxExpired(alias) {
 // ════════════════════════════════════════════════════════════
 // ── AUTH — multi-account: ?account=user@gmail.com ──
 app.get('/auth/login', (req, res) => {
-  // Require admin secret for security
   const secret = req.query.secret || req.headers['x-admin-secret'] || '';
+  const fingerprint = req.query.fingerprint || '';
+  
+  // Require admin secret OR a user fingerprint
   if (process.env.ADMIN_SECRET && secret !== process.env.ADMIN_SECRET) {
-    return res.status(401).send('Unauthorized — include ?secret=ADMIN_SECRET in the URL');
+    if (!fingerprint) {
+      return res.status(401).send('Unauthorized — missing admin secret or fingerprint');
+    }
   }
   const accountEmail = (req.query.account || '').trim().toLowerCase() || undefined;
-  res.redirect(getAuthUrl(accountEmail));
+  res.redirect(getAuthUrl(accountEmail, fingerprint));
 });
 
 app.get('/auth/callback', async (req, res) => {
   try {
-    // ?state= carries the accountEmail set in getAuthUrl()
-    const accountEmail = (req.query.state || '').trim().toLowerCase() || undefined;
-    const savedEmail = await saveToken(req.query.code, accountEmail);
+    const stateStr = req.query.state || '';
+    
+    // Check subscription limits if fingerprint is present
+    let fingerprint = null;
+    try {
+      const parsed = JSON.parse(Buffer.from(stateStr, 'base64').toString('utf8'));
+      fingerprint = parsed.f || null;
+    } catch (e) { }
+
+    if (fingerprint) {
+      // Check tier limit
+      const { data: keys } = await supabase.from('subscription_keys').select('tier').eq('fingerprint', fingerprint);
+      // We take the highest tier if multiple exist, but typically 1 key per fp
+      const activeTier = keys && keys.length > 0 ? keys[0].tier : 'none';
+      let limit = 0;
+      if (activeTier === 'basic') limit = 1;
+      else if (activeTier === 'pro') limit = 2;
+      else if (activeTier === 'team') limit = 3;
+
+      const { count } = await supabase.from('gmail_accounts').select('email', { count: 'exact', head: true }).eq('owner_fp', fingerprint);
+      
+      if (count !== null && count >= limit) {
+        return res.status(403).send(`<html><body style="font-family:sans-serif;text-align:center;padding:60px;background:#111113;color:#faf7f2"><h2 style="color:#ef4444">Limit Reached</h2><p>You have reached the limit of ${limit} Gmail accounts for your ${activeTier} subscription.</p><script>setTimeout(() => window.close(), 3000);</script></body></html>`);
+      }
+    }
+
+    const savedEmail = await saveToken(req.query.code, stateStr);
     await registerWatch(savedEmail);
     res.send(`
       <html><body style="font-family:sans-serif;text-align:center;padding:60px;">
@@ -394,9 +422,9 @@ cron.schedule('0 0 * * *', async () => {
 // Returns the real block status — does NOT mask it here since this
 // is used to show warnings to the user before they waste an attempt.
 // ════════════════════════════════════════════════════════════
-app.post('/api/check-block', async function(req, res) {
+app.post('/api/check-block', async function (req, res) {
   try {
-    const fp    = (req.body.fp || '').trim();
+    const fp = (req.body.fp || '').trim();
     const ipKey = getIPKey(req);
     if (!fp) return res.status(400).json({ blocked: false });
 
@@ -411,15 +439,15 @@ app.post('/api/check-block', async function(req, res) {
       supabase.from('recovery_attempts').select('*').eq('fingerprint', ipKey).maybeSingle()
     ]);
 
-    const row   = stricter(fpRow, ipRow);
+    const row = stricter(fpRow, ipRow);
     const eval_ = evaluateRow(row);
 
     // Return real block status — client uses this to show a warning
     return res.json({
-      blocked:         eval_.blocked,
-      permanent:       eval_.permanent || false,
-      message:         eval_.message || null,
-      attemptsUsed:    eval_.attemptsUsed || 0
+      blocked: eval_.blocked,
+      permanent: eval_.permanent || false,
+      message: eval_.message || null,
+      attemptsUsed: eval_.attemptsUsed || 0
     });
 
   } catch (e) {
@@ -442,12 +470,12 @@ app.post('/api/check-block', async function(req, res) {
 // The stealth masking only applies to the CHECK-BLOCK endpoint (pre-flight).
 // This endpoint MUST tell the user they are blocked so they stop trying.
 // ════════════════════════════════════════════════════════════
-app.post('/api/validate-email', async function(req, res) {
+app.post('/api/validate-email', async function (req, res) {
   try {
-    const fp     = (req.body.fp    || '').trim();
-    const sid    = (req.body.sid   || fp).trim();
-    const alias  = (req.body.alias || '').trim().toLowerCase();
-    const ipKey  = getIPKey(req);
+    const fp = (req.body.fp || '').trim();
+    const sid = (req.body.sid || fp).trim();
+    const alias = (req.body.alias || '').trim().toLowerCase();
+    const ipKey = getIPKey(req);
     const ipHash = hashIP(getRawIP(req));
 
     if (!fp || !alias) {
@@ -459,7 +487,7 @@ app.post('/api/validate-email', async function(req, res) {
       // Don't record an attempt — this is a spam flood, not a real try
       await sleep(PROG_DELAYS[1]);
       return res.json({
-        valid:   false,
+        valid: false,
         blocked: true,
         message: 'Too many requests. Please wait a minute.'
       });
@@ -477,7 +505,7 @@ app.post('/api/validate-email', async function(req, res) {
     ]);
 
     // ── 4. Check if already blocked ──
-    const worst     = stricter(fpRow, ipRow);
+    const worst = stricter(fpRow, ipRow);
     const blockEval = evaluateRow(worst);
 
     if (blockEval.blocked) {
@@ -485,23 +513,23 @@ app.post('/api/validate-email', async function(req, res) {
       // Add a small delay to slow down automated scripts
       await sleep(2000 + Math.random() * 1000);
       return res.json({
-        valid:     false,
-        blocked:   true,
+        valid: false,
+        blocked: true,
         permanent: blockEval.permanent || false,
-        message:   blockEval.permanent
+        message: blockEval.permanent
           ? 'Your access has been permanently restricted.'
           : blockEval.message
       });
     }
 
     // ── 5. Allowed-email lookup (admin-managed whitelist) ──
-    const atIdx    = alias.indexOf('@');
-    const user     = alias.slice(0, atIdx);
-    const domain   = alias.slice(atIdx + 1);
+    const atIdx = alias.indexOf('@');
+    const user = alias.slice(0, atIdx);
+    const domain = alias.slice(atIdx + 1);
     const baseUser = user.replace(/\./g, '');
-    const isGmail  = domain === 'gmail.com' || domain === 'googlemail.com';
+    const isGmail = domain === 'gmail.com' || domain === 'googlemail.com';
 
-    let hasEmails  = false;
+    let hasEmails = false;
     let isHoneypot = false;
 
     // Exact match only — entered email must exist literally in the whitelist
@@ -513,7 +541,7 @@ app.post('/api/validate-email', async function(req, res) {
         return res.status(500).json({ valid: false, error: 'Database error' });
       }
       if (rows && rows.length > 0) {
-        hasEmails  = true;
+        hasEmails = true;
         isHoneypot = !!(rows[0].honeypot);
       }
     }
@@ -523,21 +551,21 @@ app.post('/api/validate-email', async function(req, res) {
     // emails = immediate 12-hour block on both fingerprint and IP.
     if (hasEmails && isHoneypot) {
       const HONEYPOT_MS = 12 * 60 * 60 * 1000; // 12 hours
-      const now         = new Date();
+      const now = new Date();
       const blockedUntil = new Date(now.getTime() + HONEYPOT_MS).toISOString();
       const honeypotPayload = {
-        attempts:      (fpRow ? fpRow.attempts || 0 : 0) + 1,
-        block_level:   2,
+        attempts: (fpRow ? fpRow.attempts || 0 : 0) + 1,
+        block_level: 2,
         blocked_until: blockedUntil,
-        permanent:     false,
-        last_attempt:  now.toISOString()
+        permanent: false,
+        last_attempt: now.toISOString()
       };
       const honeypotIpPayload = {
-        attempts:      (ipRow ? ipRow.attempts || 0 : 0) + 1,
-        block_level:   2,
+        attempts: (ipRow ? ipRow.attempts || 0 : 0) + 1,
+        block_level: 2,
         blocked_until: blockedUntil,
-        permanent:     false,
-        last_attempt:  now.toISOString()
+        permanent: false,
+        last_attempt: now.toISOString()
       };
       // Upsert both rows
       await Promise.all([
@@ -551,10 +579,10 @@ app.post('/api/validate-email', async function(req, res) {
       console.log('[HONEYPOT] Trap triggered for alias:', alias, '| fp:', fp.slice(0, 8), '| ip-key:', ipKey.slice(0, 12));
       await sleep(2000 + Math.random() * 1000);
       return res.json({
-        valid:     false,
-        blocked:   true,
+        valid: false,
+        blocked: true,
         permanent: false,
-        message:   'Too many failed attempts. Try again in 12 hour(s).'
+        message: 'Too many failed attempts. Try again in 12 hour(s).'
       });
     }
 
@@ -564,39 +592,39 @@ app.post('/api/validate-email', async function(req, res) {
 
       // Record for BOTH fingerprint row AND IP-range row independently
       const [updFp, updIp] = await Promise.all([
-        recordFailedAttempt(fp,    fpRow,  now),
-        recordFailedAttempt(ipKey, ipRow,  now)
+        recordFailedAttempt(fp, fpRow, now),
+        recordFailedAttempt(ipKey, ipRow, now)
       ]);
 
       // Pick the stricter updated row to decide what to tell the user
-      const updated    = stricter(updFp, updIp);
+      const updated = stricter(updFp, updIp);
       const nowBlocked = updated ? evaluateRow(updated).blocked : false;
       // How many attempts remain before the next block (if not yet blocked)
-      const remaining  = nowBlocked ? 0 : Math.max(0, 4 - (updated?.attempts || 1));
+      const remaining = nowBlocked ? 0 : Math.max(0, 4 - (updated?.attempts || 1));
 
       // Progressive delay: 1st attempt=1s, 2nd=3s, 3rd+=5s
       const attemptNum = updated?.attempts || 1;
-      const delay      = attemptNum >= 4 ? PROG_DELAYS[2]
-                       : attemptNum >= 2 ? PROG_DELAYS[1]
-                       :                  PROG_DELAYS[0];
+      const delay = attemptNum >= 4 ? PROG_DELAYS[2]
+        : attemptNum >= 2 ? PROG_DELAYS[1]
+          : PROG_DELAYS[0];
       await sleep(delay);
 
       if (nowBlocked) {
         const newEval = evaluateRow(updated);
         return res.json({
-          valid:     false,
-          blocked:   true,
+          valid: false,
+          blocked: true,
           permanent: updated.permanent || false,
-          message:   updated.permanent
+          message: updated.permanent
             ? 'Your access has been permanently restricted.'
             : newEval.message
         });
       }
 
       return res.json({
-        valid:             false,
-        blocked:           false,
-        reason:            'no_emails',
+        valid: false,
+        blocked: false,
+        reason: 'no_emails',
         remainingAttempts: remaining
       });
     }
@@ -624,10 +652,10 @@ app.post('/api/validate-email', async function(req, res) {
 // ── INBOX-ACCESS ──
 // Called on each inbox fetch. Applies TTL + pattern-based degradation.
 // ════════════════════════════════════════════════════════════
-app.post('/api/inbox-access', async function(req, res) {
+app.post('/api/inbox-access', async function (req, res) {
   try {
-    const alias  = (req.body.alias || '').trim().toLowerCase();
-    const sid    = (req.body.sid   || '').trim();
+    const alias = (req.body.alias || '').trim().toLowerCase();
+    const sid = (req.body.sid || '').trim();
     const ipHash = hashIP(getRawIP(req));
 
     if (!alias) return res.status(400).json({ ok: false });
@@ -645,9 +673,9 @@ app.post('/api/inbox-access', async function(req, res) {
     if (delay > 0) await sleep(delay);
 
     return res.json({
-      ok:        true,
-      degrade:   score > 50,
-      empty:     expired && score > 60,
+      ok: true,
+      degrade: score > 50,
+      empty: expired && score > 60,
       refreshMs: score > 50 ? 30000 : 8000
     });
   } catch (e) {
@@ -674,21 +702,21 @@ app.listen(process.env.PORT || 3000, async () => {
 // kills access — even for sessions that already validated.
 // Prevents the anon Supabase key from bypassing the whitelist.
 // ════════════════════════════════════════════════════════════
-app.post('/api/fetch-emails', async function(req, res) {
+app.post('/api/fetch-emails', async function (req, res) {
   try {
     const alias = (req.body.alias || '').trim().toLowerCase();
-    const fp    = (req.body.fp    || '').trim();
-    const sid   = (req.body.sid   || fp).trim();
+    const fp = (req.body.fp || '').trim();
+    const sid = (req.body.sid || fp).trim();
 
     if (!alias || !fp) return res.status(400).json({ ok: false, error: 'Missing params' });
     if (isBurstBlocked(req)) { await sleep(PROG_DELAYS[1]); return res.json({ ok: false, error: 'Too many requests.' }); }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(alias)) return res.status(400).json({ ok: false, error: 'Invalid alias format' });
 
-    const atIdx    = alias.indexOf('@');
-    const user     = alias.slice(0, atIdx);
-    const domain   = alias.slice(atIdx + 1);
+    const atIdx = alias.indexOf('@');
+    const user = alias.slice(0, atIdx);
+    const domain = alias.slice(atIdx + 1);
     const baseUser = user.replace(/\./g, '');
-    const isGmail  = domain === 'gmail.com' || domain === 'googlemail.com';
+    const isGmail = domain === 'gmail.com' || domain === 'googlemail.com';
     let allowed = false;
 
     // Exact match only
@@ -702,7 +730,7 @@ app.post('/api/fetch-emails', async function(req, res) {
     if (!allowed) return res.status(403).json({ ok: false, error: 'not_allowed' });
 
     // ── Ban check — blocked fingerprints/IPs cannot fetch emails ──
-    const fetchFp    = (req.body.fp || '').trim();
+    const fetchFp = (req.body.fp || '').trim();
     const fetchIpKey = getIPKey(req);
     if (fetchFp) {
       const [{ data: fetchFpRow }, { data: fetchIpRow }] = await Promise.all([
@@ -716,7 +744,7 @@ app.post('/api/fetch-emails', async function(req, res) {
     }
 
     const ipHash = hashIP(getRawIP(req));
-    const score  = recordAccess(alias, sid, ipHash);
+    const score = recordAccess(alias, sid, ipHash);
     touchInbox(alias);
     const delay = stealthDelay(score);
     if (delay > 0) await sleep(delay);
@@ -794,12 +822,12 @@ async function claimOrVerifyOwnership(req, res, alias, fp) {
     const { error: insErr } = await supabase
       .from('email_sessions')
       .insert({
-        email:      alias,
-        owner_fp:   identity.owner_fp,
-        owner_ip:   identity.owner_ip,
-        owner_ua:   identity.owner_ua,
+        email: alias,
+        owner_fp: identity.owner_fp,
+        owner_ip: identity.owner_ip,
+        owner_ua: identity.owner_ua,
         claimed_at: new Date().toISOString(),
-        has_pin:    false
+        has_pin: false
       });
 
     if (insErr) {
@@ -810,8 +838,8 @@ async function claimOrVerifyOwnership(req, res, alias, fp) {
         .maybeSingle();
       if (raceRow && !isOwner(req, fp, raceRow)) {
         return res.json({
-          valid:   false,
-          reason:  'session_taken',
+          valid: false,
+          reason: 'session_taken',
           message: 'This inbox is currently in use by another session.'
         });
       }
@@ -825,18 +853,18 @@ async function claimOrVerifyOwnership(req, res, alias, fp) {
   }
 
   return res.json({
-    valid:   false,
-    reason:  'session_active',
+    valid: false,
+    reason: 'session_active',
     message: 'This inbox is currently claimed by another session. If you have a transfer PIN, use it to claim access.'
   });
 }
 
 // ── SET TRANSFER PIN ─────────────────────────────────────────
-app.post('/api/set-transfer-pin', async function(req, res) {
+app.post('/api/set-transfer-pin', async function (req, res) {
   try {
-    const fp    = (req.body.fp    || '').trim();
+    const fp = (req.body.fp || '').trim();
     const alias = (req.body.alias || '').trim().toLowerCase();
-    const pin   = (req.body.pin   || '').trim();
+    const pin = (req.body.pin || '').trim();
 
     if (!fp || !alias || !pin) return res.status(400).json({ ok: false, error: 'Missing params' });
     if (!/^\d{4}$/.test(pin)) return res.status(400).json({ ok: false, error: 'PIN must be exactly 4 digits' });
@@ -867,12 +895,12 @@ app.post('/api/set-transfer-pin', async function(req, res) {
 
 // ── CLAIM WITH PIN ───────────────────────────────────────────
 const pinAttempts = {};
-const PIN_ATTEMPT_LIMIT  = 5;
+const PIN_ATTEMPT_LIMIT = 5;
 const PIN_ATTEMPT_WINDOW = 60 * 60 * 1000;
 
 function isPinBlocked(fp) {
   const now = Date.now();
-  const e   = pinAttempts[fp];
+  const e = pinAttempts[fp];
   if (!e) return false;
   if (now - e.since > PIN_ATTEMPT_WINDOW) { delete pinAttempts[fp]; return false; }
   return e.count >= PIN_ATTEMPT_LIMIT;
@@ -887,11 +915,11 @@ function recordPinAttempt(fp) {
   }
 }
 
-app.post('/api/claim-with-pin', async function(req, res) {
+app.post('/api/claim-with-pin', async function (req, res) {
   try {
-    const fp    = (req.body.fp    || '').trim();
+    const fp = (req.body.fp || '').trim();
     const alias = (req.body.alias || '').trim().toLowerCase();
-    const pin   = (req.body.pin   || '').trim();
+    const pin = (req.body.pin || '').trim();
 
     if (!fp || !alias || !pin) return res.status(400).json({ ok: false, error: 'Missing params' });
     if (!/^\d{4}$/.test(pin)) return res.status(400).json({ ok: false, error: 'Invalid PIN format' });
@@ -926,14 +954,14 @@ app.post('/api/claim-with-pin', async function(req, res) {
     const { error: updErr } = await supabase
       .from('email_sessions')
       .update({
-        owner_fp:       newIdentity.owner_fp,
-        owner_ip:       newIdentity.owner_ip,
-        owner_ua:       newIdentity.owner_ua,
-        claimed_at:     new Date().toISOString(),
+        owner_fp: newIdentity.owner_fp,
+        owner_ip: newIdentity.owner_ip,
+        owner_ua: newIdentity.owner_ua,
+        claimed_at: new Date().toISOString(),
         transferred_at: new Date().toISOString(),
-        pin_hash:       null,
-        has_pin:        false,
-        pin_set_at:     null
+        pin_hash: null,
+        has_pin: false,
+        pin_set_at: null
       })
       .eq('email', alias);
 
@@ -948,9 +976,9 @@ app.post('/api/claim-with-pin', async function(req, res) {
 });
 
 // ── RELEASE SESSION ──────────────────────────────────────────
-app.post('/api/release-session', async function(req, res) {
+app.post('/api/release-session', async function (req, res) {
   try {
-    const fp    = (req.body.fp    || '').trim();
+    const fp = (req.body.fp || '').trim();
     const alias = (req.body.alias || '').trim().toLowerCase();
 
     if (!fp || !alias) return res.status(400).json({ ok: false });
@@ -980,7 +1008,7 @@ function requireAdminSecret(req, res, next) {
   next();
 }
 
-app.get('/api/admin/settings', requireAdminSecret, async function(req, res) {
+app.get('/api/admin/settings', requireAdminSecret, async function (req, res) {
   try {
     const { data: rows, error } = await supabase.from('admin_settings').select('*');
     if (error) return res.status(500).json({ error: 'Database error' });
@@ -994,22 +1022,22 @@ app.get('/api/admin/settings', requireAdminSecret, async function(req, res) {
   }
 });
 
-app.post('/api/admin/settings', requireAdminSecret, async function(req, res) {
+app.post('/api/admin/settings', requireAdminSecret, async function (req, res) {
   try {
     const key = (req.body.key || '').trim();
     const value = (req.body.value || '').trim();
     if (!key) return res.status(400).json({ ok: false, error: 'Missing key' });
-    
+
     const { error } = await supabase.from('admin_settings').upsert({ key, value });
     if (error) throw error;
-    
+
     return res.json({ ok: true, message: 'Setting saved' });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
 });
 
-app.get('/api/admin/sessions', requireAdminSecret, async function(req, res) {
+app.get('/api/admin/sessions', requireAdminSecret, async function (req, res) {
   try {
     const { data: rows, error } = await supabase
       .from('email_sessions')
@@ -1022,7 +1050,7 @@ app.get('/api/admin/sessions', requireAdminSecret, async function(req, res) {
   }
 });
 
-app.get('/api/admin/sessions/with-pins', requireAdminSecret, async function(req, res) {
+app.get('/api/admin/sessions/with-pins', requireAdminSecret, async function (req, res) {
   try {
     const { data: rows, error } = await supabase
       .from('email_sessions')
@@ -1036,7 +1064,7 @@ app.get('/api/admin/sessions/with-pins', requireAdminSecret, async function(req,
   }
 });
 
-app.post('/api/admin/release-session', requireAdminSecret, async function(req, res) {
+app.post('/api/admin/release-session', requireAdminSecret, async function (req, res) {
   try {
     const alias = (req.body.alias || '').trim().toLowerCase();
     if (!alias) return res.status(400).json({ ok: false });
@@ -1069,10 +1097,10 @@ cron.schedule('0 * * * *', async () => {
 // Returns all rows from recovery_attempts, ordered by
 // attempts desc. Supports ?limit=N&offset=N pagination.
 // ════════════════════════════════════════════════════════════
-app.get('/api/admin/fraud-log', requireAdminSecret, async function(req, res) {
+app.get('/api/admin/fraud-log', requireAdminSecret, async function (req, res) {
   try {
-    const limit  = Math.min(parseInt(req.query.limit  || '100', 10), 500);
-    const offset = parseInt(req.query.offset || '0',   10);
+    const limit = Math.min(parseInt(req.query.limit || '100', 10), 500);
+    const offset = parseInt(req.query.offset || '0', 10);
 
     const { data: rows, error, count } = await supabase
       .from('recovery_attempts')
@@ -1085,13 +1113,13 @@ app.get('/api/admin/fraud-log', requireAdminSecret, async function(req, res) {
     // Summarise stats
     const all = rows || [];
     return res.json({
-      ok:      true,
-      total:   count || 0,
-      rows:    all,
+      ok: true,
+      total: count || 0,
+      rows: all,
       stats: {
-        permanent:    all.filter(r => r.permanent).length,
+        permanent: all.filter(r => r.permanent).length,
         activeBlocks: all.filter(r => !r.permanent && r.blocked_until && new Date(r.blocked_until) > new Date()).length,
-        warned:       all.filter(r => !r.permanent && (!r.blocked_until || new Date(r.blocked_until) <= new Date()) && (r.attempts || 0) >= 1).length
+        warned: all.filter(r => !r.permanent && (!r.blocked_until || new Date(r.blocked_until) <= new Date()) && (r.attempts || 0) >= 1).length
       }
     });
   } catch (e) {
@@ -1103,7 +1131,7 @@ app.get('/api/admin/fraud-log', requireAdminSecret, async function(req, res) {
 // ════════════════════════════════════════════════════════════
 // ── ADMIN — FRAUD BAN (manual permanent ban) ──
 // ════════════════════════════════════════════════════════════
-app.post('/api/admin/fraud-ban', requireAdminSecret, async function(req, res) {
+app.post('/api/admin/fraud-ban', requireAdminSecret, async function (req, res) {
   try {
     const key = (req.body.fingerprint || '').trim();
     if (!key) return res.status(400).json({ ok: false, error: 'Missing fingerprint key' });
@@ -1112,11 +1140,11 @@ app.post('/api/admin/fraud-ban', requireAdminSecret, async function(req, res) {
       .from('recovery_attempts').select('*').eq('fingerprint', key).maybeSingle();
 
     const payload = {
-      attempts:      (existing ? existing.attempts || 0 : 0) + 1,
-      block_level:   3,
+      attempts: (existing ? existing.attempts || 0 : 0) + 1,
+      block_level: 3,
       blocked_until: null,
-      permanent:     true,
-      last_attempt:  new Date().toISOString()
+      permanent: true,
+      last_attempt: new Date().toISOString()
     };
 
     if (existing) {
@@ -1136,7 +1164,7 @@ app.post('/api/admin/fraud-ban', requireAdminSecret, async function(req, res) {
 // ════════════════════════════════════════════════════════════
 // ── ADMIN — FRAUD UNBAN (clear all blocks) ──
 // ════════════════════════════════════════════════════════════
-app.post('/api/admin/fraud-unban', requireAdminSecret, async function(req, res) {
+app.post('/api/admin/fraud-unban', requireAdminSecret, async function (req, res) {
   try {
     const key = (req.body.fingerprint || '').trim();
     if (!key) return res.status(400).json({ ok: false, error: 'Missing fingerprint key' });
@@ -1158,10 +1186,10 @@ app.post('/api/admin/fraud-unban', requireAdminSecret, async function(req, res) 
 // ── ADMIN — SET HONEYPOT FLAG ──
 // Sets or clears honeypot=true on an allowed_email row.
 // ════════════════════════════════════════════════════════════
-app.post('/api/admin/set-honeypot', requireAdminSecret, async function(req, res) {
+app.post('/api/admin/set-honeypot', requireAdminSecret, async function (req, res) {
   try {
-    const email     = (req.body.email     || '').trim().toLowerCase();
-    const honeypot  = req.body.honeypot === true || req.body.honeypot === 'true';
+    const email = (req.body.email || '').trim().toLowerCase();
+    const honeypot = req.body.honeypot === true || req.body.honeypot === 'true';
 
     if (!email) return res.status(400).json({ ok: false, error: 'Missing email' });
 
@@ -1189,7 +1217,7 @@ app.post('/api/admin/set-honeypot', requireAdminSecret, async function(req, res)
  * GET /api/admin/gmail-accounts
  * Returns all connected Gmail accounts with their watch status.
  */
-app.get('/api/admin/gmail-accounts', requireAdminSecret, async function(req, res) {
+app.get('/api/admin/gmail-accounts', requireAdminSecret, async function (req, res) {
   try {
     const accounts = await listAccounts();
     // Enrich with alias counts
@@ -1205,11 +1233,11 @@ app.get('/api/admin/gmail-accounts', requireAdminSecret, async function(req, res
     }
     const now = new Date();
     const enriched = accounts.map(acc => ({
-      email:         acc.email,
-      watch_expiry:  acc.watch_expiry,
-      watch_active:  acc.watch_expiry ? new Date(acc.watch_expiry) > now : false,
-      alias_count:   aliasCounts[acc.email] || 0,
-      added_at:      acc.added_at
+      email: acc.email,
+      watch_expiry: acc.watch_expiry,
+      watch_active: acc.watch_expiry ? new Date(acc.watch_expiry) > now : false,
+      alias_count: aliasCounts[acc.email] || 0,
+      added_at: acc.added_at
     }));
     return res.json({ ok: true, accounts: enriched });
   } catch (e) {
@@ -1222,7 +1250,7 @@ app.get('/api/admin/gmail-accounts', requireAdminSecret, async function(req, res
  * GET /api/admin/gmail-connect-url?account=user@gmail.com
  * Returns an OAuth URL the admin opens to connect a new Gmail account.
  */
-app.get('/api/admin/gmail-connect-url', requireAdminSecret, async function(req, res) {
+app.get('/api/admin/gmail-connect-url', requireAdminSecret, async function (req, res) {
   try {
     const accountEmail = (req.query.account || '').trim().toLowerCase();
     if (!accountEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(accountEmail)) {
@@ -1245,7 +1273,7 @@ app.get('/api/admin/gmail-connect-url', requireAdminSecret, async function(req, 
  * Body: { account: "user@gmail.com" }
  * Removes a Gmail account. Aliases assigned to it lose their gmail_account mapping.
  */
-app.post('/api/admin/gmail-accounts/remove', requireAdminSecret, async function(req, res) {
+app.post('/api/admin/gmail-accounts/remove', requireAdminSecret, async function (req, res) {
   try {
     const accountEmail = (req.body.account || '').trim().toLowerCase();
     if (!accountEmail) return res.status(400).json({ ok: false, error: 'Missing account' });
@@ -1271,7 +1299,7 @@ app.post('/api/admin/gmail-accounts/remove', requireAdminSecret, async function(
  * Body: { account: "user@gmail.com" }
  * Manually refreshes the Pub/Sub watch for one account.
  */
-app.post('/api/admin/gmail-accounts/refresh-watch', requireAdminSecret, async function(req, res) {
+app.post('/api/admin/gmail-accounts/refresh-watch', requireAdminSecret, async function (req, res) {
   try {
     const accountEmail = (req.body.account || '').trim().toLowerCase();
     if (!accountEmail) return res.status(400).json({ ok: false, error: 'Missing account' });
@@ -1289,10 +1317,10 @@ app.post('/api/admin/gmail-accounts/refresh-watch', requireAdminSecret, async fu
  * Body: { email: "alias@gmail.com", gmail_account: "source@gmail.com" | null }
  * Assigns or clears the gmail_account for a specific alias.
  */
-app.post('/api/admin/set-alias-account', requireAdminSecret, async function(req, res) {
+app.post('/api/admin/set-alias-account', requireAdminSecret, async function (req, res) {
   try {
-    const aliasEmail    = (req.body.email         || '').trim().toLowerCase();
-    const gmailAccount  = req.body.gmail_account ? (req.body.gmail_account || '').trim().toLowerCase() : null;
+    const aliasEmail = (req.body.email || '').trim().toLowerCase();
+    const gmailAccount = req.body.gmail_account ? (req.body.gmail_account || '').trim().toLowerCase() : null;
     if (!aliasEmail) return res.status(400).json({ ok: false, error: 'Missing email' });
 
     const { error } = await supabase
@@ -1308,3 +1336,153 @@ app.post('/api/admin/set-alias-account', requireAdminSecret, async function(req,
     return res.status(500).json({ ok: false, error: e.message });
   }
 });
+
+// ════════════════════════════════════════════════════════════
+// ── SUBSCRIPTION KEYS ──
+// ════════════════════════════════════════════════════════════
+
+/**
+ * POST /api/admin/subscription-keys/generate
+ */
+app.post('/api/admin/subscription-keys/generate', requireAdminSecret, async function (req, res) {
+  try {
+    const { tier, billing_cycle, amount } = req.body;
+    const qty = parseInt(amount) || 1;
+    if (!['basic', 'pro', 'team'].includes(tier)) return res.status(400).json({ ok: false, error: 'Invalid tier' });
+    
+    const keys = [];
+    for (let i = 0; i < qty; i++) {
+      const randomPart = crypto.randomBytes(8).toString('hex').toUpperCase();
+      keys.push({
+        key: `JM-${tier.toUpperCase()}-${randomPart}`,
+        tier,
+        billing_cycle: billing_cycle || 'monthly'
+      });
+    }
+
+    const { error } = await supabase.from('subscription_keys').insert(keys);
+    if (error) throw error;
+    
+    return res.json({ ok: true, keys });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/**
+ * GET /api/admin/subscription-keys
+ */
+app.get('/api/admin/subscription-keys', requireAdminSecret, async function (req, res) {
+  try {
+    const { data, error } = await supabase.from('subscription_keys').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return res.json({ ok: true, keys: data });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/**
+ * POST /api/admin/subscription-keys/delete
+ */
+app.post('/api/admin/subscription-keys/delete', requireAdminSecret, async function (req, res) {
+  try {
+    const { key } = req.body;
+    const { error } = await supabase.from('subscription_keys').delete().eq('key', key);
+    if (error) throw error;
+    return res.json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/**
+ * POST /api/subscription/redeem
+ */
+app.post('/api/subscription/redeem', async function (req, res) {
+  try {
+    const { key, fingerprint } = req.body;
+    if (!key || !fingerprint) return res.status(400).json({ ok: false, error: 'Missing key or fingerprint' });
+
+    // 1. Find key
+    const { data: keyData, error: findError } = await supabase.from('subscription_keys').select('*').eq('key', key).maybeSingle();
+    if (findError) throw findError;
+    if (!keyData) return res.status(404).json({ ok: false, error: 'Invalid subscription key.' });
+
+    // 2. Check if already used by someone else
+    if (keyData.fingerprint && keyData.fingerprint !== fingerprint) {
+      return res.status(403).json({ ok: false, error: 'This key has already been redeemed by another device.' });
+    }
+
+    // 3. Redeem (or re-redeem for same fp)
+    const { error: updateError } = await supabase.from('subscription_keys').update({ 
+      fingerprint, 
+      used_at: keyData.used_at || new Date().toISOString()
+    }).eq('key', key);
+    
+    if (updateError) throw updateError;
+    
+    return res.json({ ok: true, tier: keyData.tier });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/**
+ * GET /api/subscription/status
+ */
+app.get('/api/subscription/status', async function (req, res) {
+  try {
+    const fingerprint = req.query.fingerprint;
+    if (!fingerprint) return res.json({ ok: true, tier: 'none' });
+    
+    const { data } = await supabase.from('subscription_keys').select('tier').eq('fingerprint', fingerprint);
+    const activeTier = data && data.length > 0 ? data[0].tier : 'none';
+    
+    return res.json({ ok: true, tier: activeTier });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/**
+ * GET /api/user/gmail-accounts
+ */
+app.get('/api/user/gmail-accounts', async function (req, res) {
+  try {
+    const fingerprint = req.query.fingerprint;
+    if (!fingerprint) return res.json({ ok: true, accounts: [] });
+
+    // Get accounts owned by this fingerprint
+    const { data, error } = await supabase.from('gmail_accounts').select('email, added_at, watch_expiry').eq('owner_fp', fingerprint);
+    if (error) throw error;
+    
+    return res.json({ ok: true, accounts: data });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/**
+ * POST /api/user/gmail-accounts/remove
+ */
+app.post('/api/user/gmail-accounts/remove', async function (req, res) {
+  try {
+    const { account, fingerprint } = req.body;
+    if (!account || !fingerprint) return res.status(400).json({ ok: false, error: 'Missing account or fingerprint' });
+
+    // Verify ownership before removal
+    const { data: accData } = await supabase.from('gmail_accounts').select('owner_fp').eq('email', account).maybeSingle();
+    if (!accData || accData.owner_fp !== fingerprint) {
+      return res.status(403).json({ ok: false, error: 'Not authorized to remove this account.' });
+    }
+
+    await removeAccount(account);
+    await supabase.from('allowed_emails').update({ gmail_account: null }).eq('gmail_account', account);
+
+    return res.json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
