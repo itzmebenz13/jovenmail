@@ -8,10 +8,10 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="joven.mail" />
+  <meta name="apple-mobile-web-app-title" content="KoreoMail" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>joven.mail — Temporary Gmail Aliases</title>
+  <title>KoreoMail — Temporary Gmail Aliases</title>
 
   <!-- Compact, crisp fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3999,7 +3999,7 @@
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg></i>
-        <div class="logo">joven.mail</div>
+        <div class="logo">KoreoMail</div>
         <div class="badge">Beta</div>
       </div>
       <div class="header-actions">
@@ -4018,6 +4018,12 @@
             </svg></i> Privacy</a>
         </nav>
         <div class="header-divider"></div>
+        <button class="btn-pill btn-outline btn-sm" id="btnMyAccounts" style="display:none;" onclick="openMyAccountsModal()">
+          📬 My Accounts
+        </button>
+        <button class="btn-pill btn-outline btn-sm" onclick="openSubscriptionModal()">
+          🔑 Subscriptions
+        </button>
         <button class="btn-pill btn-outline btn-sm" onclick="openLoginModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -4110,7 +4116,7 @@
             </svg>
           </div>
           <div>
-            <div class="ib-title">Install joven.mail</div>
+            <div class="ib-title">Install KoreoMail</div>
             <div class="ib-sub">Add to home screen for instant access</div>
           </div>
         </div>
@@ -4465,6 +4471,92 @@
     </footer>
   </div>
 
+  <!-- MY ACCOUNTS MODAL -->
+  <div class="modal-overlay" id="myAccountsModalOverlay" onclick="closeMyAccountsOutside(event)">
+    <div class="modal" id="myAccountsModal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <button class="modal-close" onclick="closeMyAccountsModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <h2 style="font-size:1.4rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:10px;">My Connected Accounts</h2>
+        <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:20px;line-height:1.5;">Manage your personal Gmail accounts connected to KoreoMail.</p>
+        
+        <div id="myAccountsList" style="text-align:left; max-height:250px; overflow-y:auto; margin-bottom:20px; background:var(--bg-input); border-radius:10px; padding:10px; border:1px solid var(--border);">
+          <div class="adm-loading"><span class="adm-spinner"></span> Loading accounts...</div>
+        </div>
+
+        <button class="btn-pill btn-primary" style="width:100%;padding:12px;font-size:0.95rem;justify-content:center;gap:8px;" onclick="addMyGmailAccount()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg>
+          Add Gmail Account
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBSCRIPTION MODAL -->
+  <div class="modal-overlay" id="subscriptionModalOverlay" onclick="closeSubscriptionOutside(event)">
+    <div class="modal" id="subscriptionModal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <button class="modal-close" onclick="closeSubscriptionModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <h2 style="font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:8px;">Unlock More Accounts</h2>
+        <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:20px;line-height:1.5;">Get a subscription key to connect your own Gmail accounts and receive emails directly here.</p>
+        
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
+          <!-- Basic Plan -->
+          <div style="border: 2px solid var(--border-strong); border-radius: 12px; padding: 15px; text-align: left; background: var(--bg-card); position: relative;">
+            <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 4px;">Basic Plan</div>
+            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px;">Connect up to <strong>1 Gmail account</strong></div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent);">₱99<span style="font-size:0.8rem; color:var(--text-dim); font-weight: 600;">/month</span></div>
+          </div>
+          <!-- Pro Plan -->
+          <div style="border: 2px solid var(--accent); border-radius: 12px; padding: 15px; text-align: left; background: var(--bg-card); position: relative;">
+            <div style="position: absolute; top: -10px; right: 15px; background: var(--accent); color: var(--accent-text); font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Popular</div>
+            <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 4px;">Pro Plan</div>
+            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px;">Connect up to <strong>2 Gmail accounts</strong></div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent);">₱299<span style="font-size:0.8rem; color:var(--text-dim); font-weight: 600;">/month</span></div>
+          </div>
+          <!-- Team Plan -->
+          <div style="border: 2px solid var(--border-strong); border-radius: 12px; padding: 15px; text-align: left; background: var(--bg-card); position: relative;">
+            <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 4px;">Team Plan</div>
+            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px;">Connect up to <strong>3 Gmail accounts</strong></div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent);">₱499<span style="font-size:0.8rem; color:var(--text-dim); font-weight: 600;">/month</span></div>
+          </div>
+        </div>
+
+        <button class="btn-pill btn-outline" style="width:100%;padding:12px;font-size:0.95rem;justify-content:center;margin-bottom:15px;background:var(--bg-app);" onclick="purchaseSubscriptionKey()">
+          Purchase Key via Email
+        </button>
+
+        <div style="margin-top:20px; border-top: 1px dashed var(--border-strong); padding-top: 20px;">
+          <div style="font-size:0.9rem; font-weight:700; margin-bottom:10px;">Already have a key?</div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="subKeyInput" placeholder="Enter your key here..." style="flex:1; border-radius: 8px; border: 1px solid var(--border); padding: 10px; font-family: monospace; font-size: 0.9rem; background: var(--bg-input); color: var(--text);" />
+            <button class="btn-pill btn-primary" onclick="redeemSubscriptionKey()" style="padding: 10px 16px;">Redeem</button>
+          </div>
+          <div id="subKeyMessage" style="margin-top: 10px; font-size: 0.8rem; display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL -->
   <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
     <div class="modal" id="modal" onclick="event.stopPropagation()">
@@ -4572,7 +4664,7 @@
         <div class="modal-subject" style="margin-bottom: 0;">Terms of Service</div>
       </div>
       <div class="modal-body">
-        <p style="margin-bottom: 16px;"><strong>1. Acceptance of Terms</strong><br />By using joven.mail, you agree to
+        <p style="margin-bottom: 16px;"><strong>1. Acceptance of Terms</strong><br />By using KoreoMail, you agree to
           these ephemeral routing terms. The service is provided "as is" without any warranties.</p>
         <p style="margin-bottom: 16px;"><strong>2. Acceptable Use</strong><br />You agree not to use this service for
           sending spam, phishing, or engaging in any illegal activities. The routing is strictly for personal privacy
@@ -4928,7 +5020,7 @@
        · Inbox TTL: 15 min inactivity → server may return empty
     ════════════════════════════════════════════════════════ */
 
-    var RAILWAY_URL = 'https://jovenmail-production.up.railway.app';
+    var RAILWAY_URL = 'https://koreomail.up.railway.app';
 
     // ── SESSION ID ──
     // Stable per-browser identifier. Stored in localStorage so it
@@ -6543,10 +6635,161 @@
       }
     };
 
+    // ── SUBSCRIPTION & MY ACCOUNTS LOGIC ──
+    var _activeTier = 'none';
+
+    async function checkSubscriptionStatus() {
+      try {
+        var fp = await getBrowserFingerprint();
+        var r = await fetch(RAILWAY_URL + '/api/subscription/status?fingerprint=' + fp);
+        var data = await r.json();
+        if (data.ok && data.tier !== 'none') {
+          _activeTier = data.tier;
+          var btn = document.getElementById('btnMyAccounts');
+          if (btn) btn.style.display = 'inline-flex';
+        }
+      } catch (e) {
+        console.error('checkSubscriptionStatus error:', e);
+      }
+    }
+
+    function openSubscriptionModal() {
+      document.getElementById('subscriptionModalOverlay').classList.add('open');
+    }
+    function closeSubscriptionModal() {
+      document.getElementById('subscriptionModalOverlay').classList.remove('open');
+    }
+    function closeSubscriptionOutside(e) {
+      if (e.target.id === 'subscriptionModalOverlay') closeSubscriptionModal();
+    }
+
+    function purchaseSubscriptionKey() {
+      window.location.href = "mailto:koreomailph@gmail.com?subject=Purchase Subscription Key&body=Hi, I would like to purchase a subscription key for JovenMail.%0D%0A%0D%0APreferred Tier (Basic/Pro/Team):%0D%0ABilling Cycle (Monthly/Annual):%0D%0A%0D%0AThank you!";
+    }
+
+    async function redeemSubscriptionKey() {
+      var key = document.getElementById('subKeyInput').value.trim();
+      var msgEl = document.getElementById('subKeyMessage');
+      if (!key) {
+        msgEl.style.display = 'block';
+        msgEl.style.color = '#f87171';
+        msgEl.textContent = 'Please enter a key.';
+        return;
+      }
+      
+      msgEl.style.display = 'block';
+      msgEl.style.color = 'var(--text-dim)';
+      msgEl.textContent = 'Validating key...';
+
+      try {
+        var fp = await getBrowserFingerprint();
+        var r = await fetch(RAILWAY_URL + '/api/subscription/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: key, fingerprint: fp })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Invalid key.');
+        
+        msgEl.style.color = '#22c55e';
+        msgEl.textContent = 'Success! You are now on the ' + data.tier + ' tier.';
+        
+        await checkSubscriptionStatus(); // Refresh UI
+        setTimeout(closeSubscriptionModal, 2000);
+      } catch (e) {
+        msgEl.style.color = '#f87171';
+        msgEl.textContent = e.message;
+      }
+    }
+
+    function openMyAccountsModal() {
+      document.getElementById('myAccountsModalOverlay').classList.add('open');
+      loadMyAccounts();
+    }
+    function closeMyAccountsModal() {
+      document.getElementById('myAccountsModalOverlay').classList.remove('open');
+    }
+    function closeMyAccountsOutside(e) {
+      if (e.target.id === 'myAccountsModalOverlay') closeMyAccountsModal();
+    }
+
+    async function loadMyAccounts() {
+      var list = document.getElementById('myAccountsList');
+      list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading accounts...</div>';
+      try {
+        var fp = await getBrowserFingerprint();
+        var r = await fetch(RAILWAY_URL + '/api/user/gmail-accounts?fingerprint=' + fp);
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error);
+
+        var accs = data.accounts || [];
+        if (accs.length === 0) {
+          list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:0.85rem;">No Gmail accounts connected yet.</div>';
+          return;
+        }
+
+        var html = '';
+        accs.forEach(function (acc) {
+          html += '<div style="display:flex; justify-content:space-between; align-items:center; padding: 10px; border-bottom: 1px solid var(--border);">';
+          html += '<div style="font-size:0.85rem; font-family:monospace;">' + acc.email + '</div>';
+          html += '<button class="btn-text" style="color:#f87171; font-size:0.75rem;" onclick="removeMyAccount(\'' + acc.email + '\')">Remove</button>';
+          html += '</div>';
+        });
+        list.innerHTML = html;
+      } catch (e) {
+        list.innerHTML = '<div style="color:#f87171;padding:15px;text-align:center;">' + e.message + '</div>';
+      }
+    }
+
+    async function addMyGmailAccount() {
+      var fp = await getBrowserFingerprint();
+      var url = RAILWAY_URL + '/auth/login?fingerprint=' + fp;
+      
+      // Calculate limits
+      var limit = 0;
+      if (_activeTier === 'basic') limit = 1;
+      else if (_activeTier === 'pro') limit = 2;
+      else if (_activeTier === 'team') limit = 3;
+      
+      // If we already loaded accounts, we could check limits before opening the tab
+      // But the server will also block it.
+      
+      window.open(url, '_blank', 'width=600,height=700');
+      
+      // Poll to refresh list when window closes
+      var checkFocus = setInterval(function() {
+        if (document.hasFocus()) {
+          clearInterval(checkFocus);
+          loadMyAccounts();
+        }
+      }, 1000);
+    }
+
+    async function removeMyAccount(email) {
+      if (!confirm('Disconnect ' + email + '?')) return;
+      try {
+        var fp = await getBrowserFingerprint();
+        var r = await fetch(RAILWAY_URL + '/api/user/gmail-accounts/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account: email, fingerprint: fp })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error);
+        showToast('Account removed');
+        loadMyAccounts();
+      } catch (e) {
+        showToast('Remove failed: ' + e.message);
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', async function () {
       // Apply saved UI theme
       var savedUi = localStorage.getItem('ui-theme') || 'meiro';
       setUiTheme(savedUi);
+
+      // ── Check subscription status ──
+      checkSubscriptionStatus();
 
       // ── Check for QuickLink (?q=) FIRST — viewer mode, no ownership involved ──
       if (tryLoadQuickLink()) return;
@@ -6610,7 +6853,7 @@
 
   </script>
   <div id="iosToast">
-    <p>Install <strong>joven.mail</strong></p>
+    <p>Install <strong>KoreoMail</strong></p>
     <div class="steps">
       1. Tap the <strong>Share</strong> icon &#x2BAD;<br />
       2. Tap <strong>"Add to Home Screen"</strong>
@@ -6686,7 +6929,8 @@
         fraud: 'admSectionFraud',
         sessions: 'admSectionSessions',
         ownership: 'admSectionOwnership',
-        gmail: 'admSectionGmail'
+        gmail: 'admSectionGmail',
+        subscriptions: 'admSectionSubscriptions'
       };
       Object.keys(sections).forEach(function (k) {
         var el = document.getElementById(sections[k]);
@@ -6699,6 +6943,7 @@
       }
       if (name === 'ownership') admLoadOwnership();
       if (name === 'gmail') admLoadGmailAccounts();
+      if (name === 'subscriptions') admLoadSubscriptions();
     }
 
     // ── CLEAR SEARCH ──
@@ -7829,7 +8074,80 @@
       }
     }
 
-  </script>
+    // ── ADMIN SUBSCRIPTIONS ──
+    async function admLoadSubscriptions() {
+      var list = document.getElementById('admSubList');
+      if (!list) return;
+      list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading keys&hellip;</div>';
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/subscription-keys', {
+          headers: { 'x-admin-secret': getAdminSecret() }
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Failed to load keys');
+        
+        var keys = data.keys || [];
+        if (keys.length === 0) {
+          list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:0.8rem;">No subscription keys found.</div>';
+          return;
+        }
+
+        var html = '<table class="adm-table"><thead><tr><th>Key</th><th>Tier</th><th>Cycle</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody>';
+        keys.forEach(function (k) {
+          var date = new Date(k.created_at).toLocaleString();
+          var status = k.fingerprint ? '<span style="color:var(--accent);">Used by ' + k.fingerprint.slice(0,8) + '...</span>' : '<span style="color:#22c55e;">Available</span>';
+          html += '<tr>' +
+            '<td style="font-family:monospace;font-size:0.8rem;">' + k.key + '</td>' +
+            '<td><span style="text-transform:capitalize;font-weight:700;">' + k.tier + '</span></td>' +
+            '<td style="text-transform:capitalize;">' + k.billing_cycle + '</td>' +
+            '<td>' + status + '</td>' +
+            '<td>' + date + '</td>' +
+            '<td><button class="btn-text" style="color:#f87171" onclick="admDeleteKey(\'' + k.key + '\')">Delete</button></td>' +
+            '</tr>';
+        });
+        html += '</tbody></table>';
+        list.innerHTML = html;
+      } catch (e) {
+        list.innerHTML = '<div style="color:#f87171;padding:15px;text-align:center;">' + e.message + '</div>';
+      }
+    }
+
+    async function admGenerateKeys() {
+      var tier = document.getElementById('admSubTier').value;
+      var cycle = document.getElementById('admSubCycle').value;
+      var amount = document.getElementById('admSubAmount').value;
+      
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/subscription-keys/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ tier: tier, billing_cycle: cycle, amount: amount })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('\u2713 Generated ' + amount + ' keys');
+        await admLoadSubscriptions();
+      } catch (e) {
+        showToast('Generate failed: ' + e.message);
+      }
+    }
+
+    async function admDeleteKey(key) {
+      if (!confirm('Delete subscription key ' + key + '?')) return;
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/subscription-keys/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ key: key })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Failed');
+        showToast('\u2713 Key deleted');
+        await admLoadSubscriptions();
+      } catch (e) {
+        showToast('Delete failed: ' + e.message);
+      }
+    }  </script>
 
 
   <!-- ═══════════════════════════════════════════
@@ -8141,7 +8459,7 @@
       <div class="adm-topbar">
         <div class="adm-logo">
           <div class="adm-logo-dot"></div>
-          <h2>joven.mail</h2>
+          <h2>KoreoMail</h2>
           <span>admin</span>
         </div>
         <button class="btn-pill btn-outline btn-sm" onclick="closeAdminPanel()"
@@ -8183,6 +8501,8 @@
         <div class="adm-tab adm-nav-btn" data-section="ownership" onclick="admSwitchSection('ownership')">🏷️ Ownership
         </div>
         <div class="adm-tab adm-nav-btn" data-section="gmail" onclick="admSwitchSection('gmail')">📬 Gmail Accounts
+        </div>
+        <div class="adm-tab adm-nav-btn" data-section="subscriptions" onclick="admSwitchSection('subscriptions')">🔑 Subscriptions
         </div>
       </div>
 
@@ -8304,7 +8624,8 @@ CREATE TABLE IF NOT EXISTS gmail_accounts (
   tokens         JSONB NOT NULL DEFAULT '{}',
   watch_expiry   TIMESTAMPTZ,
   watch_resource TEXT,
-  added_at       TIMESTAMPTZ DEFAULT now()
+  added_at       TIMESTAMPTZ DEFAULT now(),
+  owner_fp       TEXT
 );
 
 -- 2. Add gmail_account column to allowed_emails
@@ -8319,7 +8640,49 @@ ALTER TABLE emails
 CREATE TABLE IF NOT EXISTS admin_settings (
   key TEXT PRIMARY KEY,
   value TEXT
+);
+
+-- 5. Create subscription_keys table for user subscriptions
+CREATE TABLE IF NOT EXISTS subscription_keys (
+  key TEXT PRIMARY KEY,
+  tier TEXT NOT NULL,
+  billing_cycle TEXT NOT NULL,
+  fingerprint TEXT,
+  used_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
 );</pre>
+        </div>
+      </div>
+
+      <!-- ── SUBSCRIPTIONS SECTION ── -->
+      <div id="admSectionSubscriptions" style="display:none;">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              🔑 Subscription Keys
+            </div>
+            <button class="btn-pill btn-outline btn-sm" onclick="admLoadSubscriptions()" style="display:flex;align-items:center;gap:5px;">
+              Refresh
+            </button>
+          </div>
+          
+          <div style="display:flex; gap: 8px; flex-wrap:wrap; margin-bottom: 15px;">
+            <select id="admSubTier" style="padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text);">
+              <option value="basic">Basic</option>
+              <option value="pro">Pro</option>
+              <option value="team">Team</option>
+            </select>
+            <select id="admSubCycle" style="padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text);">
+              <option value="monthly">Monthly</option>
+              <option value="annual">Annual</option>
+            </select>
+            <input id="admSubAmount" type="number" min="1" max="100" value="1" style="width: 60px; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text);" />
+            <button class="btn-pill btn-primary btn-sm" onclick="admGenerateKeys()">Generate Keys</button>
+          </div>
+
+          <div id="admSubList" style="min-height:60px;">
+            <div class="adm-loading"><span class="adm-spinner"></span> Loading keys&hellip;</div>
+          </div>
         </div>
       </div>
 
