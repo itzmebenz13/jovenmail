@@ -4004,6 +4004,8 @@
       </div>
       <div class="header-actions">
         <nav class="header-nav">
+          <a href="#" class="nav-link" id="navMyAccounts" style="display:none;" onclick="openMyAccountsModal(); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> My Accounts</a>
+          <a href="#" class="nav-link" onclick="openSubscriptionModal(); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> Subscriptions</a>
           <a href="#" class="nav-link" onclick="showToast('API is not yet available'); return false;"><svg width="14"
               height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round">
@@ -4018,12 +4020,6 @@
             </svg></i> Privacy</a>
         </nav>
         <div class="header-divider"></div>
-        <button class="btn-pill btn-outline btn-sm" id="btnMyAccounts" style="display:none;" onclick="openMyAccountsModal()">
-          📬 My Accounts
-        </button>
-        <button class="btn-pill btn-outline btn-sm" onclick="openSubscriptionModal()">
-          🔑 Subscriptions
-        </button>
         <button class="btn-pill btn-outline btn-sm" onclick="openLoginModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -4062,6 +4058,12 @@
 
       <!-- Mobile Menu Dropdown -->
       <div class="mobile-menu" id="mobileMenu">
+        <a href="#" class="mobile-link" id="mobileMyAccounts" style="display:none;" onclick="toggleMobileMenu(); openMyAccountsModal(); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> My Accounts
+        </a>
+        <a href="#" class="mobile-link" onclick="toggleMobileMenu(); openSubscriptionModal(); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> Subscriptions
+        </a>
         <a href="#" class="mobile-link"
           onclick="toggleMobileMenu(); showToast('API is not yet available'); return false;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -6645,8 +6647,10 @@
         var data = await r.json();
         if (data.ok && data.tier !== 'none') {
           _activeTier = data.tier;
-          var btn = document.getElementById('btnMyAccounts');
-          if (btn) btn.style.display = 'inline-flex';
+          var navBtn = document.getElementById('navMyAccounts');
+          if (navBtn) navBtn.style.display = 'flex';
+          var mobBtn = document.getElementById('mobileMyAccounts');
+          if (mobBtn) mobBtn.style.display = 'flex';
         }
       } catch (e) {
         console.error('checkSubscriptionStatus error:', e);
