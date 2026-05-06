@@ -13,7 +13,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>KoreoMail — Temporary Gmail Aliases</title>
 
-  <!-- Preload the hero character image for instant display -->
+  <!-- Preload critical images for instant display -->
+  <link rel="preload" href="photos/header.png" as="image" type="image/png" />
   <link rel="preload" href="photos/koreo-hi.png" as="image" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4002,7 +4003,7 @@
   <div class="wrap">
     <header>
       <div class="logo-wrap" style="display: flex; align-items: center; gap: 10px;">
-        <img src="photos/header.png" alt="KoreoMail Logo" style="height: 54px; width: auto; object-fit: contain;">
+        <img src="photos/header.png" alt="KoreoMail Logo" style="height: 54px; width: auto; object-fit: contain;" fetchpriority="high" decoding="sync">
         <div class="badge">Beta</div>
       </div>
       <div class="header-actions">
@@ -4140,6 +4141,8 @@
               class="koreo-img"
               id="koreoImg"
               draggable="false"
+              fetchpriority="high"
+              decoding="sync"
             />
             <!-- Sparkle particles -->
             <div class="koreo-sparkle s1">✦</div>
