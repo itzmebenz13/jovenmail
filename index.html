@@ -94,6 +94,10 @@
       --radius-input: 10px;
     }
 
+    [data-theme="dark"] .logo-wrap img {
+      filter: invert(1) hue-rotate(180deg);
+    }
+
     /* ─── Light mode: override hardcoded glows with KoreoMail blue equivalents ─── */
     :root .btn-primary:hover,
     [data-theme="light"] .btn-primary:hover {
@@ -4965,27 +4969,27 @@
   <!-- SUBSCRIPTION MODAL (Supernotes Style) -->
   <div class="modal-overlay" id="subscriptionModalOverlay" onclick="closeSubscriptionOutside(event)">
     <div class="modal" id="subscriptionModal" onclick="event.stopPropagation()"
-      style="max-width: 420px; border-radius: 12px; background: linear-gradient(180deg, #f0f7ff 0%, #e0efff 100%); padding: 0; overflow: hidden; border: 1px solid #b8daff;">
+      style="max-width: 420px; border-radius: 12px; background: linear-gradient(180deg, var(--bg-input) 0%, var(--bg-app) 100%); padding: 0; overflow: hidden; border: 1px solid var(--border);">
 
       <!-- Top Nav -->
       <div style="display:flex; justify-content:space-between; align-items:center; padding: 24px 24px 16px;">
         <div style="flex:1;"></div>
 
         <!-- Plan Segmented Control -->
-        <div style="display:flex; background: rgba(255,255,255,0.6); padding: 4px; border-radius: 6px; gap: 4px;">
+        <div style="display:flex; background: var(--bg-hover); padding: 4px; border-radius: 6px; gap: 4px;">
           <button id="pillBasic" onclick="selectPlan('basic')"
-            style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:#1B2A41; transition:all 0.2s;">Basic</button>
+            style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:var(--text-main); transition:all 0.2s;">Basic</button>
           <button id="pillPro" onclick="selectPlan('pro')"
-            style="border:none; background:#4DA6FF; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:#fff; box-shadow: 0 2px 8px rgba(77,166,255,0.3); transition:all 0.2s;">Pro</button>
+            style="border:none; background:var(--accent); padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:#fff; box-shadow: 0 2px 8px rgba(77,166,255,0.3); transition:all 0.2s;">Pro</button>
           <button id="pillTeam" onclick="selectPlan('team')"
-            style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:#1B2A41; transition:all 0.2s;">Team</button>
+            style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:var(--text-main); transition:all 0.2s;">Team</button>
         </div>
 
         <div style="flex:1; display:flex; justify-content:flex-end;">
           <button onclick="closeSubscriptionModal()"
-            style="background:rgba(255,255,255,0.5); border:none; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#1B2A41; transition: background 0.2s;"
-            onmouseover="this.style.background='rgba(255,255,255,0.8)'"
-            onmouseout="this.style.background='rgba(255,255,255,0.5)'">
+            style="background:var(--bg-hover); border:none; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-main); transition: background 0.2s;"
+            onmouseover="this.style.opacity='0.8'"
+            onmouseout="this.style.opacity='1'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -4999,7 +5003,7 @@
 
         <!-- Icon & Title -->
         <div
-          style="display:inline-flex; align-items:center; gap:8px; background: rgba(77,166,255,0.15); padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; color:#2B8BE6;">
+          style="display:inline-flex; align-items:center; gap:8px; background: rgba(77,166,255,0.15); padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; color:var(--accent);">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -5008,7 +5012,7 @@
           <span id="displayPlanName" style="font-weight:800; font-size:1.1rem; letter-spacing:-0.02em;">Pro Plan</span>
         </div>
 
-        <p style="color:#1B2A41; font-size:0.9rem; font-weight:600; margin-bottom:32px;">Save 20% with the Yearly plan
+        <p style="color:var(--text-main); font-size:0.9rem; font-weight:600; margin-bottom:32px;">Save 20% with the Yearly plan
         </p>
 
         <!-- Pricing Cards -->
@@ -5016,14 +5020,14 @@
 
           <!-- Monthly Card -->
           <div id="cardMonthly" onclick="selectCycle('monthly')"
-            style="flex:1; max-width: 150px; background: #fff; border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid transparent; overflow:hidden;">
+            style="flex:1; max-width: 150px; background: var(--bg-card); border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid transparent; overflow:hidden;">
             <div style="padding: 24px 16px;">
-              <div style="font-size:0.8rem; font-weight:700; color:#a8a29e; margin-bottom:8px;">1 month</div>
-              <div style="font-size:1.8rem; font-weight:900; color:#1c1917; letter-spacing:-0.03em;">₱<span
+              <div style="font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:8px;">1 month</div>
+              <div style="font-size:1.8rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;">₱<span
                   id="priceMo">299</span></div>
             </div>
             <div
-              style="background: #f0f7ff; padding: 12px; font-size:0.8rem; font-weight:700; color:#2B8BE6; transition: background 0.2s;"
+              style="background: var(--bg-input); padding: 12px; font-size:0.8rem; font-weight:700; color:var(--accent); transition: background 0.2s;"
               id="cardMonthlyBottom">
               ₱<span id="priceMoSub">299</span> /mon
             </div>
@@ -5031,17 +5035,17 @@
 
           <!-- Yearly Card -->
           <div id="cardAnnual" onclick="selectCycle('annual')"
-            style="flex:1; max-width: 150px; background: #fff; border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid #4DA6FF; box-shadow: 0 10px 30px rgba(77,166,255,0.2); position:relative; overflow:hidden; transform: scale(1.05);">
+            style="flex:1; max-width: 150px; background: var(--bg-card); border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(77,166,255,0.2); position:relative; overflow:hidden; transform: scale(1.05);">
             <div
               style="position:absolute; top:-2px; left:50%; transform:translateX(-50%); background:#FFD166; color:#1B2A41; font-size:0.7rem; font-weight:900; padding:4px 12px; border-radius:0 0 6px 6px; white-space:nowrap;">
               Save 20%</div>
             <div style="padding: 32px 16px 24px;">
-              <div style="font-size:0.8rem; font-weight:700; color:#a8a29e; margin-bottom:8px;">1 year</div>
-              <div style="font-size:1.8rem; font-weight:900; color:#1c1917; letter-spacing:-0.03em;">₱<span
+              <div style="font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:8px;">1 year</div>
+              <div style="font-size:1.8rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;">₱<span
                   id="priceYr">2990</span></div>
             </div>
             <div
-              style="background: #4DA6FF; padding: 12px; font-size:0.8rem; font-weight:700; color:#fff; transition: background 0.2s;"
+              style="background: var(--accent); padding: 12px; font-size:0.8rem; font-weight:700; color:#fff; transition: background 0.2s;"
               id="cardAnnualBottom">
               ₱<span id="priceYrSub">249</span> /mon
             </div>
@@ -5050,35 +5054,35 @@
         </div>
 
         <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:16px;">
-          <input type="checkbox" id="chkTerms" style="width:16px; height:16px; accent-color:#4DA6FF; cursor:pointer;"
+          <input type="checkbox" id="chkTerms" style="width:16px; height:16px; accent-color:var(--accent); cursor:pointer;"
             onchange="updatePurchaseBtn()" />
-          <label for="chkTerms" style="font-size:0.8rem; color:#1B2A41; cursor:pointer; font-weight:600;">
-            I agree to the <a href="terms.html" target="_blank" style="text-decoration:underline; color:#2B8BE6;">Terms
+          <label for="chkTerms" style="font-size:0.8rem; color:var(--text-main); cursor:pointer; font-weight:600;">
+            I agree to the <a href="terms.html" target="_blank" style="text-decoration:underline; color:var(--accent);">Terms
               & Conditions</a>
           </label>
         </div>
 
         <button id="btnPurchase" onclick="purchaseSubscriptionKey()"
-          style="width:100%; background:#4DA6FF; color:#fff; border:none; border-radius:8px; padding:16px; font-size:1.05rem; font-weight:800; cursor:not-allowed; box-shadow:0 6px 20px rgba(77,166,255,0.3); transition:transform 0.15s, opacity 0.2s; margin-bottom:16px; opacity:0.5;"
+          style="width:100%; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:16px; font-size:1.05rem; font-weight:800; cursor:not-allowed; box-shadow:0 6px 20px rgba(77,166,255,0.3); transition:transform 0.15s, opacity 0.2s; margin-bottom:16px; opacity:0.5;"
           onactive="if(document.getElementById('chkTerms').checked) this.style.transform='scale(0.98)'">
           Continue with Pro Plan
         </button>
 
-        <p style="font-size:0.7rem; color:#1B2A41; line-height:1.4; font-weight:500;">
+        <p style="font-size:0.7rem; color:var(--text-dim); line-height:1.4; font-weight:500;">
           Subscription keys are generated manually. Cancel anytime. Save 20% with Yearly plan compared to Monthly.
         </p>
 
         <!-- Redeem area -->
         <div
-          style="margin-top:20px; text-align:left; background:rgba(255,255,255,0.4); border-radius: 8px; padding: 16px;">
-          <div style="font-size:0.85rem; font-weight:800; color:#1B2A41; margin-bottom:8px;">Got a Subscription Key?
+          style="margin-top:20px; text-align:left; background:var(--bg-hover); border:1px solid var(--border); border-radius: 8px; padding: 16px;">
+          <div style="font-size:0.85rem; font-weight:800; color:var(--text-main); margin-bottom:8px;">Got a Subscription Key?
           </div>
           <div style="display:flex; gap:8px;">
             <input type="text" id="subKeyInput" placeholder="e.g. ABC123"
-              style="flex:1; width:100%; box-sizing:border-box; border-radius: 6px; border: 1px solid rgba(77,166,255,0.3); padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; background: #fff; color: #1c1917; outline: none; transition:border-color 0.2s;"
-              onfocus="this.style.borderColor='#4DA6FF'" onblur="this.style.borderColor='rgba(77,166,255,0.3)'" />
+              style="flex:1; width:100%; box-sizing:border-box; border-radius: 6px; border: 1px solid var(--border-strong); padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; background: var(--bg-input); color: var(--text-main); outline: none; transition:border-color 0.2s;"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-strong)'" />
             <button
-              style="background:#1B2A41; color:#fff; border:none; border-radius:6px; padding: 0 16px; font-weight:700; font-size:0.85rem; cursor:pointer; flex-shrink:0;"
+              style="background:var(--accent); color:#fff; border:none; border-radius:6px; padding: 0 16px; font-weight:700; font-size:0.85rem; cursor:pointer; flex-shrink:0;"
               onclick="redeemSubscriptionKey()">Redeem</button>
           </div>
           <div id="subKeyMessage" style="margin-top: 8px; font-size: 0.75rem; font-weight:600; display:none;"></div>
@@ -7219,12 +7223,12 @@
         var pill = document.getElementById('pill' + p.charAt(0).toUpperCase() + p.slice(1));
         if (!pill) return;
         if (p === plan) {
-          pill.style.background = '#4DA6FF';
+          pill.style.background = 'var(--accent)';
           pill.style.color = '#fff';
           pill.style.boxShadow = '0 2px 8px rgba(77,166,255,0.3)';
         } else {
           pill.style.background = 'transparent';
-          pill.style.color = '#1B2A41';
+          pill.style.color = 'var(--text-main)';
           pill.style.boxShadow = 'none';
         }
       });
@@ -7250,29 +7254,29 @@
       var cardYrBot = document.getElementById('cardAnnualBottom');
 
       if (cycle === 'annual') {
-        cardYr.style.border = '2px solid #4DA6FF';
+        cardYr.style.border = '2px solid var(--accent)';
         cardYr.style.transform = 'scale(1.05)';
         cardYr.style.boxShadow = '0 10px 30px rgba(77,166,255,0.2)';
-        cardYrBot.style.background = '#4DA6FF';
+        cardYrBot.style.background = 'var(--accent)';
         cardYrBot.style.color = '#fff';
 
         cardMo.style.border = '2px solid transparent';
         cardMo.style.transform = 'scale(1)';
         cardMo.style.boxShadow = 'none';
-        cardMoBot.style.background = '#f0f7ff';
-        cardMoBot.style.color = '#2B8BE6';
+        cardMoBot.style.background = 'var(--bg-input)';
+        cardMoBot.style.color = 'var(--accent)';
       } else {
-        cardMo.style.border = '2px solid #4DA6FF';
+        cardMo.style.border = '2px solid var(--accent)';
         cardMo.style.transform = 'scale(1.05)';
         cardMo.style.boxShadow = '0 10px 30px rgba(77,166,255,0.2)';
-        cardMoBot.style.background = '#4DA6FF';
+        cardMoBot.style.background = 'var(--accent)';
         cardMoBot.style.color = '#fff';
 
         cardYr.style.border = '2px solid transparent';
         cardYr.style.transform = 'scale(1)';
         cardYr.style.boxShadow = 'none';
-        cardYrBot.style.background = '#f0f7ff';
-        cardYrBot.style.color = '#2B8BE6';
+        cardYrBot.style.background = 'var(--bg-input)';
+        cardYrBot.style.color = 'var(--accent)';
       }
 
       updatePurchaseBtn();
