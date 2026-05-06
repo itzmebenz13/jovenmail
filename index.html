@@ -2464,7 +2464,7 @@
       position: fixed;
       inset: 0;
       z-index: 10000;
-      background: var(--bg-app);
+      background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%);
       overflow-y: auto;
       flex-direction: column;
       align-items: center;
@@ -2488,7 +2488,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 20px 0 8px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: none;
     }
 
     .adm-logo {
@@ -2501,7 +2501,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--accent);
+      background: #22c55e;
       animation: pulse-green 2s infinite;
     }
 
@@ -2509,25 +2509,26 @@
       font-size: 1rem;
       font-weight: 700;
       letter-spacing: -0.01em;
-      color: var(--text-main);
+      color: #15803d;
     }
 
     .adm-logo span {
       font-size: 0.72rem;
       font-family: 'JetBrains Mono', monospace;
-      color: var(--text-muted);
-      background: var(--bg-hover);
+      color: #ffffff;
+      background: #22c55e;
+      font-weight: 800;
       padding: 2px 8px;
       border-radius: 5px;
-      border: 1px solid var(--border);
+      border: none;
     }
 
     .adm-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      background: #ffffff;
+      border: none;
+      border-radius: 16px;
       padding: 18px;
-      box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 30px rgba(34,197,94,0.1);
     }
 
     .adm-card-head {
@@ -2539,8 +2540,8 @@
 
     .adm-card-title {
       font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--text-muted);
+      font-weight: 700;
+      color: #166534;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       display: flex;
@@ -2549,9 +2550,9 @@
     }
 
     .adm-card-title .adm-count {
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-      color: var(--text-dim);
+      background: #f0fdf4;
+      border: none;
+      color: #15803d;
       border-radius: 5px;
       padding: 1px 7px;
       font-size: 0.72rem;
@@ -2565,39 +2566,41 @@
     }
 
     .adm-stat {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      background: #ffffff;
+      border: none;
+      border-radius: 16px;
       padding: 13px;
+      box-shadow: 0 4px 15px rgba(34,197,94,0.05);
     }
 
     .adm-stat .adm-val {
       font-size: 1.5rem;
       font-weight: 700;
       letter-spacing: -0.03em;
-      color: var(--text-main);
+      color: #15803d;
       font-family: 'JetBrains Mono', monospace;
       line-height: 1;
     }
 
     .adm-stat .adm-val.accent {
-      color: var(--accent);
+      color: #22c55e;
     }
 
     .adm-stat .adm-lbl {
       font-size: 0.72rem;
-      color: var(--text-muted);
+      color: #166534;
+      font-weight: 600;
       margin-top: 5px;
     }
 
     .adm-tabs {
       display: flex;
-      gap: 2px;
-      background: var(--bg-input);
-      border-radius: 9px;
-      padding: 3px;
+      gap: 4px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 10px;
+      padding: 4px;
       margin-bottom: 14px;
-      border: 1px solid var(--border);
+      border: none;
     }
 
     .adm-tab {
@@ -2605,18 +2608,19 @@
       padding: 8px;
       text-align: center;
       font-size: 0.82rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      border-radius: 7px;
-      color: var(--text-dim);
+      border-radius: 8px;
+      color: #166534;
       transition: all 0.2s;
-      border: 1px solid transparent;
+      border: none;
+      background: transparent;
     }
 
     .adm-tab.active {
-      background: var(--bg-hover);
-      color: var(--text-main);
-      border-color: var(--border-strong);
+      background: #22c55e;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(34,197,94,0.3);
     }
 
     .adm-tab-panel {
@@ -2629,10 +2633,10 @@
 
     .adm-textarea {
       width: 100%;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
+      background: #ffffff;
+      border: 1px solid rgba(22,163,74,0.3);
       border-radius: 10px;
-      color: var(--text-main);
+      color: #1c1917;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.88rem;
       padding: 10px 14px;
@@ -2644,15 +2648,15 @@
     }
 
     .adm-textarea:focus {
-      border-color: var(--accent);
+      border-color: #22c55e;
     }
 
     .adm-input {
       width: 100%;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
+      background: #ffffff;
+      border: 1px solid rgba(22,163,74,0.3);
       border-radius: 10px;
-      color: var(--text-main);
+      color: #1c1917;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.88rem;
       padding: 9px 13px;
@@ -2661,7 +2665,7 @@
     }
 
     .adm-input:focus {
-      border-color: var(--accent);
+      border-color: #22c55e;
     }
 
     .adm-row {
@@ -2681,7 +2685,7 @@
     }
 
     .adm-upload-zone {
-      border: 2px dashed var(--border-strong);
+      border: 2px dashed rgba(22,163,74,0.3);
       border-radius: 10px;
       padding: 24px;
       text-align: center;
@@ -2692,8 +2696,8 @@
 
     .adm-upload-zone:hover,
     .adm-upload-zone.drag-over {
-      border-color: var(--accent);
-      background: rgba(217, 249, 80, 0.03);
+      border-color: #22c55e;
+      background: rgba(34,197,94,0.05);
     }
 
     .adm-upload-zone input[type=file] {
@@ -2706,20 +2710,21 @@
     }
 
     .adm-upload-zone p {
-      color: var(--text-dim);
+      color: #166534;
       font-size: 0.85rem;
       margin-top: 6px;
+      font-weight: 600;
     }
 
     .adm-upload-zone small {
-      color: var(--text-muted);
+      color: #15803d;
       font-size: 0.75rem;
     }
 
     .adm-file-label {
       display: none;
-      color: var(--accent);
-      font-weight: 600;
+      color: #22c55e;
+      font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
       margin-top: 7px;
       font-size: 0.82rem;
@@ -2732,8 +2737,8 @@
       gap: 12px;
       padding: 11px 13px;
       border-radius: 10px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
+      background: #ffffff;
+      border: 1px solid rgba(22,163,74,0.2);
       transition: border-color 0.2s;
       margin-bottom: 7px;
     }
@@ -2743,7 +2748,7 @@
     }
 
     .gmail-account-card:hover {
-      border-color: var(--border-strong);
+      border-color: #22c55e;
     }
 
     .gmail-account-info {
@@ -2754,8 +2759,8 @@
     .gmail-account-email {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.81rem;
-      font-weight: 600;
-      color: var(--code-text);
+      font-weight: 700;
+      color: #15803d;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
