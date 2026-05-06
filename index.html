@@ -13,7 +13,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>KoreoMail — Temporary Gmail Aliases</title>
 
-  <!-- Compact, crisp fonts -->
+  <!-- Preload the hero character image for instant display -->
+  <link rel="preload" href="photos/koreo-hi.png" as="image" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -4135,13 +4136,18 @@
               <span id="koreoGreetText">Hi there! 👋</span>
               <div class="koreo-bubble-tail"></div>
             </div>
+            
+            <!-- Skeleton placeholder -->
+            <div class="koreo-skeleton" id="koreoSkeleton"></div>
+            
             <!-- Interactive Bird -->
             <img
               src="photos/koreo-hi.png"
               alt="Koreo the bird waving hello"
-              class="koreo-img"
+              class="koreo-img not-loaded"
               id="koreoImg"
               draggable="false"
+              onload="this.classList.remove('not-loaded'); document.getElementById('koreoSkeleton').style.display='none';"
             />
             <!-- Sparkle particles -->
             <div class="koreo-sparkle s1">✦</div>
@@ -4158,34 +4164,59 @@
           /* ── Koreo Hero ── */
           .koreo-hero {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            gap: 6px;
-            padding: 10px 0 28px;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px 0 24px;
+            max-width: 600px;
+            margin: 0 auto;
           }
 
           .koreo-scene {
             position: relative;
-            width: 180px;
-            height: 180px;
+            width: 140px;
+            height: 140px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+          }
+
+          /* Skeleton Loading Placeholder */
+          .koreo-skeleton {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: rgba(77, 166, 255, 0.2);
+            animation: pulse-skeleton 1.5s ease-in-out infinite alternate;
+            z-index: 1;
+          }
+
+          @keyframes pulse-skeleton {
+            0% { transform: scale(0.95); opacity: 0.6; }
+            100% { transform: scale(1.05); opacity: 1; }
           }
 
           /* The bird image — transparent background */
           .koreo-img {
-            width: 160px;
-            height: 160px;
+            width: 120px;
+            height: 120px;
             object-fit: contain;
             cursor: pointer;
             user-select: none;
             -webkit-user-drag: none;
-            filter: drop-shadow(0 8px 20px rgba(77, 166, 255, 0.30));
+            filter: drop-shadow(0 8px 16px rgba(77, 166, 255, 0.25));
             animation: koreoFloat 3.2s ease-in-out infinite;
-            transition: filter 0.2s;
+            transition: filter 0.2s, opacity 0.4s ease;
             position: relative;
             z-index: 2;
+            opacity: 1;
+          }
+          
+          .koreo-img.not-loaded {
+            opacity: 0;
           }
 
           .koreo-img:hover {
@@ -4225,8 +4256,8 @@
           /* Speech bubble */
           .koreo-bubble {
             position: absolute;
-            top: -10px;
-            right: -28px;
+            top: -15px;
+            right: -35px;
             background: #ffffff;
             border: 2px solid #4DA6FF;
             border-radius: 16px;
@@ -4295,8 +4326,51 @@
 
           /* Text block */
           .koreo-text {
-            text-align: center;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
           }
+
+          .koreo-greeting {
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.7rem;
+            font-weight: 900;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+            color: var(--text-main);
+          }
+
+          .koreo-hi   { color: var(--text-dim); font-weight: 700; font-size: 1.25rem; }
+          .koreo-name { color: #4DA6FF; font-weight: 900; }
+          .koreo-wave { color: #FFD166; }
+
+          .koreo-sub {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            line-height: 1.4;
+            max-width: 250px;
+          }
+          
+          /* Mobile Stack */
+          @media (max-width: 480px) {
+            .koreo-hero {
+              flex-direction: column;
+              text-align: center;
+              gap: 8px;
+            }
+            .koreo-text {
+              text-align: center;
+              align-items: center;
+            }
+            .koreo-sub {
+              max-width: none;
+            }
+          }
+        </style>
 
           .koreo-greeting {
             font-family: 'Nunito', sans-serif;
