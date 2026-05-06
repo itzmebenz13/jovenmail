@@ -4671,13 +4671,8 @@
           <div style="font-size:0.85rem; font-weight:800; color:#166534; margin-bottom:8px;">Got a Subscription Key?
           </div>
           <div style="display:flex; gap:8px;">
-            <input type="text" id="subKeyInput" placeholder="e.g. ABC123=" flex:1; border-radius: 6px; border: 1px solid
-              rgba(22,163,74,0.3); padding: 10px 12px; font-family: 'JetBrains Mono' , monospace; font-size: 0.85rem;
-              background: #fff; color: #1c1917; outline: none; transition:border-color 0.2s;"
-              onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='rgba(22,163,74,0.3)'" />
-            <button
-              style="background:#166534; color:#fff; border:none; border-radius:6px; padding: 0 16px; font-weight:700; font-size:0.85rem; cursor:pointer;"
-              onclick="redeemSubscriptionKey()">Redeem</button>
+            <input type="text" id="subKeyInput" placeholder="e.g. ABC123" style="flex:1; width:100%; box-sizing:border-box; border-radius: 6px; border: 1px solid rgba(22,163,74,0.3); padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; background: #fff; color: #1c1917; outline: none; transition:border-color 0.2s;" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='rgba(22,163,74,0.3)'" />
+            <button style="background:#166534; color:#fff; border:none; border-radius:6px; padding: 0 16px; font-weight:700; font-size:0.85rem; cursor:pointer; flex-shrink:0;" onclick="redeemSubscriptionKey()">Redeem</button>
           </div>
           <div id="subKeyMessage" style="margin-top: 8px; font-size: 0.75rem; font-weight:600; display:none;"></div>
         </div>
