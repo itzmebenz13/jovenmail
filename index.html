@@ -33,58 +33,58 @@
 
   <style>
     :root {
-      /* -- LIGHT MODE -- */
-      --bg-app: #f4f4f5;
+      /* -- LIGHT MODE (KoreoMail Palette) -- */
+      --bg-app: #E6F2FF;
       --bg-card: #ffffff;
-      --bg-input: #fafafa;
-      --bg-hover: #e4e4e7;
+      --bg-input: #f0f7ff;
+      --bg-hover: #daeeff;
 
-      --border: #e4e4e7;
-      --border-strong: #d4d4d8;
+      --border: #c8e0f7;
+      --border-strong: #a8c8f0;
 
-      --accent: #16a34a;
-      /* Forest green — readable on white */
-      --accent-hover: #15803d;
+      --accent: #4DA6FF;
+      /* KoreoMail blue */
+      --accent-hover: #2e8fe8;
       --accent-text: #ffffff;
-      /* White text on green button */
-      --code-text: #15803d;
-      /* Dark green for code in light mode */
+      /* White text on blue button */
+      --code-text: #1B2A41;
+      /* Dark navy for code in light mode */
 
-      --text-main: #09090b;
-      --text-dim: #71717a;
-      --text-muted: #a1a1aa;
+      --text-main: #1B2A41;
+      --text-dim: #4a6a8a;
+      --text-muted: #7a9ab8;
 
-      --shadow-card: 0 2px 8px -2px rgba(0, 0, 0, 0.05);
+      --shadow-card: 0 2px 8px -2px rgba(77, 166, 255, 0.10);
       --radius-btn: 10px;
       --radius-card: 14px;
       --radius-input: 10px;
     }
 
     [data-theme="dark"] {
-      /* -- DARK MODE -- */
-      --bg-app: #09090b;
-      /* Very deep background */
-      --bg-card: #111113;
-      /* Card surface — slightly richer */
-      --bg-input: #0e0e10;
+      /* -- DARK MODE (KoreoMail Palette) -- */
+      --bg-app: #0e1621;
+      /* Very deep navy background */
+      --bg-card: #152030;
+      /* Card surface — navy-rich */
+      --bg-input: #0f1a28;
       /* Input background */
-      --bg-hover: #1e1e21;
+      --bg-hover: #1d2e42;
       /* Hover states */
 
-      --border: #232326;
-      --border-strong: #3a3a40;
+      --border: #1e3048;
+      --border-strong: #2a4060;
 
-      --accent: #22c55e;
-      /* Pure green — readable in dark mode */
-      --accent-hover: #16a34a;
+      --accent: #4DA6FF;
+      /* KoreoMail blue — readable in dark mode */
+      --accent-hover: #6db8ff;
       --accent-text: #ffffff;
-      /* White text on green button */
-      --code-text: #22c55e;
-      /* Pure green for code in dark mode */
+      /* White text on blue button */
+      --code-text: #4DA6FF;
+      /* KoreoMail blue for code in dark mode */
 
-      --text-main: #f5f5f5;
-      --text-dim: #a1a1aa;
-      --text-muted: #4d4d55;
+      --text-main: #e8f2ff;
+      --text-dim: #7aa0c4;
+      --text-muted: #3a5878;
 
       --shadow-card: 0 4px 20px -4px rgba(0, 0, 0, 0.5);
       --radius-btn: 10px;
@@ -92,67 +92,67 @@
       --radius-input: 10px;
     }
 
-    /* ─── Light mode: override hardcoded lime rgba glows with forest-green equivalents ─── */
+    /* ─── Light mode: override hardcoded glows with KoreoMail blue equivalents ─── */
     :root .btn-primary:hover,
     [data-theme="light"] .btn-primary:hover {
-      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.28) !important;
+      box-shadow: 0 4px 12px rgba(77, 166, 255, 0.32) !important;
     }
 
     [data-theme="light"] .alias-field.has-alias {
-      border-color: rgba(22, 163, 74, 0.35) !important;
-      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.09) !important;
+      border-color: rgba(77, 166, 255, 0.40) !important;
+      box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.10) !important;
     }
 
     [data-theme="light"] .owner-badge {
-      background: rgba(22, 163, 74, 0.12) !important;
-      border-color: rgba(22, 163, 74, 0.35) !important;
-      color: #15803d !important;
+      background: rgba(77, 166, 255, 0.12) !important;
+      border-color: rgba(77, 166, 255, 0.35) !important;
+      color: #1B2A41 !important;
     }
 
     [data-theme="light"] #ownerAliasBadge {
-      background: rgba(22, 163, 74, 0.1) !important;
-      border-color: rgba(22, 163, 74, 0.3) !important;
-      color: #15803d !important;
+      background: rgba(77, 166, 255, 0.10) !important;
+      border-color: rgba(77, 166, 255, 0.30) !important;
+      color: #1B2A41 !important;
     }
 
     [data-theme="light"] .owner-action-btn.ql-btn {
-      border-color: rgba(22, 163, 74, 0.3) !important;
-      background: rgba(22, 163, 74, 0.07) !important;
-      color: #15803d !important;
+      border-color: rgba(77, 166, 255, 0.30) !important;
+      background: rgba(77, 166, 255, 0.07) !important;
+      color: #1B2A41 !important;
     }
 
     [data-theme="light"] .owner-action-btn.ql-btn .oab-icon {
-      background: rgba(22, 163, 74, 0.14) !important;
+      background: rgba(77, 166, 255, 0.14) !important;
     }
 
     [data-theme="light"] .owner-action-btn.ql-btn:hover {
-      background: rgba(22, 163, 74, 0.14) !important;
-      border-color: rgba(22, 163, 74, 0.55) !important;
-      box-shadow: 0 5px 16px rgba(22, 163, 74, 0.18) !important;
+      background: rgba(77, 166, 255, 0.14) !important;
+      border-color: rgba(77, 166, 255, 0.55) !important;
+      box-shadow: 0 5px 16px rgba(77, 166, 255, 0.20) !important;
     }
 
     [data-theme="light"] #viewerBanner {
-      background: rgba(22, 163, 74, 0.07) !important;
-      border-color: rgba(22, 163, 74, 0.25) !important;
+      background: rgba(77, 166, 255, 0.07) !important;
+      border-color: rgba(77, 166, 255, 0.25) !important;
     }
 
     [data-theme="light"] .viewer-label {
-      color: #15803d !important;
+      color: #1B2A41 !important;
     }
 
     [data-theme="light"] .sync-dot {
-      background: #16a34a !important;
+      background: #4DA6FF !important;
     }
 
     [data-theme="light"] .ql-mode-btn.active {
-      border-color: #16a34a !important;
-      background: rgba(22, 163, 74, 0.08) !important;
-      color: #15803d !important;
+      border-color: #4DA6FF !important;
+      background: rgba(77, 166, 255, 0.08) !important;
+      color: #1B2A41 !important;
     }
 
     [data-theme="light"] .ql-loader-icon {
-      background: rgba(22, 163, 74, 0.1) !important;
-      border-color: rgba(22, 163, 74, 0.28) !important;
+      background: rgba(77, 166, 255, 0.10) !important;
+      border-color: rgba(77, 166, 255, 0.28) !important;
       animation: qlPulseLM 1.6s ease-in-out infinite !important;
     }
 
@@ -160,24 +160,24 @@
 
       0%,
       100% {
-        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.3);
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.35);
       }
 
       50% {
-        box-shadow: 0 0 0 14px rgba(22, 163, 74, 0);
+        box-shadow: 0 0 0 14px rgba(77, 166, 255, 0);
       }
     }
 
     [data-theme="light"] .ql-loader-dots span {
-      background: #16a34a !important;
+      background: #4DA6FF !important;
     }
 
     [data-theme="light"] .adm-logo-dot {
-      background: #16a34a !important;
+      background: #4DA6FF !important;
     }
 
     [data-theme="light"] .adm-stat .adm-val.accent {
-      color: #16a34a !important;
+      color: #4DA6FF !important;
     }
 
     *,
@@ -443,29 +443,29 @@
 
     @keyframes pulse-green {
       0% {
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.45);
       }
 
       70% {
-        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0);
+        box-shadow: 0 0 0 4px rgba(77, 166, 255, 0);
       }
 
       100% {
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
       }
     }
 
     @keyframes pulse-green-light {
       0% {
-        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45);
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.50);
       }
 
       70% {
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0);
+        box-shadow: 0 0 0 4px rgba(77, 166, 255, 0);
       }
 
       100% {
-        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
       }
     }
 
@@ -541,7 +541,7 @@
     .btn-primary:hover {
       background: var(--accent-hover);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+      box-shadow: 0 4px 12px rgba(77, 166, 255, 0.30);
     }
 
     .btn-outline {
@@ -592,7 +592,7 @@
 
     .input-minimal:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08);
+      box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.12);
     }
 
     @keyframes fadeIn {
@@ -677,7 +677,7 @@
     .btn-refresh:hover {
       color: var(--accent);
       border-color: var(--accent);
-      background: rgba(34, 197, 94, 0.05);
+      background: rgba(77, 166, 255, 0.07);
     }
 
     .btn-refresh:active {
@@ -823,7 +823,7 @@
 
     .email-item.unread .email-dot {
       background: var(--accent);
-      box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+      box-shadow: 0 0 6px rgba(77, 166, 255, 0.45);
     }
 
     .email-content {
@@ -865,8 +865,8 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      background: rgba(34, 197, 94, 0.12);
-      border: 1px solid rgba(34, 197, 94, 0.3);
+      background: rgba(77, 166, 255, 0.12);
+      border: 1px solid rgba(77, 166, 255, 0.30);
       color: var(--code-text);
       border-radius: 6px;
       padding: 2px 8px;
@@ -880,9 +880,9 @@
     }
 
     [data-theme="light"] .otp-chip {
-      background: rgba(22, 163, 74, 0.12);
-      border-color: rgba(22, 163, 74, 0.3);
-      color: #15803d;
+      background: rgba(77, 166, 255, 0.12);
+      border-color: rgba(77, 166, 255, 0.30);
+      color: #1B2A41;
     }
 
     .otp-chip:hover {
@@ -905,9 +905,9 @@
       min-width: 280px;
       max-width: min(380px, calc(100vw - 32px));
       background: var(--bg-card);
-      border: 1px solid rgba(34, 197, 94, 0.3);
+      border: 1px solid rgba(77, 166, 255, 0.35);
       border-radius: 12px;
-      box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(34, 197, 94, 0.06);
+      box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(77, 166, 255, 0.08);
       padding: 12px 14px 10px;
       opacity: 0;
       transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
@@ -1062,12 +1062,12 @@
 
     @keyframes newEmailGlow {
       0% {
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.55);
         border-color: var(--accent);
       }
 
       60% {
-        box-shadow: 0 0 16px 4px rgba(34, 197, 94, 0.2);
+        box-shadow: 0 0 16px 4px rgba(77, 166, 255, 0.22);
       }
 
       100% {
@@ -1081,8 +1081,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(34, 197, 94, 0.07);
-      border: 1px solid rgba(34, 197, 94, 0.25);
+      background: rgba(77, 166, 255, 0.07);
+      border: 1px solid rgba(77, 166, 255, 0.25);
       border-radius: 10px;
       padding: 12px 16px;
       margin-bottom: 16px;
@@ -1106,7 +1106,7 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 1.5rem;
       font-weight: 800;
-      color: #4a6000;
+      color: #1B2A41;
       letter-spacing: 0.15em;
     }
 
@@ -1133,7 +1133,8 @@
     }
 
     .otp-copy-btn.copied {
-      background: #4ade80;
+      background: #FFD166;
+      color: #1B2A41;
     }
 
     /* -- MODAL -- */
