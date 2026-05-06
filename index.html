@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Nunito:wght@700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap"
     rel="stylesheet" />
 
   <!-- Supabase & Lucide Icons -->
@@ -4127,8 +4127,247 @@
 
     <main>
       <section class="hero">
-        <h1>Multiple Gmails. Infinite Aliases.</h1>
-        <p>Recover your assigned Gmail alias and access its inbox privately. Your alias, your messages!</p>
+        <!-- Koreo Greeting -->
+        <div class="koreo-hero">
+          <div class="koreo-scene">
+            <!-- Speech Bubble -->
+            <div class="koreo-bubble" id="koreoBubble">
+              <span id="koreoGreetText">Hi there! 👋</span>
+              <div class="koreo-bubble-tail"></div>
+            </div>
+            <!-- Interactive Bird -->
+            <img
+              src="photos/koreo-hi.png"
+              alt="Koreo the bird waving hello"
+              class="koreo-img"
+              id="koreoImg"
+              draggable="false"
+            />
+            <!-- Sparkle particles -->
+            <div class="koreo-sparkle s1">✦</div>
+            <div class="koreo-sparkle s2">✦</div>
+            <div class="koreo-sparkle s3">✦</div>
+          </div>
+          <div class="koreo-text">
+            <h1 class="koreo-greeting"><span class="koreo-hi">Hey, I'm </span><span class="koreo-name">Koreo</span><span class="koreo-wave">!</span></h1>
+            <p class="koreo-sub">Your mail is ready. Check your inbox below. 📬</p>
+          </div>
+        </div>
+
+        <style>
+          /* ── Koreo Hero ── */
+          .koreo-hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 0 28px;
+          }
+
+          .koreo-scene {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          /* The bird image — transparent background */
+          .koreo-img {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-drag: none;
+            filter: drop-shadow(0 8px 20px rgba(77, 166, 255, 0.30));
+            animation: koreoFloat 3.2s ease-in-out infinite;
+            transition: filter 0.2s;
+            position: relative;
+            z-index: 2;
+          }
+
+          .koreo-img:hover {
+            filter: drop-shadow(0 10px 28px rgba(77, 166, 255, 0.50));
+          }
+
+          /* Floating bob */
+          @keyframes koreoFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            30%       { transform: translateY(-8px) rotate(-2deg); }
+            60%       { transform: translateY(-4px) rotate(1deg); }
+          }
+
+          /* Click bounce */
+          .koreo-img.bounce {
+            animation: koreoBounce 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+          }
+
+          @keyframes koreoBounce {
+            0%   { transform: scale(1) rotate(0deg); }
+            20%  { transform: scale(1.18) rotate(-8deg); }
+            50%  { transform: scale(0.9) rotate(6deg); }
+            75%  { transform: scale(1.06) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+          }
+
+          /* Hover wiggle */
+          .koreo-img:hover:not(.bounce) {
+            animation: koreoWiggle 0.6s ease-in-out infinite;
+          }
+
+          @keyframes koreoWiggle {
+            0%, 100% { transform: rotate(-4deg) scale(1.04); }
+            50%       { transform: rotate(4deg) scale(1.04); }
+          }
+
+          /* Speech bubble */
+          .koreo-bubble {
+            position: absolute;
+            top: -10px;
+            right: -28px;
+            background: #ffffff;
+            border: 2px solid #4DA6FF;
+            border-radius: 16px;
+            padding: 6px 13px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: #1B2A41;
+            white-space: nowrap;
+            box-shadow: 0 4px 14px rgba(77, 166, 255, 0.20);
+            opacity: 0;
+            transform: scale(0.7) translateY(6px);
+            transform-origin: bottom left;
+            transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            z-index: 10;
+          }
+
+          .koreo-bubble.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+
+          .koreo-bubble-tail {
+            position: absolute;
+            bottom: -9px;
+            left: 14px;
+            width: 14px;
+            height: 10px;
+            background: #ffffff;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            border-bottom: 2px solid #4DA6FF;
+          }
+
+          [data-theme="dark"] .koreo-bubble {
+            background: #152030;
+            color: #e8f2ff;
+            border-color: #4DA6FF;
+          }
+
+          [data-theme="dark"] .koreo-bubble-tail {
+            background: #152030;
+          }
+
+          /* Sparkles */
+          .koreo-sparkle {
+            position: absolute;
+            font-size: 0.9rem;
+            color: #FFD166;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            animation: sparkleFloat 2.8s ease-in-out infinite;
+          }
+
+          .s1 { top: 18px;  left: 10px;  animation-delay: 0s;    animation-duration: 2.6s; }
+          .s2 { top: 30px;  right: 8px;  animation-delay: 0.9s;  animation-duration: 3.1s; }
+          .s3 { bottom: 22px; left: 22px; animation-delay: 1.7s;  animation-duration: 2.4s; }
+
+          @keyframes sparkleFloat {
+            0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+            30%  { opacity: 1; transform: translateY(-10px) scale(1); }
+            70%  { opacity: 0.8; transform: translateY(-18px) scale(0.8); }
+            100% { opacity: 0; transform: translateY(-26px) scale(0.4); }
+          }
+
+          /* Text block */
+          .koreo-text {
+            text-align: center;
+          }
+
+          .koreo-greeting {
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+            color: var(--text-main);
+          }
+
+          .koreo-hi   { color: var(--text-dim); font-weight: 700; font-size: 1.4rem; }
+          .koreo-name { color: #4DA6FF; font-weight: 900; }
+          .koreo-wave { color: #FFD166; }
+
+          .koreo-sub {
+            font-size: 0.88rem;
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+          }
+        </style>
+
+        <script>
+          (function() {
+            var greetings = [
+              "Hi there! 👋",
+              "Kumusta! 🌟",
+              "Check your mail! 📬",
+              "You've got mail! ✉️",
+              "Hello, friend! 😊",
+              "Mabilis. Simple. 🚀"
+            ];
+            var idx = 0;
+            var img = document.getElementById('koreoImg');
+            var bubble = document.getElementById('koreoBubble');
+            var greetText = document.getElementById('koreoGreetText');
+            var bubbleTimeout;
+
+            function showBubble(text) {
+              greetText.textContent = text;
+              bubble.classList.add('visible');
+              clearTimeout(bubbleTimeout);
+              bubbleTimeout = setTimeout(function() {
+                bubble.classList.remove('visible');
+              }, 2200);
+            }
+
+            if (img) {
+              // Click: bounce + cycle greeting
+              img.addEventListener('click', function() {
+                img.classList.remove('bounce');
+                void img.offsetWidth; // reflow
+                img.classList.add('bounce');
+                idx = (idx + 1) % greetings.length;
+                showBubble(greetings[idx]);
+                img.addEventListener('animationend', function h() {
+                  img.classList.remove('bounce');
+                  img.removeEventListener('animationend', h);
+                });
+              });
+
+              // Hover: show bubble
+              img.addEventListener('mouseenter', function() {
+                if (!bubble.classList.contains('visible')) {
+                  showBubble(greetings[idx]);
+                }
+              });
+            }
+          })();
+        </script>
       </section>
 
       <!-- Subscription Offer Banner -->
