@@ -4002,7 +4002,7 @@
   <div class="wrap">
     <header>
       <div class="logo-wrap" style="display: flex; align-items: center; gap: 10px;">
-        <img src="photos/header.png" alt="KoreoMail Logo" style="height: 38px; width: auto; object-fit: contain;">
+        <img src="photos/header.png" alt="KoreoMail Logo" style="height: 54px; width: auto; object-fit: contain;">
         <div class="badge">Beta</div>
       </div>
       <div class="header-actions">
@@ -4133,17 +4133,13 @@
               <div class="koreo-bubble-tail"></div>
             </div>
             
-            <!-- Skeleton placeholder -->
-            <div class="koreo-skeleton" id="koreoSkeleton"></div>
-            
             <!-- Interactive Bird -->
             <img
               src="photos/koreo-hi.png"
               alt="Koreo the bird waving hello"
-              class="koreo-img not-loaded"
+              class="koreo-img"
               id="koreoImg"
               draggable="false"
-              onload="this.classList.remove('not-loaded'); document.getElementById('koreoSkeleton').style.display='none';"
             />
             <!-- Sparkle particles -->
             <div class="koreo-sparkle s1">✦</div>
@@ -4179,22 +4175,6 @@
             flex-shrink: 0;
           }
 
-          /* Skeleton Loading Placeholder */
-          .koreo-skeleton {
-            position: absolute;
-            width: 85px;
-            height: 85px;
-            border-radius: 50%;
-            background: rgba(77, 166, 255, 0.2);
-            animation: pulse-skeleton 1.5s ease-in-out infinite alternate;
-            z-index: 1;
-          }
-
-          @keyframes pulse-skeleton {
-            0% { transform: scale(0.95); opacity: 0.6; }
-            100% { transform: scale(1.05); opacity: 1; }
-          }
-
           /* The bird image — transparent background */
           .koreo-img {
             width: 95px;
@@ -4205,14 +4185,9 @@
             -webkit-user-drag: none;
             filter: drop-shadow(0 8px 16px rgba(77, 166, 255, 0.25));
             animation: koreoFloat 3.2s ease-in-out infinite;
-            transition: filter 0.2s, opacity 0.4s ease;
+            transition: filter 0.2s;
             position: relative;
             z-index: 2;
-            opacity: 1;
-          }
-          
-          .koreo-img.not-loaded {
-            opacity: 0;
           }
 
           .koreo-img:hover {
@@ -4361,10 +4336,6 @@
             .koreo-scene {
               width: 80px;
               height: 80px;
-            }
-            .koreo-skeleton {
-              width: 60px;
-              height: 60px;
             }
             .koreo-img {
               width: 70px;
