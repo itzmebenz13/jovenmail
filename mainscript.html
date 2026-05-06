@@ -4706,7 +4706,7 @@ if __name__ == "__main__":
 
     // Persist server URL and key with lock/unlock UI
     (function () {
-      document.getElementById('run-url').value = window.location.origin;
+      document.getElementById('run-url').value = 'https://sheinscript.up.railway.app';
       var savedKey = localStorage.getItem('ssu_run_key');
       var keyInput = document.getElementById('run-key');
       var applyBtn = document.getElementById('key-apply');
@@ -5050,7 +5050,7 @@ if __name__ == "__main__":
     var _sessionUser = '';
     var _sessionIsAdmin = false;
     var _sessionCoins = { bronze: 0, silver: 0, gold: 0 };
-    var _serverBase = window.location.origin;
+    var _serverBase = 'https://sheinscript.up.railway.app';
 
     // ================================================================
     // LOGIN SYSTEM
