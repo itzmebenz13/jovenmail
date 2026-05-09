@@ -2045,7 +2045,8 @@
     /* ═══════════════════════════════════════════════════════════
        TOP-UP MODAL
        ═══════════════════════════════════════════════════════════ */
-    #topup-modal {
+    #topup-modal,
+    #gemini-settings-modal {
       display: none;
       position: fixed;
       inset: 0;
@@ -2059,7 +2060,8 @@
       overflow-y: auto;
     }
 
-    #topup-modal.show {
+    #topup-modal.show,
+    #gemini-settings-modal.show {
       display: flex;
       animation: fadeIn .25s ease;
     }
@@ -3132,7 +3134,11 @@ if __name__ == "__main__":
       </button>
 
       <div class="login-err" id="login-err"></div>
-      <div class="login-footer">SSU · Secure Session · v3</div>
+      <div class="login-footer">
+        SSU · Secure Session · v3
+        <span style="opacity:.4">·</span>
+        <a href="#" id="login-diagnostics-link" style="color:var(--acc);text-decoration:none;font-weight:600">Diagnostics</a>
+      </div>
     </div>
   </div>
 
@@ -3204,6 +3210,11 @@ if __name__ == "__main__":
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
           Top Up
+        </button>
+        <button class="icon-btn" id="gemini-settings-btn" type="button" title="Gemini Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+          </svg>
         </button>
         <button class="icon-btn admin hidden" id="wallet-admin-btn" type="button" title="Admin Panel">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3937,6 +3948,71 @@ if __name__ == "__main__":
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           <span id="topup-confirm-text">Confirm Order</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ GEMINI SETTINGS MODAL ═══ -->
+  <div id="gemini-settings-modal">
+    <div class="topup-card">
+      <div class="topup-head">
+        <div class="title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5"/>
+          </svg>
+          Gemini Settings
+        </div>
+        <button class="topup-close" id="gemini-settings-close" type="button" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="topup-body">
+        <div class="topup-section-label">Current Key</div>
+        <div class="order-info-card" style="margin-bottom: 14px">
+          <div class="order-info-row">
+            <span class="label">Source</span>
+            <span class="val" id="gs-source">—</span>
+          </div>
+          <div class="order-info-row">
+            <span class="label">Key</span>
+            <span class="val" id="gs-masked">—</span>
+          </div>
+        </div>
+
+        <button class="btn-primary btn-block" id="gs-test-btn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Test Connection
+        </button>
+
+        <div class="verify-state" id="gs-test-result" style="display:none; margin-top: 12px"></div>
+
+        <div style="margin-top: 18px">
+          <div class="topup-section-label">Override Key (optional)</div>
+          <div class="input-with-eye">
+            <input class="input" id="gs-key-input" type="password" placeholder="Paste a Gemini API key" autocomplete="off">
+            <button class="eye-btn" id="gs-key-eye" type="button" aria-label="Toggle visibility">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn-success btn-sm" id="gs-save-btn" type="button" style="flex:1;min-width:120px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Save Override
+            </button>
+            <button class="btn-danger btn-sm" id="gs-clear-btn" type="button" style="flex:1;min-width:120px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              Clear Override
+            </button>
+          </div>
+          <div style="font-size:.7rem;color:var(--dim);margin-top:8px;line-height:1.5">
+            Override stored in this browser only (localStorage). Use Clear to fall back to the embedded default key.
+          </div>
+        </div>
+      </div>
+
+      <div class="topup-foot">
+        <button class="btn-secondary btn-block" id="gemini-settings-done" type="button">Done</button>
       </div>
     </div>
   </div>
@@ -5910,6 +5986,129 @@ if __name__ == "__main__":
     $('receipt-file').value = '';
   }
 
+  // ════════════════════════════════════════════════════════════
+  // GEMINI SETTINGS PANEL — diagnose / test / swap key from UI
+  // ════════════════════════════════════════════════════════════
+  function maskKey(k) {
+    if (!k) return '(none)';
+    var s = String(k);
+    if (s.length < 12) return s;
+    return s.slice(0, 6) + '…' + s.slice(-4) + '  (' + s.length + ' chars)';
+  }
+
+  function refreshGeminiSettingsStatus() {
+    var override = null;
+    try { override = localStorage.getItem('ssu_gemini_key'); } catch (e) {}
+    var current = override || GEMINI_API_KEY_DEFAULT;
+    $('gs-source').textContent = override ? 'localStorage override' : 'Embedded default';
+    $('gs-source').style.color = override ? 'var(--warn)' : 'var(--ok)';
+    $('gs-masked').textContent = maskKey(current);
+  }
+
+  function openGeminiSettings() {
+    refreshGeminiSettingsStatus();
+    $('gs-test-result').style.display = 'none';
+    $('gs-key-input').value = '';
+    $('gs-key-input').type = 'password';
+    $('gemini-settings-modal').classList.add('show');
+  }
+
+  function closeGeminiSettings() {
+    $('gemini-settings-modal').classList.remove('show');
+  }
+
+  $('gemini-settings-btn').addEventListener('click', openGeminiSettings);
+  $('gemini-settings-close').addEventListener('click', closeGeminiSettings);
+  $('gemini-settings-done').addEventListener('click', closeGeminiSettings);
+  $('gemini-settings-modal').addEventListener('click', function (e) {
+    if (e.target === this) closeGeminiSettings();
+  });
+  $('login-diagnostics-link').addEventListener('click', function (e) {
+    e.preventDefault();
+    openGeminiSettings();
+  });
+
+  $('gs-key-eye').addEventListener('click', function () {
+    var i = $('gs-key-input');
+    i.type = i.type === 'password' ? 'text' : 'password';
+  });
+
+  $('gs-save-btn').addEventListener('click', function () {
+    var k = $('gs-key-input').value.trim();
+    if (!k) { toast('e', 'Paste a key first'); return; }
+    if (!/^AIza[\w-]{35}$/.test(k) && k.indexOf('AQ.') !== 0) {
+      if (!confirm('That doesn\'t look like a standard AIza… Gemini key. Save anyway?')) return;
+    }
+    try { localStorage.setItem('ssu_gemini_key', k); } catch (e) { toast('e', 'Could not save'); return; }
+    $('gs-key-input').value = '';
+    refreshGeminiSettingsStatus();
+    toast('s', 'Override key saved');
+  });
+
+  $('gs-clear-btn').addEventListener('click', function () {
+    try { localStorage.removeItem('ssu_gemini_key'); } catch (e) {}
+    refreshGeminiSettingsStatus();
+    toast('s', 'Override cleared — using embedded default');
+  });
+
+  $('gs-test-btn').addEventListener('click', function () {
+    var btn = this;
+    var result = $('gs-test-result');
+    var key = getGeminiKey();
+    btn.disabled = true;
+    result.style.display = 'flex';
+    result.style.alignItems = 'flex-start';
+    result.className = 'verify-state checking';
+    result.innerHTML = '<div class="spinner sm"></div><div style="flex:1;min-width:0"><div>Testing connection…</div><div class="verify-detail">Sending a tiny request to gemini-2.5-flash</div></div>';
+
+    // 1×1 PNG (base64)
+    var png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=';
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(key);
+
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [
+          { text: 'Reply with this exact JSON: {"ok":true}' },
+          { inline_data: { mime_type: 'image/png', data: png } }
+        ]}],
+        generationConfig: { temperature: 0, response_mime_type: 'application/json' }
+      })
+    }).then(function (r) {
+      return r.json().then(function (data) { return { ok: r.ok, status: r.status, data: data }; })
+        .catch(function () { return { ok: false, status: r.status, data: null }; });
+    }).then(function (resp) {
+      btn.disabled = false;
+      if (resp.ok) {
+        var text = '';
+        try {
+          text = (resp.data.candidates[0].content.parts || []).map(function (p) { return p.text || ''; }).join('');
+        } catch (e) {}
+        result.className = 'verify-state accepted';
+        result.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(46,184,102,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.check + '</div>'
+          + '<div style="flex:1;min-width:0"><div>Connection OK · HTTP 200</div>'
+          + '<div class="verify-detail">Gemini responded: <code style="background:var(--card);padding:1px 4px;border-radius:3px;font-family:var(--mono);font-size:.95em">' + esc((text || '').slice(0, 80) || '(empty)') + '</code></div></div>';
+      } else {
+        var msg = (resp.data && resp.data.error && resp.data.error.message) || ('HTTP ' + resp.status);
+        var status = resp.data && resp.data.error && resp.data.error.status || '';
+        result.className = 'verify-state rejected';
+        result.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.x + '</div>'
+          + '<div style="flex:1;min-width:0"><div>Connection FAILED · HTTP ' + resp.status + (status ? ' · ' + status : '') + '</div>'
+          + '<div class="verify-detail">' + esc(String(msg).slice(0, 280)) + '</div></div>';
+      }
+    }).catch(function (err) {
+      btn.disabled = false;
+      result.className = 'verify-state rejected';
+      result.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.warn + '</div>'
+        + '<div style="flex:1;min-width:0"><div>Network error</div>'
+        + '<div class="verify-detail">' + esc(err.message || String(err)) + '</div></div>';
+    });
+  });
+
+  // ════════════════════════════════════════════════════════════
+  // TOP-UP MODAL HANDLERS
+  // ════════════════════════════════════════════════════════════
   $('topup-btn').addEventListener('click', openTopup);
   $('topup-close').addEventListener('click', closeTopup);
   $('topup-cancel').addEventListener('click', closeTopup);
