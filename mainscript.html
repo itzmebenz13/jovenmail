@@ -3941,20 +3941,24 @@ if __name__ == "__main__":
           <div class="receipt-rules">
             <div class="rules-title">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--acc)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              How AI verification reads your receipt
+              What Gemini AI looks for on your receipt
             </div>
             <ul>
               <li>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Receipt must clearly show the exact amount: <code id="rule-amount">₱1,000.00</code>
+                Recipient must be: <code>JO&bull;&bull;O EM&bull;&bull;&bull;&bull;&bull;L D.</code>
               </li>
               <li>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Receipt timestamp must fall in the 2-minute window after order confirmation
+                Mobile number must be: <code>+63 998 807 9228</code>
               </li>
               <li>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Demo encoding: include amount and time in the filename, e.g. <code id="rule-filename">receipt_PHP1000_2026-05-09_1006.jpg</code>
+                Amount on the receipt must equal: <code id="rule-amount">&#8369;1,000.00</code>
+              </li>
+              <li>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Transaction time on the receipt must fall in the 2-minute window
               </li>
               <li>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -5619,6 +5623,210 @@ if __name__ == "__main__":
   }
 
   // ════════════════════════════════════════════════════════════
+  // GEMINI RECEIPT OCR — config & helpers
+  // ════════════════════════════════════════════════════════════
+  // NOTE: API key is intentionally embedded for private use only.
+  // Anyone who can view this page's source can read the key.
+  // Override at runtime via: localStorage.setItem('ssu_gemini_key', '<key>')
+  var GEMINI_API_KEY_DEFAULT = 'AQ.Ab8RN6KwgDC9AxhAp7GE7wGA0k6k8NJVPSMctQDztglKmz8Frg';
+  var GEMINI_MODEL = 'gemini-2.0-flash';
+  var GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent';
+
+  // Strict expected receipt fields (the receipt MUST show exactly these)
+  var EXPECTED_NAME = 'JO••O EM•••••L D.';
+  var EXPECTED_NUMBER = '+63 998 807 9228';
+
+  var OCR_PROMPT = "Act as a high-precision OCR and data extraction engine.\n\n" +
+    "Analyze the provided GCash screenshot and extract the following transaction details. " +
+    "Return the output STRICTLY in a valid JSON object format only. Do not include any conversational text, explanations, or markdown code blocks—just the raw JSON.\n\n" +
+    "If a value is partially masked (e.g., phone numbers with asterisks), extract it exactly as it appears.\n\n" +
+    "Target Fields:\n" +
+    "1. \"name\": The recipient or sender name.\n" +
+    "2. \"number\": The mobile number associated with the transaction.\n" +
+    "3. \"amount\": The total currency value (exclude the 'PHP' or 'P' symbol).\n" +
+    "4. \"datetime\": The full date and time string of the transaction.\n" +
+    "5. \"ref_no\": The Reference Number or Transaction ID.\n\n" +
+    "JSON Template:\n" +
+    "{\n  \"name\": \"\",\n  \"number\": \"\",\n  \"amount\": 0.00,\n  \"datetime\": \"\",\n  \"ref_no\": \"\"\n}\n\n" +
+    "If any field is unreadable or missing, set the value to null.";
+
+  function getGeminiKey() {
+    try { return localStorage.getItem('ssu_gemini_key') || GEMINI_API_KEY_DEFAULT; }
+    catch (e) { return GEMINI_API_KEY_DEFAULT; }
+  }
+
+  function fileToBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var result = reader.result || '';
+        var idx = String(result).indexOf(',');
+        resolve(idx >= 0 ? String(result).slice(idx + 1) : String(result));
+      };
+      reader.onerror = function () { reject(new Error('Could not read file')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function safeParseJson(text) {
+    if (!text) return null;
+    var t = String(text).trim();
+    // strip markdown fences if Gemini ignored response_mime_type
+    t = t.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
+    // grab first {...} block if there's prose before/after
+    var m = t.match(/\{[\s\S]*\}/);
+    if (m) t = m[0];
+    try { return JSON.parse(t); } catch (e) { return null; }
+  }
+
+  function ocrReceiptWithGemini(file) {
+    return fileToBase64(file).then(function (b64) {
+      var key = getGeminiKey();
+      if (!key) throw new Error('Missing Gemini API key');
+      var body = {
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: OCR_PROMPT },
+            { inline_data: { mime_type: file.type || 'image/jpeg', data: b64 } }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0,
+          response_mime_type: 'application/json'
+        }
+      };
+      return fetch(GEMINI_ENDPOINT + '?key=' + encodeURIComponent(key), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (resp) {
+        return resp.json().then(function (data) { return { ok: resp.ok, status: resp.status, data: data }; });
+      });
+    }).then(function (r) {
+      if (!r.ok) {
+        var msg = (r.data && r.data.error && r.data.error.message) || ('Gemini HTTP ' + r.status);
+        throw new Error(msg);
+      }
+      var cands = (r.data && r.data.candidates) || [];
+      if (!cands.length) throw new Error('Gemini returned no candidates');
+      var parts = (cands[0].content && cands[0].content.parts) || [];
+      var text = parts.map(function (p) { return p.text || ''; }).join('').trim();
+      if (!text) throw new Error('Gemini response was empty');
+      var parsed = safeParseJson(text);
+      if (!parsed) throw new Error('Gemini did not return valid JSON');
+      return {
+        name: parsed.name == null ? null : String(parsed.name),
+        number: parsed.number == null ? null : String(parsed.number),
+        amount: parsed.amount == null ? null : Number(parsed.amount),
+        datetime: parsed.datetime == null ? null : String(parsed.datetime),
+        ref_no: parsed.ref_no == null ? null : String(parsed.ref_no)
+      };
+    });
+  }
+
+  // STRICT mask matching: bullets/asterisks in the EXPECTED act as wildcards.
+  // The OCR'd value must be the same length and visible chars must match
+  // case-insensitively in the same positions.
+  function isMaskChar(ch) { return ch === '•' || ch === '●' || ch === '*' || ch === '·'; }
+  function matchMaskedName(expected, actual) {
+    if (!actual) return false;
+    var e = String(expected).trim();
+    var a = String(actual).trim();
+    if (e.length !== a.length) return false;
+    for (var i = 0; i < e.length; i++) {
+      var ec = e.charAt(i);
+      var ac = a.charAt(i);
+      if (isMaskChar(ec)) {
+        // Wildcard slot — actual must also be a mask char (strict GCash form)
+        if (!isMaskChar(ac)) return false;
+      } else {
+        if (ec.toLowerCase() !== ac.toLowerCase()) return false;
+      }
+    }
+    return true;
+  }
+
+  // STRICT exact number match: normalize whitespace; everything else must match literally.
+  function matchExactNumber(expected, actual) {
+    if (!actual) return false;
+    var norm = function (s) { return String(s).trim().replace(/\s+/g, ' '); };
+    return norm(expected) === norm(actual);
+  }
+
+  // Robust GCash datetime parser. Returns ms or null.
+  function parseGcashDatetime(s) {
+    if (!s) return null;
+    var str = String(s).trim();
+    // Native Date.parse handles many formats
+    var d = new Date(str);
+    if (!isNaN(d.getTime())) return d.getTime();
+
+    // Try common GCash patterns
+    var months = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,sept:8,oct:9,nov:10,dec:11 };
+    function parseWith(pattern) {
+      var m = str.match(pattern);
+      if (!m) return null;
+      var year = parseInt(m.year || m[1]);
+      var month = m.month != null ? m.month : (m[2] != null ? m[2] : null);
+      var day = parseInt(m.day || m[3]);
+      var hour = parseInt(m.hour || m[4]);
+      var min = parseInt(m.min || m[5]);
+      var sec = m.sec ? parseInt(m.sec) : (m[6] ? parseInt(m[6]) : 0);
+      var ampm = (m.ampm || m[7] || '').toLowerCase();
+      if (typeof month === 'string') {
+        var mm = months[month.slice(0, 3).toLowerCase()];
+        if (mm == null) return null;
+        month = mm;
+      } else if (typeof month === 'number') {
+        month = month - 1;
+      }
+      if (ampm === 'pm' && hour < 12) hour += 12;
+      if (ampm === 'am' && hour === 12) hour = 0;
+      var dt = new Date(year, month, day, hour, min, sec);
+      return isNaN(dt.getTime()) ? null : dt.getTime();
+    }
+
+    // "May 09, 2026 10:05 AM" / "May 9, 2026 10:05:42 AM"
+    var m1 = str.match(/([A-Za-z]+)\.?\s+(\d{1,2}),?\s+(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?/);
+    if (m1) {
+      var monNum = months[m1[1].slice(0, 3).toLowerCase()];
+      if (monNum != null) {
+        var hr = parseInt(m1[4]);
+        var ap = (m1[7] || '').toLowerCase();
+        if (ap === 'pm' && hr < 12) hr += 12;
+        if (ap === 'am' && hr === 12) hr = 0;
+        var d2 = new Date(parseInt(m1[3]), monNum, parseInt(m1[2]), hr, parseInt(m1[5]), m1[6] ? parseInt(m1[6]) : 0);
+        if (!isNaN(d2.getTime())) return d2.getTime();
+      }
+    }
+
+    // "2026-05-09 10:05:42" / "2026/05/09 10:05"
+    var m2 = str.match(/(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})[\sT]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?/);
+    if (m2) {
+      var hr2 = parseInt(m2[4]);
+      var ap2 = (m2[7] || '').toLowerCase();
+      if (ap2 === 'pm' && hr2 < 12) hr2 += 12;
+      if (ap2 === 'am' && hr2 === 12) hr2 = 0;
+      var d3 = new Date(parseInt(m2[1]), parseInt(m2[2]) - 1, parseInt(m2[3]), hr2, parseInt(m2[5]), m2[6] ? parseInt(m2[6]) : 0);
+      if (!isNaN(d3.getTime())) return d3.getTime();
+    }
+
+    // "09/05/2026 10:05 AM" / "9/5/2026 10:05" (DMY common in PH)
+    var m3 = str.match(/(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{4})[\sT]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?/);
+    if (m3) {
+      var hr3 = parseInt(m3[4]);
+      var ap3 = (m3[7] || '').toLowerCase();
+      if (ap3 === 'pm' && hr3 < 12) hr3 += 12;
+      if (ap3 === 'am' && hr3 === 12) hr3 = 0;
+      var d4 = new Date(parseInt(m3[3]), parseInt(m3[2]) - 1, parseInt(m3[1]), hr3, parseInt(m3[5]), m3[6] ? parseInt(m3[6]) : 0);
+      if (!isNaN(d4.getTime())) return d4.getTime();
+    }
+
+    return null;
+  }
+
+  // ════════════════════════════════════════════════════════════
   // TOP-UP FLOW
   // ════════════════════════════════════════════════════════════
   var _topupSelectedAmt = 5;
@@ -5651,6 +5859,7 @@ if __name__ == "__main__":
         + '<div class="log-body">'
         + '<div class="log-title">' + label + ' · ' + fmtPHP(t.amount) + '</div>'
         + '<div class="log-meta"><span>Order ' + esc(t.orderId) + '</span>'
+        + (t.ref_no ? '<span style="color:var(--dim);font-family:var(--mono)">Ref ' + esc(t.ref_no) + '</span>' : '')
         + (t.detail ? '<span style="color:var(--err)">' + esc(t.detail) + '</span>' : '')
         + '</div>'
         + '</div>'
@@ -5776,8 +5985,6 @@ if __name__ == "__main__":
     $('order-confirmed-at').textContent = fmtTime(now);
     $('order-expires-at').textContent = fmtTime(expiresAt);
     $('rule-amount').textContent = fmtPHP(amount);
-    var fnExample = 'receipt_PHP' + amount + '_' + now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + '_' + pad(now.getHours()) + pad(now.getMinutes()) + '.jpg';
-    $('rule-filename').textContent = fnExample;
 
     // Reset receipt preview
     $('receipt-preview').classList.remove('show');
@@ -5896,132 +6103,152 @@ if __name__ == "__main__":
     $('preview-name').textContent = file.name;
     $('preview-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
 
-    // Show verifying state
-    var v = $('verify-state');
-    v.className = 'verify-state checking';
-    v.innerHTML = '<div class="spinner sm"></div><div><div>Verifying receipt with AI…</div><div class="verify-detail">Reading amount, timestamp, and matching to your order</div></div>';
+    setVerifyChecking('Sending receipt to Gemini…', 'Extracting recipient, amount, time and reference number');
     $('verify-checks').innerHTML = '';
 
-    // Simulated AI delay (1.4s)
-    setTimeout(function () { runReceiptVerification(file); }, 1400);
+    runReceiptVerification(file);
+  }
+
+  function setVerifyChecking(title, detail) {
+    var v = $('verify-state');
+    v.className = 'verify-state checking';
+    v.innerHTML = '<div class="spinner sm"></div><div><div>' + esc(title) + '</div><div class="verify-detail">' + esc(detail) + '</div></div>';
+  }
+  function setVerifyAccepted(title, detail) {
+    var v = $('verify-state');
+    v.className = 'verify-state accepted';
+    v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(46,184,102,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.check + '</div><div><div>' + esc(title) + '</div><div class="verify-detail">' + esc(detail) + '</div></div>';
+  }
+  function setVerifyRejected(title, detail) {
+    var v = $('verify-state');
+    v.className = 'verify-state rejected';
+    v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.x + '</div><div><div>' + esc(title) + '</div><div class="verify-detail">' + esc(detail) + '</div></div>';
+  }
+  function setVerifyError(title, detail) {
+    var v = $('verify-state');
+    v.className = 'verify-state rejected';
+    v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.warn + '</div><div><div>' + esc(title) + '</div><div class="verify-detail">' + esc(detail) + '</div></div>';
   }
 
   /**
-   * STRICT DEMO AI verification:
-   * - Reads amount from filename: pattern PHP\d+ or \d+\.00 (or PHP\d+\.\d+)
-   * - Reads timestamp from filename: pattern YYYY-MM-DD_HHMM (or HH-MM)
-   * - Falls back to file.lastModified for timestamp if filename has no time
-   * - Both amount AND time-window MUST match for acceptance
+   * Real Gemini Vision OCR verification:
+   * Sends the receipt image to Gemini, parses the JSON, and runs 5 strict checks:
+   * 1. name === EXPECTED_NAME (mask-aware, length-strict)
+   * 2. number === EXPECTED_NUMBER (whitespace-normalized)
+   * 3. amount === order.amount
+   * 4. datetime is inside [confirmedAt, expiresAt]
+   * 5. ref_no present
    */
   function runReceiptVerification(file) {
     var order = _activeTopupOrder;
     if (!order) return;
     var nowMs = Date.now();
+    if (nowMs > order.expiresAtMs) {
+      setVerifyRejected('Window already expired', 'The 2-minute timer ran out before the upload completed.');
+      return;
+    }
 
-    // Parse amount from filename
-    var name = file.name || '';
-    var amountFromFilename = null;
-    var amtMatch = name.match(/PHP\s*(\d+(?:\.\d+)?)/i) || name.match(/(?:^|[_\-])(\d{2,5})(?:[_\-]|$)/) || name.match(/(\d{2,5})(?:\.00)?/);
-    if (amtMatch) {
-      // Heuristic: look for the most likely amount-shaped number
-      var phpExp = name.match(/PHP\s*(\d+(?:\.\d+)?)/i);
-      if (phpExp) amountFromFilename = parseFloat(phpExp[1]);
-      else {
-        // Match any 3-5 digit number (typical PH amounts: 200, 400, 1000, 2000, 5000)
-        var nums = name.match(/\b(\d{2,5})\b/g);
-        if (nums) {
-          for (var i = 0; i < nums.length; i++) {
-            var n = parseInt(nums[i]);
-            if (n === order.amount) { amountFromFilename = n; break; }
-          }
-          if (amountFromFilename === null) amountFromFilename = parseInt(nums[0]);
-        }
+    setVerifyChecking('Sending receipt to Gemini…', 'Reading recipient, number, amount, time and reference');
+
+    ocrReceiptWithGemini(file).then(function (ocr) {
+      // Always show what Gemini returned (helps debugging)
+      var checks = [];
+
+      // CHECK 1: Recipient name
+      var nameOk = matchMaskedName(EXPECTED_NAME, ocr.name);
+      checks.push({
+        ok: nameOk,
+        label: nameOk
+          ? 'Recipient matches: ' + EXPECTED_NAME
+          : (ocr.name == null
+            ? 'Recipient name not detected on receipt'
+            : 'Recipient mismatch — got "' + ocr.name + '", expected "' + EXPECTED_NAME + '"')
+      });
+
+      // CHECK 2: Mobile number
+      var numberOk = matchExactNumber(EXPECTED_NUMBER, ocr.number);
+      checks.push({
+        ok: numberOk,
+        label: numberOk
+          ? 'Number matches: ' + EXPECTED_NUMBER
+          : (ocr.number == null
+            ? 'Mobile number not detected on receipt'
+            : 'Number mismatch — got "' + ocr.number + '", expected "' + EXPECTED_NUMBER + '"')
+      });
+
+      // CHECK 3: Amount
+      var amountOk = ocr.amount != null && Math.abs(Number(ocr.amount) - order.amount) < 0.01;
+      checks.push({
+        ok: amountOk,
+        label: amountOk
+          ? 'Amount matches: ' + fmtPHP(order.amount)
+          : (ocr.amount == null
+            ? 'Amount not detected on receipt'
+            : 'Amount mismatch — got ' + fmtPHP(ocr.amount) + ', expected ' + fmtPHP(order.amount))
+      });
+
+      // CHECK 4: Datetime within 2-min window
+      var ts = parseGcashDatetime(ocr.datetime);
+      var tsInWindow = ts != null && ts >= order.confirmedAtMs && ts <= order.expiresAtMs;
+      checks.push({
+        ok: tsInWindow,
+        label: tsInWindow
+          ? 'Time within window: ' + fmtDateTime(new Date(ts))
+          : (ts == null
+            ? (ocr.datetime ? 'Could not parse "' + ocr.datetime + '" as a date' : 'Date/time not detected on receipt')
+            : 'Time outside window — receipt shows ' + fmtDateTime(new Date(ts))
+              + ', window was ' + fmtTime(new Date(order.confirmedAtMs)) + '–' + fmtTime(new Date(order.expiresAtMs)))
+      });
+
+      // CHECK 5: Reference number present
+      var refOk = !!(ocr.ref_no && String(ocr.ref_no).length >= 6);
+      checks.push({
+        ok: refOk,
+        label: refOk
+          ? 'Reference: ' + ocr.ref_no
+          : 'Reference number not detected on receipt'
+      });
+
+      var checksHtml = checks.map(function (c) {
+        return '<div class="verify-check ' + (c.ok ? 'ok' : 'fail') + '">'
+          + (c.ok ? ICONS.check : ICONS.x)
+          + '<span>' + esc(c.label) + '</span></div>';
+      }).join('');
+      $('verify-checks').innerHTML = checksHtml;
+
+      // Re-check expiry — the Gemini call may have taken a few seconds.
+      // If the order expired mid-call, the upload-arrived-on-time invariant
+      // is violated even if all 5 fields look right.
+      if (Date.now() > order.expiresAtMs) {
+        setVerifyRejected('Window expired during verification', 'The 2-minute timer ran out before Gemini could finish checking.');
+        return;
       }
-    }
 
-    // Parse timestamp from filename: YYYY-MM-DD_HHMM or YYYY-MM-DD_HH-MM or YYYY-MM-DD HH:MM
-    var tsFromFilename = null;
-    var dateRe = /(\d{4})-(\d{1,2})-(\d{1,2})[_ \-T]?(\d{1,2})[\-:]?(\d{2})/;
-    var dm = name.match(dateRe);
-    if (dm) {
-      var d = new Date(parseInt(dm[1]), parseInt(dm[2]) - 1, parseInt(dm[3]), parseInt(dm[4]), parseInt(dm[5]));
-      if (!isNaN(d.getTime())) tsFromFilename = d.getTime();
-    }
-    // Fallback: file.lastModified
-    var tsFromLastMod = file.lastModified || null;
-    var ts = tsFromFilename || tsFromLastMod;
-
-    var checks = [];
-
-    // CHECK 1: Amount matches expected
-    var amountOk = amountFromFilename !== null && Math.abs(amountFromFilename - order.amount) < 0.01;
-    checks.push({
-      ok: amountOk,
-      label: amountOk
-        ? 'Amount matches: ' + fmtPHP(order.amount)
-        : (amountFromFilename === null
-          ? 'Amount not detected — include "PHP' + order.amount + '" in filename'
-          : 'Amount mismatch: detected ' + fmtPHP(amountFromFilename) + ', expected ' + fmtPHP(order.amount))
+      var allPass = nameOk && numberOk && amountOk && tsInWindow && refOk;
+      if (allPass) {
+        setVerifyAccepted('Receipt verified', 'Crediting ' + order.gt + ' GT to your wallet…');
+        $('upload-zone').classList.add('disabled');
+        if (_topupTimer) { clearInterval(_topupTimer); _topupTimer = null; }
+        // Capture ref_no for the top-up history record
+        order.ref_no = ocr.ref_no || null;
+        setTimeout(function () { creditTopup(order); }, 700);
+      } else {
+        // Decline — but keep order alive so the user can re-upload while timer runs.
+        var failLabel = !nameOk ? 'Receiver name does not match'
+          : !numberOk ? 'Receiver number does not match'
+          : !amountOk ? 'Amount on receipt does not match order'
+          : !tsInWindow ? 'Receipt time is outside the 2-minute window'
+          : !refOk ? 'Reference number missing'
+          : 'Receipt could not be verified';
+        setVerifyRejected('Receipt declined', failLabel + ' — fix and re-upload while the timer is still running.');
+      }
+    }).catch(function (err) {
+      var msg = err && err.message ? err.message : String(err || 'Unknown error');
+      // Distinct OCR error state — the order is NOT consumed; user can retry.
+      setVerifyError('Couldn\'t read the receipt', msg + ' — try uploading again.');
+      $('verify-checks').innerHTML = '';
+      toast('e', 'Receipt OCR failed: ' + msg);
     });
-
-    // CHECK 2: Timestamp present
-    var tsPresent = ts !== null;
-    checks.push({
-      ok: tsPresent,
-      label: tsPresent
-        ? 'Timestamp detected: ' + fmtDateTime(new Date(ts))
-        : 'No timestamp found in filename or file metadata'
-    });
-
-    // CHECK 3: Timestamp within 2-min window
-    var tsInWindow = false;
-    if (tsPresent) {
-      tsInWindow = ts >= order.confirmedAtMs && ts <= order.expiresAtMs;
-    }
-    checks.push({
-      ok: tsInWindow,
-      label: tsInWindow
-        ? 'Timestamp within window'
-        : (tsPresent
-          ? 'Timestamp out of window (' + fmtTime(new Date(order.confirmedAtMs)) + '–' + fmtTime(new Date(order.expiresAtMs)) + ')'
-          : 'Cannot verify time window without timestamp')
-    });
-
-    // CHECK 4: Upload itself happened before expiry
-    var uploadInTime = nowMs <= order.expiresAtMs;
-    checks.push({
-      ok: uploadInTime,
-      label: uploadInTime ? 'Upload within window' : 'Upload occurred after window expired'
-    });
-
-    var checksHtml = checks.map(function (c) {
-      return '<div class="verify-check ' + (c.ok ? 'ok' : 'fail') + '">'
-        + (c.ok ? ICONS.check : ICONS.x)
-        + '<span>' + esc(c.label) + '</span></div>';
-    }).join('');
-    $('verify-checks').innerHTML = checksHtml;
-
-    var allPass = amountOk && tsInWindow && uploadInTime;
-    if (allPass) {
-      // Approve!
-      var v = $('verify-state');
-      v.className = 'verify-state accepted';
-      v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(46,184,102,.18);display:flex;align-items:center;justify-content:center">' + ICONS.check + '</div><div><div>Receipt verified</div><div class="verify-detail">Crediting ' + order.gt + ' GT to your wallet…</div></div>';
-      // Lock upload zone
-      $('upload-zone').classList.add('disabled');
-      // Stop timer
-      if (_topupTimer) { clearInterval(_topupTimer); _topupTimer = null; }
-      setTimeout(function () { creditTopup(order); }, 900);
-    } else {
-      // Decline
-      var failLabel = !uploadInTime ? 'Upload arrived after window expired' :
-        !amountOk ? 'Amount on receipt does not match order' :
-          !tsInWindow ? 'Receipt timestamp not within the 2-minute window' :
-            'Receipt could not be verified';
-      var v2 = $('verify-state');
-      v2.className = 'verify-state rejected';
-      v2.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center">' + ICONS.x + '</div><div><div>Receipt declined</div><div class="verify-detail">' + esc(failLabel) + ' — try again with a corrected file</div></div>';
-    }
   }
 
   function creditTopup(order) {
@@ -6035,7 +6262,8 @@ if __name__ == "__main__":
         order_id: order.orderId,
         gt: order.gt,
         amount: order.amount,
-        confirmed_at: order.confirmedAt
+        confirmed_at: order.confirmedAt,
+        ref_no: order.ref_no || null
       })
     }).then(function (r) { return r.json(); }).then(function (data) {
       finishTopup(order, data && data.ok ? data : null);
@@ -6063,7 +6291,8 @@ if __name__ == "__main__":
       amount: order.amount,
       gt: order.gt,
       status: 'success',
-      confirmedAt: order.confirmedAt
+      confirmedAt: order.confirmedAt,
+      ref_no: order.ref_no || null
     });
     persistTopupHistory();
     renderTopupHistory();
