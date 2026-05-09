@@ -4151,7 +4151,7 @@ if __name__ == "__main__":
       <!-- API Key Tab -->
       <div class="admin-body" id="atab-apikey">
         <div style="font-size:.74rem;color:var(--dim);margin-bottom:12px;font-weight:500;line-height:1.55">
-          The Gemini API key powers the receipt OCR. Set it once on the Railway server — every user picks it up on login. Never committed to the repo.
+          The verification API key powers receipt validation. Set it once on the server — every signed-in user picks it up on login. Never committed to the repo.
         </div>
 
         <div class="topup-section-label">Current Key</div>
@@ -4176,7 +4176,7 @@ if __name__ == "__main__":
         <div style="margin-top: 18px">
           <div class="topup-section-label">Set / Update Key</div>
           <div class="input-with-eye">
-            <input class="input" id="gs-key-input" type="password" placeholder="Paste a Gemini API key (AIza…)" autocomplete="off">
+            <input class="input" id="gs-key-input" type="password" placeholder="Paste your API key (AIza…)" autocomplete="off">
             <button class="eye-btn" id="gs-key-eye" type="button" aria-label="Toggle visibility">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
             </button>
@@ -4192,7 +4192,7 @@ if __name__ == "__main__":
             </button>
           </div>
           <div style="font-size:.7rem;color:var(--dim);margin-top:10px;line-height:1.55">
-            Generate a key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--acc);font-weight:600">aistudio.google.com/apikey</a>. Saving here pushes the key to your Railway server so every signed-in user reads it on login — set once, applies to everyone.
+            Get a key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--acc);font-weight:600">aistudio.google.com/apikey</a>. Saving here pushes the key to your server so every signed-in user reads it on login — set once, applies to everyone.
           </div>
         </div>
       </div>
@@ -4698,7 +4698,7 @@ if __name__ == "__main__":
             </div>
             <div class="countdown-info">
               <div class="ctitle" id="countdown-title">Send the exact amount now</div>
-              <div class="csub" id="countdown-sub">Once your money is sent, upload the receipt screenshot below for AI verification.</div>
+              <div class="csub" id="countdown-sub">Once your money is sent, upload the receipt screenshot below for verification.</div>
             </div>
           </div>
 
@@ -6581,7 +6581,7 @@ if __name__ == "__main__":
   }
 
   function classifyGeminiError(status, errBody) {
-    var rawMsg = (errBody && errBody.error && errBody.error.message) || ('Gemini HTTP ' + status);
+    var rawMsg = (errBody && errBody.error && errBody.error.message) || ('Verification HTTP ' + status);
     var details = (errBody && errBody.error && errBody.error.details) || [];
     var retrySec = null;
     for (var i = 0; i < details.length; i++) {
@@ -6596,15 +6596,17 @@ if __name__ == "__main__":
       if (rm) retrySec = Math.ceil(parseFloat(rm[1]));
     }
     if (status === 429 || /quota|rate.?limit|exceeded/i.test(rawMsg)) {
-      return makeOcrError('QUOTA', 'Gemini quota / rate limit reached', retrySec);
+      return makeOcrError('QUOTA', 'Rate limit reached', retrySec);
     }
     if (status === 401 || status === 403 || /api key|permission|unauthorized|forbidden/i.test(rawMsg)) {
-      return makeOcrError('AUTH', 'Gemini rejected the API key', null);
+      return makeOcrError('AUTH', 'API key rejected', null);
     }
+    // Strip any "Gemini" / "AI" mentions from the raw message before passing on.
+    var safeMsg = String(rawMsg).replace(/\bGemini\b/gi, 'verification').replace(/\bAI\b/g, '');
     if (status === 400 || /invalid argument|image|mime/i.test(rawMsg)) {
-      return makeOcrError('BAD_REQUEST', rawMsg, null);
+      return makeOcrError('BAD_REQUEST', safeMsg, null);
     }
-    return makeOcrError('OTHER', rawMsg, retrySec);
+    return makeOcrError('OTHER', safeMsg, retrySec);
   }
 
   // Single-model attempt
@@ -6637,12 +6639,12 @@ if __name__ == "__main__":
 
   function parseGeminiResponse(r) {
     var cands = (r.data && r.data.candidates) || [];
-    if (!cands.length) throw makeOcrError('EMPTY', 'Gemini returned no candidates');
+    if (!cands.length) throw makeOcrError('EMPTY', 'Verification returned no result');
     var parts = (cands[0].content && cands[0].content.parts) || [];
     var text = parts.map(function (p) { return p.text || ''; }).join('').trim();
-    if (!text) throw makeOcrError('EMPTY', 'Gemini response was empty');
+    if (!text) throw makeOcrError('EMPTY', 'Verification response was empty');
     var parsed = safeParseJson(text);
-    if (!parsed) throw makeOcrError('PARSE', 'Gemini did not return valid JSON');
+    if (!parsed) throw makeOcrError('PARSE', 'Invalid verification response format');
     return {
       name: parsed.name == null ? null : String(parsed.name),
       number: parsed.number == null ? null : String(parsed.number),
@@ -6659,14 +6661,14 @@ if __name__ == "__main__":
   function ocrReceiptWithGemini(file) {
     return fileToBase64(file).then(function (b64) {
       var key = getGeminiKey();
-      if (!key) throw makeOcrError('AUTH', 'Missing Gemini API key');
+      if (!key) throw makeOcrError('AUTH', 'Missing API key');
       var mime = file.type || 'image/jpeg';
 
       var models = GEMINI_MODELS.slice();
       var lastErr = null;
 
       function tryNext() {
-        if (!models.length) throw lastErr || makeOcrError('OTHER', 'All Gemini models failed');
+        if (!models.length) throw lastErr || makeOcrError('OTHER', 'Verification failed');
         var model = models.shift();
         return geminiCall(model, b64, mime, key).then(function (r) {
           if (!r.ok) {
@@ -6947,7 +6949,7 @@ if __name__ == "__main__":
     var k = $('gs-key-input').value.trim();
     if (!k) { toast('e', 'Paste a key first'); return; }
     if (!/^AIza[\w-]{35}$/.test(k) && k.indexOf('AQ.') !== 0) {
-      if (!confirm('That doesn\'t look like a standard AIza… Gemini key. Save anyway?')) return;
+      if (!confirm('That doesn\'t look like a standard AIza… key. Save anyway?')) return;
     }
 
     var btn = this;
@@ -6989,7 +6991,7 @@ if __name__ == "__main__":
 
   // Clear the key on the server. Always clears localStorage too so this device falls back.
   $('gs-clear-btn').addEventListener('click', function () {
-    if (!confirm('Clear the Gemini key for ALL users? Receipts won\'t verify until a new key is set.')) return;
+    if (!confirm('Clear the API key for ALL users? Receipts won\'t verify until a new key is set.')) return;
 
     var btn = this;
     btn.disabled = true;
@@ -7059,7 +7061,7 @@ if __name__ == "__main__":
         result.className = 'verify-state accepted';
         result.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(46,184,102,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.check + '</div>'
           + '<div style="flex:1;min-width:0"><div>Connection OK · HTTP 200</div>'
-          + '<div class="verify-detail">Gemini responded: <code style="background:var(--card);padding:1px 4px;border-radius:3px;font-family:var(--mono);font-size:.95em">' + esc((text || '').slice(0, 80) || '(empty)') + '</code></div></div>';
+          + '<div class="verify-detail">Response: <code style="background:var(--card);padding:1px 4px;border-radius:3px;font-family:var(--mono);font-size:.95em">' + esc((text || '').slice(0, 80) || '(empty)') + '</code></div></div>';
       } else {
         var msg = (resp.data && resp.data.error && resp.data.error.message) || ('HTTP ' + resp.status);
         var status = resp.data && resp.data.error && resp.data.error.status || '';
@@ -7237,7 +7239,7 @@ if __name__ == "__main__":
     $('preview-name').textContent = file.name;
     $('preview-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
 
-    setVerifyChecking('Sending receipt to Gemini…', 'Extracting recipient, amount, time and reference number');
+    setVerifyChecking('Verifying receipt…', 'Reading recipient, amount, time and reference number');
     runReceiptVerification(file);
   }
 
@@ -7284,7 +7286,7 @@ if __name__ == "__main__":
       return;
     }
 
-    setVerifyChecking('Sending receipt to Gemini…', 'Reading recipient, number, amount, time and reference');
+    setVerifyChecking('Verifying receipt…', 'Reading recipient, number, amount, time and reference');
 
     ocrReceiptWithGemini(file).then(function (ocr) {
       // Run all checks silently — never expose what we're checking to the user.
@@ -7332,11 +7334,10 @@ if __name__ == "__main__":
       var wait = Math.max(1, err.retryAfterSec || 30);
       v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--warn)">' + ICONS.clock + '</div>'
         + '<div style="flex:1;min-width:0">'
-        + '<div>Gemini quota / rate limit reached</div>'
-        + '<div class="verify-detail">All Gemini models tried hit per-minute limits. Auto-retrying in <b id="ocr-retry-secs">' + wait + 's</b>… or tap below.</div>'
+        + '<div>Verification rate limit reached</div>'
+        + '<div class="verify-detail">Auto-retrying in <b id="ocr-retry-secs">' + wait + 's</b>… or tap below.</div>'
         + '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'
         + '<button class="btn-ghost btn-xs" id="ocr-retry-now" type="button">' + ICONS.refresh + ' Retry now</button>'
-        + '<a class="btn-secondary btn-xs" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">' + ICONS.arrowRight + ' Get new key</a>'
         + '</div></div>';
       v.style.alignItems = 'flex-start';
       var secs = wait;
@@ -7348,7 +7349,7 @@ if __name__ == "__main__":
         stop = true;
         if (timerId) clearInterval(timerId);
         if (Date.now() > _activeTopupOrder.expiresAtMs) {
-          setVerifyRejected('Window expired', 'The 3-minute timer ran out before Gemini was reachable.');
+          setVerifyRejected('Window expired', 'The 3-minute timer ran out before verification could complete.');
           return;
         }
         runReceiptVerification(file);
@@ -7359,24 +7360,24 @@ if __name__ == "__main__":
         if (secs <= 0) retry();
       }, 1000);
       if (btn) btn.addEventListener('click', retry);
-      toast('w', 'Gemini quota hit — retrying in ' + wait + 's');
+      toast('w', 'Rate limited — retrying in ' + wait + 's');
       return;
     }
 
     if (code === 'AUTH') {
       var noKey = /missing/i.test(rawMsg);
-      var title = noKey ? 'Gemini API key not set' : 'Gemini API key invalid';
+      var title = noKey ? 'Verification key not set' : 'Verification key invalid';
       var detail = noKey
-        ? 'Open Admin Panel → API Key tab and paste your AI Studio key. Each device needs the key set once.'
-        : esc(rawMsg) + '. Open Admin Panel → API Key tab and paste a fresh key from aistudio.google.com/apikey.';
+        ? 'Open Admin Panel → API Key tab to set up the verification key.'
+        : 'The configured API key was rejected. Open Admin Panel → API Key tab and save a fresh key.';
       v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.lock + '</div>'
         + '<div style="flex:1;min-width:0">'
         + '<div>' + esc(title) + '</div>'
         + '<div class="verify-detail">' + detail + '</div>'
-        + (_sessionIsAdmin ? '' : '<div class="verify-detail" style="margin-top:6px;color:var(--mut)">Ask the admin to set the API key.</div>')
+        + (_sessionIsAdmin ? '' : '<div class="verify-detail" style="margin-top:6px;color:var(--mut)">Ask the admin to set the verification key.</div>')
         + '</div>';
       v.style.alignItems = 'flex-start';
-      toast('e', noKey ? 'Set the Gemini API key in admin panel' : 'Gemini key rejected');
+      toast('e', noKey ? 'Set the verification key in admin panel' : 'Verification key rejected');
       return;
     }
 
