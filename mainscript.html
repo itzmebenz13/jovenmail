@@ -8,6 +8,8 @@
   <title>SHEIN Script Updater</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="/photos/banner-script.png" as="image" type="image/png">
+  <link rel="preload" href="/photos/koreo-hi.png" as="image" type="image/png">
   <link
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
@@ -2043,6 +2045,491 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
+       VIEW SYSTEM (home / vouchers / logs / etc.)
+       ═══════════════════════════════════════════════════════════ */
+    .view { display: none; }
+    body[data-view="home"]            .view-home,
+    body[data-view="vouchers"]        .view-vouchers,
+    body[data-view="logs"]            .view-logs,
+    body[data-view="topup-history"]   .view-topup-history,
+    body[data-view="apk"]             .view-apk,
+    body[data-view="admin"]           .view-admin,
+    body[data-view="profile"]         .view-profile { display: block; }
+
+    body[data-view="home"]            .view-home.flex,
+    body[data-view="vouchers"]        .view-vouchers.flex,
+    body[data-view="logs"]            .view-logs.flex,
+    body[data-view="topup-history"]   .view-topup-history.flex,
+    body[data-view="apk"]             .view-apk.flex,
+    body[data-view="admin"]           .view-admin.flex,
+    body[data-view="profile"]         .view-profile.flex { display: flex; }
+
+    /* View header: back arrow + title shown on non-home views */
+    .view-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 4px 14px;
+      margin-bottom: 4px;
+    }
+    .view-header .back-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--b1);
+      color: var(--txt);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .15s;
+    }
+    .view-header .back-btn:hover { background: var(--hov); border-color: var(--b2); }
+    .view-header h2 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.015em;
+      color: var(--txt);
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HOME BANNER (decorative; sits at top of home view)
+       ═══════════════════════════════════════════════════════════ */
+    .home-banner {
+      width: 100%;
+      margin-bottom: 14px;
+      border-radius: var(--r-l);
+      overflow: hidden;
+      box-shadow: var(--shadow-s);
+      background: linear-gradient(135deg, rgba(61, 143, 232, .06), rgba(255, 184, 77, .06));
+      border: 1px solid var(--b1);
+      line-height: 0;
+    }
+
+    .home-banner img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HERO GREETING CARD (home only)
+       ═══════════════════════════════════════════════════════════ */
+    .hero {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 22px 20px;
+      margin-bottom: 16px;
+    }
+
+    .hero-mascot {
+      width: 96px;
+      height: 96px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      animation: heroFloat 3.5s ease-in-out infinite;
+    }
+
+    @keyframes heroFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .hero-mascot::before, .hero-mascot::after {
+      content: '';
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--acc2);
+      opacity: 0.7;
+      animation: heroSparkle 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .hero-mascot::before { top: 6px; right: -2px; animation-delay: 0s; }
+    .hero-mascot::after { bottom: 14px; left: -2px; animation-delay: 1s; background: var(--acc); }
+
+    @keyframes heroSparkle {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+
+    .hero-mascot img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 4px 10px rgba(61, 143, 232, .18));
+    }
+
+    .hero-mascot svg { width: 42px; height: 42px; color: var(--acc); }
+
+    .hero-text { flex: 1; min-width: 0; }
+
+    .hero-title {
+      font-size: 1.45rem;
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      color: var(--txt);
+      line-height: 1.15;
+    }
+
+    .hero-title .brand {
+      background: linear-gradient(135deg, var(--acc), var(--acc2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 900;
+    }
+
+    .hero-sub {
+      font-size: 0.92rem;
+      color: var(--dim);
+      margin-top: 4px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 480px) {
+      .hero { padding: 18px 16px; gap: 14px; }
+      .hero-mascot { width: 78px; height: 78px; }
+      .hero-mascot svg { width: 34px; height: 34px; }
+      .hero-title { font-size: 1.2rem; }
+      .hero-sub { font-size: 0.84rem; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       BIG PASTE CARD (home only)
+       ═══════════════════════════════════════════════════════════ */
+    .paste-card {
+      background: var(--card);
+      border: 1px solid var(--b1);
+      border-radius: var(--r-l);
+      padding: 22px 20px;
+      box-shadow: var(--shadow-s);
+      margin-bottom: 14px;
+    }
+
+    .btn-mega-paste {
+      width: 100%;
+      padding: 18px 24px;
+      background: linear-gradient(135deg, var(--acc), var(--accH));
+      color: #fff;
+      font-family: var(--font);
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: -0.005em;
+      border: none;
+      border-radius: var(--r-m);
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(61, 143, 232, .35);
+      transition: all .25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-mega-paste:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(61, 143, 232, .45);
+    }
+
+    .btn-mega-paste:active { transform: translateY(0); }
+
+    .paste-hint {
+      font-size: 0.78rem;
+      color: var(--dim);
+      text-align: center;
+      margin-top: 12px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .home-quick-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .home-gt-chip {
+      flex: 1;
+      min-width: 140px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--card);
+      border: 1px solid var(--b1);
+      border-radius: var(--r-m);
+      box-shadow: var(--shadow-xs);
+    }
+    .home-gt-chip .gt-icon { width: 26px; height: 26px; flex-shrink: 0; }
+    .home-gt-chip .gt-info { display: flex; flex-direction: column; }
+    .home-gt-chip .gt-num {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--acc);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .home-gt-chip .gt-lab {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: var(--dim);
+      letter-spacing: 0.08em;
+      margin-top: 3px;
+    }
+    .home-topup-btn {
+      padding: 10px 16px;
+      background: linear-gradient(135deg, var(--acc2), var(--acc2H));
+      color: #fff;
+      border: none;
+      border-radius: var(--r-m);
+      font-weight: 800;
+      font-size: 0.84rem;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(255, 184, 77, .3);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .2s;
+    }
+    .home-topup-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(255, 184, 77, .42);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HAMBURGER MENU + DRAWER
+       ═══════════════════════════════════════════════════════════ */
+    .hamburger-btn {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--inp);
+      border: 1px solid var(--b1);
+      border-radius: var(--r-s);
+      color: var(--txt);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .hamburger-btn:hover { background: var(--hov); border-color: var(--b2); }
+
+    #drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 20, 36, .5);
+      z-index: 950;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    #drawer-backdrop.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 86%;
+      max-width: 360px;
+      background: var(--card);
+      border-left: 1px solid var(--b1);
+      box-shadow: -8px 0 30px rgba(0, 0, 0, .15);
+      z-index: 951;
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.2, .8, .25, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #drawer.show { transform: translateX(0); }
+
+    .drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--b1);
+    }
+    .drawer-head .title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mut);
+    }
+    .drawer-close {
+      width: 32px;
+      height: 32px;
+      background: var(--inp);
+      border: 1px solid var(--b1);
+      border-radius: 50%;
+      color: var(--dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+    }
+    .drawer-close:hover { background: var(--hov); color: var(--txt); }
+
+    .drawer-profile {
+      padding: 18px 18px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--b1);
+    }
+    .drawer-profile .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--acc), var(--accH));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.05rem;
+      box-shadow: 0 2px 8px rgba(61, 143, 232, .35);
+      flex-shrink: 0;
+    }
+    .drawer-profile .info { flex: 1; min-width: 0; }
+    .drawer-profile .name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--txt);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .drawer-profile .tag {
+      font-size: 0.7rem;
+      color: var(--dim);
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .drawer-profile .tag.admin { color: var(--acc2H); }
+
+    .drawer-gt-row {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--b1);
+    }
+    .drawer-gt-badge {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 12px;
+      background: linear-gradient(135deg, rgba(61, 143, 232, .08), rgba(255, 184, 77, .08));
+      border: 1px solid rgba(61, 143, 232, .22);
+      border-radius: var(--r-m);
+    }
+    .drawer-gt-badge .gt-icon { width: 22px; height: 22px; flex-shrink: 0; }
+    .drawer-gt-badge .gt-num {
+      font-weight: 900;
+      color: var(--acc);
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+    .drawer-gt-badge .gt-lab {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: var(--dim);
+      letter-spacing: 0.08em;
+    }
+
+    .drawer-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 10px;
+    }
+    .drawer-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 12px;
+      border-radius: var(--r-m);
+      color: var(--txt);
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: var(--font);
+    }
+    .drawer-link:hover, .drawer-link:active { background: var(--hov); }
+    .drawer-link.active { background: rgba(61, 143, 232, .08); color: var(--acc); }
+    .drawer-link svg { color: var(--dim); flex-shrink: 0; }
+    .drawer-link.active svg { color: var(--acc); }
+    .drawer-link .badge {
+      margin-left: auto;
+      background: rgba(61, 143, 232, .12);
+      color: var(--acc);
+      font-size: 0.66rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+
+    .drawer-section {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mut);
+      padding: 14px 14px 6px;
+    }
+
+    .drawer-foot {
+      padding: 14px 18px 18px;
+      border-top: 1px solid var(--b1);
+    }
+    .drawer-logout-btn {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(239, 68, 68, .08);
+      color: var(--err);
+      border: 1px solid rgba(239, 68, 68, .25);
+      border-radius: var(--r-m);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .15s;
+    }
+    .drawer-logout-btn:hover { background: rgba(239, 68, 68, .14); }
+
+    /* ═══════════════════════════════════════════════════════════
        TOP-UP MODAL
        ═══════════════════════════════════════════════════════════ */
     #topup-modal {
@@ -2633,7 +3120,7 @@
   </style>
 </head>
 
-<body>
+<body data-view="home">
   <!-- ═══ PYTHON SCRIPT TEMPLATE (preserved verbatim) ═══ -->
   <script type="text/plain" id="py-template">
 #!/usr/bin/env -S python3 -u
@@ -3157,7 +3644,7 @@ if __name__ == "__main__":
         </div>
       </div>
       <div class="hctl">
-        <span class="status-pill"><span class="status-dot" id="status-dot"></span><span id="status-text">IDLE</span></span>
+        <span class="status-pill" id="header-status-pill"><span class="status-dot" id="status-dot"></span><span id="status-text">IDLE</span></span>
         <button id="themeToggle" type="button" aria-label="Toggle theme">
           <div id="tt-thumb">
             <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -3169,11 +3656,115 @@ if __name__ == "__main__":
             </svg>
           </div>
         </button>
+        <button class="hamburger-btn" id="hamburger-btn" type="button" aria-label="Open menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="7" x2="20" y2="7"/>
+            <line x1="4" y1="12" x2="20" y2="12"/>
+            <line x1="4" y1="17" x2="20" y2="17"/>
+          </svg>
+        </button>
       </div>
     </header>
 
-    <!-- ═══ WALLET CARD ═══ -->
-    <div id="wallet-card" class="wallet-card">
+    <!-- ═══ HOME — BANNER (only on view=home) ═══ -->
+    <div class="view view-home home-banner">
+      <img src="/photos/banner-script.png" alt="SHEIN Script Updater" decoding="async" fetchpriority="high">
+    </div>
+
+    <!-- ═══ HOME — HERO GREETING (only on view=home) ═══ -->
+    <div class="view view-home hero">
+      <div class="hero-mascot">
+        <img src="/photos/koreo-hi.png" alt="Koreo" decoding="async" fetchpriority="high">
+      </div>
+      <div class="hero-text">
+        <div class="hero-title">Hey, I'm <span class="brand">Koreo</span>!</div>
+        <div class="hero-sub">The script is ready!</div>
+      </div>
+    </div>
+
+    <!-- ═══ HOME — BIG PASTE CARD (only on view=home) ═══ -->
+    <div class="view view-home paste-card">
+      <button class="btn-mega-paste" id="home-paste-btn" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="8" y="2" width="8" height="4" rx="1.2"/>
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <line x1="9" y1="11" x2="15" y2="11"/>
+          <line x1="9" y1="15" x2="13" y2="15"/>
+        </svg>
+        Paste &amp; Run
+      </button>
+      <p class="paste-hint">Paste your captured RAW request — we'll parse and run it for you automatically.</p>
+    </div>
+
+    <!-- ═══ HOME — QUICK GT ROW (only on view=home, after login) ═══ -->
+    <div class="view view-home home-quick-row" id="home-gt-row" style="display:none">
+      <div class="home-gt-chip">
+        <span class="gt-icon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <defs>
+              <linearGradient id="gtChipGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#3D8FE8"/>
+                <stop offset="100%" stop-color="#FFB84D"/>
+              </linearGradient>
+            </defs>
+            <circle cx="12" cy="12" r="10" fill="url(#gtChipGrad)" opacity="0.18"/>
+            <circle cx="12" cy="12" r="9" fill="none" stroke="url(#gtChipGrad)" stroke-width="1.6"/>
+            <path d="M9 8l3-3 3 3M9 16l3 3 3-3M12 5v14" stroke="url(#gtChipGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </span>
+        <div class="gt-info">
+          <span class="gt-num" id="home-gt-count">0</span>
+          <span class="gt-lab">GENERATION TOKEN</span>
+        </div>
+      </div>
+      <button class="home-topup-btn" id="home-topup-btn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Top Up
+      </button>
+    </div>
+
+    <!-- View headers (back arrow + title) — one per view -->
+    <div class="view view-profile view-header">
+      <button class="back-btn" data-go-home type="button" aria-label="Back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h2>Profile</h2>
+    </div>
+    <div class="view view-vouchers view-header">
+      <button class="back-btn" data-go-home type="button" aria-label="Back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h2>Voucher Codes</h2>
+    </div>
+    <div class="view view-logs view-header">
+      <button class="back-btn" data-go-home type="button" aria-label="Back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h2>Claim Logs</h2>
+    </div>
+    <div class="view view-topup-history view-header">
+      <button class="back-btn" data-go-home type="button" aria-label="Back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h2>Top-Up History</h2>
+    </div>
+    <div class="view view-apk view-header">
+      <button class="back-btn" data-go-home type="button" aria-label="Back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h2>SHEIN Patched App</h2>
+    </div>
+    <div class="view view-admin view-header">
+      <button class="back-btn" data-go-home type="button" aria-label="Back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h2>Admin Panel</h2>
+    </div>
+
+    <!-- ═══ WALLET CARD (now only shown on Profile view) ═══ -->
+    <div id="wallet-card" class="wallet-card view view-profile">
       <div class="wallet-avatar" id="wallet-avatar">U</div>
       <div class="wallet-info">
         <div class="wallet-name" id="wallet-name">User</div>
@@ -3219,7 +3810,7 @@ if __name__ == "__main__":
     </div>
 
     <!-- ═══ ADMIN PANEL ═══ -->
-    <div id="admin-panel">
+    <div id="admin-panel" class="view view-admin">
       <div class="admin-head">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3397,8 +3988,8 @@ if __name__ == "__main__":
       </div>
     </div>
 
-    <!-- ═══ APK BANNER ═══ -->
-    <a class="apk-banner" id="apk-banner"
+    <!-- ═══ APK BANNER (now only on APK view) ═══ -->
+    <a class="apk-banner view view-apk" id="apk-banner"
       href="https://download1325.mediafire.com/wsj1esi0dlhgHCkVYR3RDR7a81IJ_l51pAce7ijsQ6x1KIFAF9fpAJS8CPhQZfOOYKoPd9YMzAmLgakQjeL2BJrg0zeqh7BEDkF85CrbpqybmnOf5-wE_yKd8AwN-n_vlrTTbfrf2LXeKCpFMiOHxAG9-doDxoz8HzLo_0my_qFiFA/6idjnne02hm3t3v/shein-patched.apk"
       target="_blank" rel="noopener">
       <div class="apk-icon-wrap">
@@ -3424,8 +4015,8 @@ if __name__ == "__main__":
       </div>
     </a>
 
-    <!-- ═══ CLOUD RUNNER ═══ -->
-    <div class="card">
+    <!-- ═══ CLOUD RUNNER (always hidden — auto-runs in background) ═══ -->
+    <div class="card" style="display:none">
       <div class="card-head">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3482,7 +4073,7 @@ if __name__ == "__main__":
     </div>
 
     <!-- ═══ CLAIM LOGS ═══ -->
-    <div class="card" id="panel-logs">
+    <div class="card view view-logs" id="panel-logs">
       <div class="collapse-head" id="logs-toggle">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3522,8 +4113,8 @@ if __name__ == "__main__":
       </div>
     </div>
 
-    <!-- ═══ TOP-UP HISTORY ═══ -->
-    <div class="card hidden" id="panel-topup-history">
+    <!-- ═══ TOP-UP HISTORY (only on topup-history view) ═══ -->
+    <div class="card view view-topup-history" id="panel-topup-history">
       <div class="collapse-head" id="topup-history-toggle">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3548,8 +4139,8 @@ if __name__ == "__main__":
       </div>
     </div>
 
-    <!-- ═══ RAW INPUT ═══ -->
-    <div class="grid-2">
+    <!-- ═══ RAW INPUT (always hidden; PASTE button on home triggers it) ═══ -->
+    <div class="grid-2" style="display:none">
       <div class="card">
         <div class="card-head">
           <div class="card-title">
@@ -3607,8 +4198,8 @@ if __name__ == "__main__":
       </div>
     </div>
 
-    <!-- ═══ TOKEN VAULT (admin) ═══ -->
-    <div class="card hidden" id="panel-vault">
+    <!-- ═══ TOKEN VAULT (admin only — on admin view) ═══ -->
+    <div class="card view view-admin" id="panel-vault" style="display:none">
       <div class="collapse-head" id="vault-toggle">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -3642,8 +4233,8 @@ if __name__ == "__main__":
       </div>
     </div>
 
-    <!-- ═══ PARSE HISTORY (admin) ═══ -->
-    <div class="card hidden" id="panel-hist">
+    <!-- ═══ PARSE HISTORY (admin only — on admin view) ═══ -->
+    <div class="card view view-admin" id="panel-hist" style="display:none">
       <div class="collapse-head" id="hist-toggle">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -3672,8 +4263,8 @@ if __name__ == "__main__":
       </div>
     </div>
 
-    <!-- ═══ VOUCHER MANAGER ═══ -->
-    <div class="card">
+    <!-- ═══ VOUCHER MANAGER (only on vouchers view) ═══ -->
+    <div class="card view view-vouchers">
       <div class="collapse-head" id="voucher-toggle">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
@@ -3734,8 +4325,8 @@ if __name__ == "__main__":
       </div>
     </div>
 
-    <!-- ═══ BRUTE FORCE (admin) ═══ -->
-    <div class="card hidden" id="panel-bf">
+    <!-- ═══ BRUTE FORCE (admin only — on admin view) ═══ -->
+    <div class="card view view-admin" id="panel-bf" style="display:none">
       <div class="collapse-head" id="bf-toggle">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 4 13 11 13 11 22 20 11 13 11"/></svg>
@@ -3881,7 +4472,7 @@ if __name__ == "__main__":
             </div>
           </div>
           <div style="font-size:.72rem;color:var(--dim);line-height:1.55;font-weight:500">
-            After confirming, you'll have <b style="color:var(--txt)">2 minutes</b> to send the exact amount and upload your receipt. The receipt's amount and timestamp must match this order.
+            After confirming, you'll have <b style="color:var(--txt)">3 minutes</b> to send the exact amount and upload your receipt. The receipt's amount and timestamp must match this order.
           </div>
         </div>
 
@@ -3893,7 +4484,7 @@ if __name__ == "__main__":
                 <circle class="track" cx="40" cy="40" r="36"/>
                 <circle class="progress" id="countdown-progress" cx="40" cy="40" r="36"/>
               </svg>
-              <div class="countdown-text" id="countdown-text">2:00</div>
+              <div class="countdown-text" id="countdown-text">3:00</div>
             </div>
             <div class="countdown-info">
               <div class="ctitle" id="countdown-title">Send the exact amount now</div>
@@ -3979,7 +4570,7 @@ if __name__ == "__main__":
               </svg>
             </div>
             <div class="success-title" style="color:var(--err)">Order Expired</div>
-            <div class="success-sub">The 2-minute upload window has passed. Please create a new top-up order to continue.</div>
+            <div class="success-sub">The 3-minute upload window has passed. Please create a new top-up order to continue.</div>
           </div>
         </div>
       </div>
@@ -3993,6 +4584,94 @@ if __name__ == "__main__":
       </div>
     </div>
   </div>
+
+  <!-- ═══ HAMBURGER DRAWER ═══ -->
+  <div id="drawer-backdrop"></div>
+  <aside id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <span class="title">Menu</span>
+      <button class="drawer-close" id="drawer-close" type="button" aria-label="Close menu">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="drawer-profile" id="drawer-profile" style="display:none">
+      <div class="avatar" id="drawer-avatar">U</div>
+      <div class="info">
+        <div class="name" id="drawer-name">User</div>
+        <div class="tag" id="drawer-tag">Member</div>
+      </div>
+    </div>
+
+    <div class="drawer-gt-row" id="drawer-gt-row" style="display:none">
+      <div class="drawer-gt-badge">
+        <span class="gt-icon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <defs>
+              <linearGradient id="drawerGtGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#3D8FE8"/><stop offset="100%" stop-color="#FFB84D"/>
+              </linearGradient>
+            </defs>
+            <circle cx="12" cy="12" r="10" fill="url(#drawerGtGrad)" opacity="0.18"/>
+            <circle cx="12" cy="12" r="9" fill="none" stroke="url(#drawerGtGrad)" stroke-width="1.6"/>
+            <path d="M9 8l3-3 3 3M9 16l3 3 3-3M12 5v14" stroke="url(#drawerGtGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </span>
+        <div style="display:flex;flex-direction:column">
+          <span class="gt-num" id="drawer-gt-count">0</span>
+          <span class="gt-lab">GENERATION TOKEN</span>
+        </div>
+      </div>
+      <button class="home-topup-btn" id="drawer-topup-btn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Top Up
+      </button>
+    </div>
+
+    <nav class="drawer-nav">
+      <button class="drawer-link active" data-go-view="home" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </button>
+      <button class="drawer-link" data-go-view="profile" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </button>
+      <button class="drawer-link" data-go-view="vouchers" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+        Voucher Codes
+        <span class="badge" id="drawer-voucher-cnt">0</span>
+      </button>
+      <button class="drawer-link" data-go-view="logs" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Claim Logs
+        <span class="badge" id="drawer-logs-cnt">0</span>
+      </button>
+      <button class="drawer-link" data-go-view="topup-history" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        Top-Up History
+        <span class="badge" id="drawer-topup-cnt">0</span>
+      </button>
+      <button class="drawer-link" data-go-view="apk" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        SHEIN Patched App
+      </button>
+      <div class="drawer-section" id="drawer-admin-section" style="display:none">Admin</div>
+      <button class="drawer-link" data-go-view="admin" type="button" id="drawer-admin-link" style="display:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1l3 6 6 1-4.5 4.5L18 19l-6-3-6 3 1.5-6.5L3 8l6-1z"/></svg>
+        Admin Panel
+      </button>
+    </nav>
+
+    <div class="drawer-foot" id="drawer-foot" style="display:none">
+      <button class="drawer-logout-btn" id="drawer-logout-btn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
 
   <div id="toast"></div>
 
@@ -4663,7 +5342,8 @@ if __name__ == "__main__":
     var runBtn = $('run-btn');
     if (on) runBtn.classList.add('auto-disabled'); else runBtn.classList.remove('auto-disabled');
   }
-  setAutoMode(localStorage.getItem('ssu_auto_mode') === '1');
+  // Auto mode is now always ON (no user toggle in the new UI).
+  setAutoMode(true);
   (function () {
     var toggling = false;
     function handle() {
@@ -6180,7 +6860,7 @@ if __name__ == "__main__":
     var amount = gt * 200;
     var orderId = 'GT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
     var now = new Date();
-    var expiresAt = new Date(now.getTime() + 120 * 1000);
+    var expiresAt = new Date(now.getTime() + 180 * 1000);
     _activeTopupOrder = {
       orderId: orderId,
       gt: gt,
@@ -6249,7 +6929,7 @@ if __name__ == "__main__":
       var mins = Math.floor(sec / 60);
       var secs = sec % 60;
       text.textContent = mins + ':' + pad(secs);
-      var pct = leftMs / 120000;
+      var pct = leftMs / 180000;
       prog.style.strokeDashoffset = String(CIRC * (1 - pct));
     }
     tick();
@@ -6352,7 +7032,7 @@ if __name__ == "__main__":
     if (!order) return;
     var nowMs = Date.now();
     if (nowMs > order.expiresAtMs) {
-      setVerifyRejected('Window already expired', 'The 2-minute timer ran out before the upload completed.');
+      setVerifyRejected('Window already expired', 'The 3-minute timer ran out before the upload completed.');
       return;
     }
 
@@ -6369,7 +7049,7 @@ if __name__ == "__main__":
 
       // Re-check expiry — the Gemini call may have taken a few seconds.
       if (Date.now() > order.expiresAtMs) {
-        setVerifyRejected('Window expired', 'The 2-minute timer ran out before verification could finish.');
+        setVerifyRejected('Window expired', 'The 3-minute timer ran out before verification could finish.');
         return;
       }
 
@@ -6420,7 +7100,7 @@ if __name__ == "__main__":
         stop = true;
         if (timerId) clearInterval(timerId);
         if (Date.now() > _activeTopupOrder.expiresAtMs) {
-          setVerifyRejected('Window expired', 'The 2-minute timer ran out before Gemini was reachable.');
+          setVerifyRejected('Window expired', 'The 3-minute timer ran out before Gemini was reachable.');
           return;
         }
         runReceiptVerification(file);
@@ -6464,7 +7144,7 @@ if __name__ == "__main__":
     var rb = $('ocr-retry-now');
     if (rb) rb.addEventListener('click', function () {
       if (Date.now() > _activeTopupOrder.expiresAtMs) {
-        setVerifyRejected('Window expired', 'The 2-minute timer ran out before the receipt could be verified.');
+        setVerifyRejected('Window expired', 'The 3-minute timer ran out before the receipt could be verified.');
         return;
       }
       runReceiptVerification(file);
@@ -6526,15 +7206,125 @@ if __name__ == "__main__":
   }
 
   // ════════════════════════════════════════════════════════════
+  // VIEW SWITCHING + DRAWER + HOME PASTE
+  // ════════════════════════════════════════════════════════════
+  function showView(name) {
+    if (!name) name = 'home';
+    document.body.setAttribute('data-view', name);
+    // Highlight the right drawer link
+    $$('.drawer-link').forEach(function (a) {
+      if (a.getAttribute('data-go-view') === name) a.classList.add('active');
+      else a.classList.remove('active');
+    });
+    // Auto-open relevant collapsible bodies on enter
+    if (name === 'logs') {
+      var lt = $('logs-toggle'); if (lt && !$('logs-body').classList.contains('open')) lt.click();
+      fetchLogs();
+    }
+    if (name === 'topup-history') {
+      var th = $('topup-history-toggle'); if (th && !$('topup-history-body').classList.contains('open')) th.click();
+    }
+    if (name === 'vouchers') {
+      var vt = $('voucher-toggle'); if (vt && !$('voucher-body').classList.contains('open')) vt.click();
+    }
+    // Scroll to top of the view
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function openDrawer() {
+    $('drawer').classList.add('show');
+    $('drawer-backdrop').classList.add('show');
+    $('drawer').setAttribute('aria-hidden', 'false');
+  }
+  function closeDrawer() {
+    $('drawer').classList.remove('show');
+    $('drawer-backdrop').classList.remove('show');
+    $('drawer').setAttribute('aria-hidden', 'true');
+  }
+
+  $('hamburger-btn').addEventListener('click', openDrawer);
+  $('drawer-close').addEventListener('click', closeDrawer);
+  $('drawer-backdrop').addEventListener('click', closeDrawer);
+
+  // All drawer nav links — switch view + close drawer
+  $$('.drawer-link[data-go-view]').forEach(function (link) {
+    link.addEventListener('click', function () {
+      showView(this.getAttribute('data-go-view'));
+      closeDrawer();
+    });
+  });
+  // All "back" buttons in view headers — go home
+  $$('[data-go-home]').forEach(function (btn) {
+    btn.addEventListener('click', function () { showView('home'); });
+  });
+
+  // Drawer logout button — reuse existing logout
+  $('drawer-logout-btn').addEventListener('click', function () {
+    closeDrawer();
+    showView('home');
+    $('wallet-logout-btn').click();
+  });
+
+  // Drawer top-up button (and home top-up button) trigger the existing top-up flow
+  function openTopUpFromAnywhere() {
+    closeDrawer();
+    $('topup-btn').click();
+  }
+  $('drawer-topup-btn').addEventListener('click', openTopUpFromAnywhere);
+  $('home-topup-btn').addEventListener('click', openTopUpFromAnywhere);
+
+  // Home PASTE button delegates to the (hidden) original paste-btn handler
+  $('home-paste-btn').addEventListener('click', function () {
+    if (!_sessionKey) { toast('e', 'Please sign in first'); return; }
+    $('paste-btn').click();
+  });
+
+  // ────────────────────────────────────────────────────────────
+  // PROFILE / DRAWER PROFILE — keep wallet UI in sync
+  // ────────────────────────────────────────────────────────────
+  var _origUpdateWallet = updateWallet;
+  updateWallet = function () {
+    _origUpdateWallet();
+    var first = (_sessionUser || 'U').charAt(0).toUpperCase();
+    $('drawer-name').textContent = _sessionUser || 'User';
+    $('drawer-avatar').textContent = first;
+    var dt = $('drawer-tag');
+    dt.textContent = _sessionIsAdmin ? 'Administrator' : 'Member';
+    dt.className = _sessionIsAdmin ? 'tag admin' : 'tag';
+    var gtVal = _sessionIsAdmin ? '∞' : (_sessionGT || 0);
+    $('drawer-gt-count').textContent = gtVal;
+    $('home-gt-count').textContent = gtVal;
+    // Only show GT row + admin link + foot when signed in
+    var loggedIn = !!_sessionKey;
+    $('drawer-profile').style.display = loggedIn ? 'flex' : 'none';
+    $('drawer-gt-row').style.display = loggedIn ? 'flex' : 'none';
+    $('drawer-foot').style.display = loggedIn ? 'block' : 'none';
+    $('home-gt-row').style.display = loggedIn ? 'flex' : 'none';
+    var adminVisible = loggedIn && _sessionIsAdmin;
+    $('drawer-admin-section').style.display = adminVisible ? 'block' : 'none';
+    $('drawer-admin-link').style.display = adminVisible ? 'flex' : 'none';
+  };
+
+  // Keep drawer counters in sync with the existing badges
+  var _voucherCntEl = $('vcnt'), _logsCntEl = $('logs-cnt'), _topupCntEl = $('topup-history-cnt');
+  function syncDrawerCounts() {
+    var pull = function (el, dst) {
+      if (!el || !dst) return;
+      var n = (el.textContent.match(/\d+/) || ['0'])[0];
+      dst.textContent = n;
+    };
+    pull(_voucherCntEl, $('drawer-voucher-cnt'));
+    pull(_logsCntEl, $('drawer-logs-cnt'));
+    pull(_topupCntEl, $('drawer-topup-cnt'));
+  }
+  // Run on a slow interval — cheap, keeps numbers fresh after admin actions
+  setInterval(syncDrawerCounts, 1500);
+
+  // ════════════════════════════════════════════════════════════
   // INIT FINAL
   // ════════════════════════════════════════════════════════════
-  // Auto-open logs panel on first load if user has a session
-  setTimeout(function () {
-    if (_sessionKey) {
-      var lt = $('logs-toggle');
-      if (lt && !$('logs-body').classList.contains('open')) lt.click();
-    }
-  }, 600);
+  // Default view = home. Drawer-only navigation from there.
+  showView('home');
 
 })();
 </script>
