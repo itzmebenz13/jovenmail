@@ -1833,23 +1833,26 @@
 
     #toast.s {
       color: var(--ok);
-      border-color: rgba(46, 184, 102, .3);
-      background: linear-gradient(135deg, var(--card), rgba(46, 184, 102, .06));
+      border-color: rgba(46, 184, 102, .35);
+      background: var(--card);
     }
 
     #toast.e {
       color: var(--err);
-      border-color: rgba(239, 68, 68, .3);
-      background: linear-gradient(135deg, var(--card), rgba(239, 68, 68, .06));
+      border-color: rgba(239, 68, 68, .35);
+      background: var(--card);
     }
 
     #toast.w {
       color: var(--warn);
-      border-color: rgba(245, 158, 11, .3);
-      background: linear-gradient(135deg, var(--card), rgba(245, 158, 11, .06));
+      border-color: rgba(245, 158, 11, .35);
+      background: var(--card);
     }
 
-    #toast.i { color: var(--dim); }
+    #toast.i {
+      color: var(--dim);
+      background: var(--card);
+    }
 
     /* ═══════════════════════════════════════════════════════════
        LOG ITEMS
