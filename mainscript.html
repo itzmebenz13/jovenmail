@@ -145,69 +145,44 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       APP HEADER (web-app shell)
+       APP HEADER (KoreoMail-style: image logo + controls on right)
        ═══════════════════════════════════════════════════════════ */
     .app-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: var(--card);
-      border: 1px solid var(--b1);
-      border-radius: var(--r-l);
-      box-shadow: var(--shadow-s);
-      margin-bottom: 14px;
+      gap: 10px;
+      padding: 10px 14px;
+      background: transparent;
+      margin-bottom: 12px;
+      min-height: 56px;
     }
 
-    .logo {
-      width: 40px;
-      height: 40px;
-      flex-shrink: 0;
-      background: linear-gradient(135deg, var(--acc), var(--acc2));
-      border-radius: var(--r-s);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(61, 143, 232, .35);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .logo::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, transparent, rgba(255, 255, 255, .25));
-    }
-
-    .app-header .htitle {
+    .app-header-logo {
       flex: 1;
       min-width: 0;
-    }
-
-    .app-header h1 {
-      font-size: 1rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--txt);
-      line-height: 1.2;
-    }
-
-    .app-header .subtitle {
-      font-size: 0.72rem;
-      color: var(--dim);
-      font-weight: 500;
-      margin-top: 2px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .app-header-logo img {
+      height: 36px;
+      width: auto;
+      max-width: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    @media (max-width: 480px) {
+      .app-header-logo img { height: 32px; }
     }
 
     .hctl {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
     }
 
     .status-pill {
@@ -307,7 +282,6 @@
        WALLET CARD
        ═══════════════════════════════════════════════════════════ */
     .wallet-card {
-      display: none;
       align-items: center;
       gap: 12px;
       padding: 14px 16px;
@@ -317,10 +291,6 @@
       box-shadow: var(--shadow-s);
       margin-bottom: 14px;
       flex-wrap: wrap;
-    }
-
-    .wallet-card.show {
-      display: flex;
     }
 
     .wallet-avatar {
@@ -2047,14 +2017,14 @@
     /* ═══════════════════════════════════════════════════════════
        VIEW SYSTEM (home / vouchers / logs / etc.)
        ═══════════════════════════════════════════════════════════ */
-    .view { display: none; }
+    .view { display: none !important; }
     body[data-view="home"]            .view-home,
     body[data-view="vouchers"]        .view-vouchers,
     body[data-view="logs"]            .view-logs,
     body[data-view="topup-history"]   .view-topup-history,
     body[data-view="apk"]             .view-apk,
     body[data-view="admin"]           .view-admin,
-    body[data-view="profile"]         .view-profile { display: block; }
+    body[data-view="profile"]         .view-profile { display: block !important; }
 
     body[data-view="home"]            .view-home.flex,
     body[data-view="vouchers"]        .view-vouchers.flex,
@@ -2062,11 +2032,10 @@
     body[data-view="topup-history"]   .view-topup-history.flex,
     body[data-view="apk"]             .view-apk.flex,
     body[data-view="admin"]           .view-admin.flex,
-    body[data-view="profile"]         .view-profile.flex { display: flex; }
+    body[data-view="profile"]         .view-profile.flex { display: flex !important; }
 
     /* View header: back arrow + title shown on non-home views */
     .view-header {
-      display: flex;
       align-items: center;
       gap: 12px;
       padding: 4px 4px 14px;
@@ -2097,31 +2066,9 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       HOME BANNER (decorative; sits at top of home view)
-       ═══════════════════════════════════════════════════════════ */
-    .home-banner {
-      width: 100%;
-      margin-bottom: 14px;
-      border-radius: var(--r-l);
-      overflow: hidden;
-      box-shadow: var(--shadow-s);
-      background: linear-gradient(135deg, rgba(61, 143, 232, .06), rgba(255, 184, 77, .06));
-      border: 1px solid var(--b1);
-      line-height: 0;
-    }
-
-    .home-banner img {
-      width: 100%;
-      height: auto;
-      display: block;
-      object-fit: cover;
-    }
-
-    /* ═══════════════════════════════════════════════════════════
        HERO GREETING CARD (home only)
        ═══════════════════════════════════════════════════════════ */
     .hero {
-      display: flex;
       align-items: center;
       gap: 18px;
       padding: 22px 20px;
@@ -2255,42 +2202,7 @@
       line-height: 1.5;
     }
 
-    .home-quick-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 14px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .home-gt-chip {
-      flex: 1;
-      min-width: 140px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      background: var(--card);
-      border: 1px solid var(--b1);
-      border-radius: var(--r-m);
-      box-shadow: var(--shadow-xs);
-    }
-    .home-gt-chip .gt-icon { width: 26px; height: 26px; flex-shrink: 0; }
-    .home-gt-chip .gt-info { display: flex; flex-direction: column; }
-    .home-gt-chip .gt-num {
-      font-size: 1.1rem;
-      font-weight: 900;
-      color: var(--acc);
-      line-height: 1;
-      letter-spacing: -0.02em;
-    }
-    .home-gt-chip .gt-lab {
-      font-size: 0.62rem;
-      font-weight: 800;
-      color: var(--dim);
-      letter-spacing: 0.08em;
-      margin-top: 3px;
-    }
+    /* (drawer keeps its own GT chip + Top Up button — see .drawer-gt-row) */
     .home-topup-btn {
       padding: 10px 16px;
       background: linear-gradient(135deg, var(--acc2), var(--acc2H));
@@ -3627,24 +3539,13 @@ if __name__ == "__main__":
   <div class="wrap">
     <span id="obadge" class="hidden"></span>
 
-    <!-- ═══ APP HEADER ═══ -->
+    <!-- ═══ APP HEADER (KoreoMail-style: image logo + controls) ═══ -->
     <header class="app-header">
-      <div class="logo">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1">
-          <polyline points="13 2 4 13 11 13 11 22 20 11 13 11"/>
-        </svg>
-      </div>
-      <div class="htitle">
-        <h1>SHEIN Script Updater</h1>
-        <div class="subtitle">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-          </svg>
-          <span>Parse · Manage · Run</span>
-        </div>
-      </div>
+      <a href="/" class="app-header-logo" aria-label="KoreoScript home">
+        <img src="/photos/banner-script.png" alt="KoreoScript" decoding="async" fetchpriority="high">
+      </a>
       <div class="hctl">
-        <span class="status-pill" id="header-status-pill"><span class="status-dot" id="status-dot"></span><span id="status-text">IDLE</span></span>
+        <span class="status-pill" id="header-status-pill" style="display:none"><span class="status-dot" id="status-dot"></span><span id="status-text">IDLE</span></span>
         <button id="themeToggle" type="button" aria-label="Toggle theme">
           <div id="tt-thumb">
             <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -3666,13 +3567,8 @@ if __name__ == "__main__":
       </div>
     </header>
 
-    <!-- ═══ HOME — BANNER (only on view=home) ═══ -->
-    <div class="view view-home home-banner">
-      <img src="/photos/banner-script.png" alt="SHEIN Script Updater" decoding="async" fetchpriority="high">
-    </div>
-
     <!-- ═══ HOME — HERO GREETING (only on view=home) ═══ -->
-    <div class="view view-home hero">
+    <div class="view view-home hero flex">
       <div class="hero-mascot">
         <img src="/photos/koreo-hi.png" alt="Koreo" decoding="async" fetchpriority="high">
       </div>
@@ -3696,67 +3592,39 @@ if __name__ == "__main__":
       <p class="paste-hint">Paste your captured RAW request — we'll parse and run it for you automatically.</p>
     </div>
 
-    <!-- ═══ HOME — QUICK GT ROW (only on view=home, after login) ═══ -->
-    <div class="view view-home home-quick-row" id="home-gt-row" style="display:none">
-      <div class="home-gt-chip">
-        <span class="gt-icon">
-          <svg viewBox="0 0 24 24" fill="none">
-            <defs>
-              <linearGradient id="gtChipGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#3D8FE8"/>
-                <stop offset="100%" stop-color="#FFB84D"/>
-              </linearGradient>
-            </defs>
-            <circle cx="12" cy="12" r="10" fill="url(#gtChipGrad)" opacity="0.18"/>
-            <circle cx="12" cy="12" r="9" fill="none" stroke="url(#gtChipGrad)" stroke-width="1.6"/>
-            <path d="M9 8l3-3 3 3M9 16l3 3 3-3M12 5v14" stroke="url(#gtChipGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </span>
-        <div class="gt-info">
-          <span class="gt-num" id="home-gt-count">0</span>
-          <span class="gt-lab">GENERATION TOKEN</span>
-        </div>
-      </div>
-      <button class="home-topup-btn" id="home-topup-btn" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Top Up
-      </button>
-    </div>
 
     <!-- View headers (back arrow + title) — one per view -->
-    <div class="view view-profile view-header">
+    <div class="view view-profile view-header flex">
       <button class="back-btn" data-go-home type="button" aria-label="Back">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <h2>Profile</h2>
     </div>
-    <div class="view view-vouchers view-header">
+    <div class="view view-vouchers view-header flex">
       <button class="back-btn" data-go-home type="button" aria-label="Back">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <h2>Voucher Codes</h2>
     </div>
-    <div class="view view-logs view-header">
+    <div class="view view-logs view-header flex">
       <button class="back-btn" data-go-home type="button" aria-label="Back">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <h2>Claim Logs</h2>
     </div>
-    <div class="view view-topup-history view-header">
+    <div class="view view-topup-history view-header flex">
       <button class="back-btn" data-go-home type="button" aria-label="Back">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <h2>Top-Up History</h2>
     </div>
-    <div class="view view-apk view-header">
+    <div class="view view-apk view-header flex">
       <button class="back-btn" data-go-home type="button" aria-label="Back">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <h2>SHEIN Patched App</h2>
     </div>
-    <div class="view view-admin view-header">
+    <div class="view view-admin view-header flex">
       <button class="back-btn" data-go-home type="button" aria-label="Back">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
@@ -3764,7 +3632,7 @@ if __name__ == "__main__":
     </div>
 
     <!-- ═══ WALLET CARD (now only shown on Profile view) ═══ -->
-    <div id="wallet-card" class="wallet-card view view-profile">
+    <div id="wallet-card" class="wallet-card view view-profile flex">
       <div class="wallet-avatar" id="wallet-avatar">U</div>
       <div class="wallet-info">
         <div class="wallet-name" id="wallet-name">User</div>
@@ -7271,7 +7139,6 @@ if __name__ == "__main__":
     $('topup-btn').click();
   }
   $('drawer-topup-btn').addEventListener('click', openTopUpFromAnywhere);
-  $('home-topup-btn').addEventListener('click', openTopUpFromAnywhere);
 
   // Home PASTE button delegates to the (hidden) original paste-btn handler
   $('home-paste-btn').addEventListener('click', function () {
@@ -7293,13 +7160,11 @@ if __name__ == "__main__":
     dt.className = _sessionIsAdmin ? 'tag admin' : 'tag';
     var gtVal = _sessionIsAdmin ? '∞' : (_sessionGT || 0);
     $('drawer-gt-count').textContent = gtVal;
-    $('home-gt-count').textContent = gtVal;
     // Only show GT row + admin link + foot when signed in
     var loggedIn = !!_sessionKey;
     $('drawer-profile').style.display = loggedIn ? 'flex' : 'none';
     $('drawer-gt-row').style.display = loggedIn ? 'flex' : 'none';
     $('drawer-foot').style.display = loggedIn ? 'block' : 'none';
-    $('home-gt-row').style.display = loggedIn ? 'flex' : 'none';
     var adminVisible = loggedIn && _sessionIsAdmin;
     $('drawer-admin-section').style.display = adminVisible ? 'block' : 'none';
     $('drawer-admin-link').style.display = adminVisible ? 'flex' : 'none';
