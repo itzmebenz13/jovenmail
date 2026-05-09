@@ -3833,7 +3833,6 @@ if __name__ == "__main__":
 
   <!-- ═══ MAIN APP ═══ -->
   <div class="wrap">
-    <span id="obadge" class="hidden"></span>
 
     <!-- ═══ APP HEADER (KoreoMail-style: image logo + controls) ═══ -->
     <header class="app-header">
@@ -3885,7 +3884,7 @@ if __name__ == "__main__":
         </svg>
         Paste &amp; Run
       </button>
-      <p class="paste-hint">Paste your captured RAW request — we'll parse and run it for you automatically.</p>
+      <p class="paste-hint">We'll parse and run it for you.</p>
     </div>
 
     <!-- ═══ HOME — SPIN TO WIN (only on view=home) ═══ -->
@@ -4958,12 +4957,10 @@ if __name__ == "__main__":
   window.toast = toast;
 
   function markUpdated(label) {
-    var b = $('obadge');
-    b.textContent = 'UPDATED: ' + label;
-    b.className = 'tag tag-green';
-    b.classList.remove('hidden');
-    $('status-dot').classList.add('on');
-    $('status-text').textContent = 'READY';
+    // The visible "UPDATED: ..." badge was removed in the clean-home redesign.
+    // Keep the (now-hidden) status pill in sync so callers don't break.
+    var dot = $('status-dot'); if (dot) dot.classList.add('on');
+    var st = $('status-text'); if (st) st.textContent = 'READY';
   }
 
   // ════════════════════════════════════════════════════════════
@@ -7572,15 +7569,25 @@ if __name__ == "__main__":
   // Client falls back to weighted-random + local credit only if the server
   // endpoint is missing (404/405) or unreachable, so the feature still works
   // pre-deploy. Each prize must match the server's SPIN_PRIZES list.
+  // Weights MUST stay in sync with SPIN_PRIZES on the Railway server (app.py).
+  // Probabilities (total weight 200):
+  //   5 GT     → 0.5 %
+  //   3 GT     → 1.0 %
+  //   2 GT     → 1.5 %
+  //   1 GT     → 2.5 %
+  //   0.5 GT   → 4.5 %
+  //   0.2 GT   → 10  %
+  //   0.1 GT   → 30  %
+  //   Try Again → 50 %
   var SPIN_PRIZES = [
     { label: '5 GT',      value: 5,   weight: 1,  color: '#EF4444', glow: '#FCA5A5' },
-    { label: 'Try Again', value: 0,   weight: 50, color: '#94A3B8', glow: '#CBD5E1' },
-    { label: '1 GT',      value: 1,   weight: 10, color: '#3B82F6', glow: '#93C5FD' },
-    { label: '0.1 GT',    value: 0.1, weight: 50, color: '#8B5CF6', glow: '#C4B5FD' },
-    { label: '3 GT',      value: 3,   weight: 3,  color: '#F97316', glow: '#FDBA74' },
-    { label: '0.5 GT',    value: 0.5, weight: 15, color: '#10B981', glow: '#6EE7B7' },
+    { label: 'Try Again', value: 0,   weight: 100, color: '#94A3B8', glow: '#CBD5E1' },
+    { label: '1 GT',      value: 1,   weight: 5,  color: '#3B82F6', glow: '#93C5FD' },
+    { label: '0.1 GT',    value: 0.1, weight: 60, color: '#8B5CF6', glow: '#C4B5FD' },
+    { label: '3 GT',      value: 3,   weight: 2,  color: '#F97316', glow: '#FDBA74' },
+    { label: '0.5 GT',    value: 0.5, weight: 9,  color: '#10B981', glow: '#6EE7B7' },
     { label: '0.2 GT',    value: 0.2, weight: 20, color: '#0EA5E9', glow: '#7DD3FC' },
-    { label: '2 GT',      value: 2,   weight: 5,  color: '#EC4899', glow: '#F9A8D4' }
+    { label: '2 GT',      value: 2,   weight: 3,  color: '#EC4899', glow: '#F9A8D4' }
   ];
 
   var _spinning = false;
@@ -7775,10 +7782,17 @@ if __name__ == "__main__":
   function _animateToPrize(prizeIndex) {
     var n = SPIN_PRIZES.length;
     var segDeg = 360 / n;
-    var fullSpins = 5 + Math.floor(Math.random() * 3);          // 5–7 full spins
-    var targetSegmentAngle = (n - prizeIndex) * segDeg % 360;     // bring chosen segment to top
-    var jitter = (Math.random() - 0.5) * (segDeg - 10);           // stay within segment
-    var totalDelta = fullSpins * 360 + targetSegmentAngle + jitter;
+    var fullSpins = 5 + Math.floor(Math.random() * 3);            // 5–7 extra full spins
+    // Final modular angle that lands segment N centered under the top pointer:
+    var targetMod = ((n - prizeIndex) * segDeg) % 360;
+    // Where the wheel currently sits (mod 360):
+    var currentMod = ((_spinTotalRotation % 360) + 360) % 360;
+    // Always rotate forward (clockwise) by 0–359° to reach the target mod-360 position:
+    var forwardDelta = ((targetMod - currentMod) + 360) % 360;
+    // Random jitter inside the segment (leave a 6° margin from the borders):
+    var halfJitter = (segDeg / 2) - 6;
+    var jitter = (Math.random() - 0.5) * 2 * halfJitter;
+    var totalDelta = fullSpins * 360 + forwardDelta + jitter;
     _spinTotalRotation += totalDelta;
     var rotateGroup = $('spin-wheel-rotate');
     rotateGroup.classList.add('spinning');
