@@ -2121,7 +2121,7 @@
     }
 
     .topup-body {
-      padding: 22px;
+      padding: 18px 18px 14px;
       flex: 1;
       overflow-y: auto;
     }
@@ -2237,22 +2237,22 @@
       background: var(--inp);
       border: 1px solid var(--b1);
       border-radius: var(--r-m);
-      padding: 16px;
-      margin-bottom: 16px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
     }
 
     .order-info-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 0;
-      font-size: 0.82rem;
+      padding: 4px 0;
+      font-size: 0.78rem;
     }
 
     .order-info-row + .order-info-row {
       border-top: 1px solid var(--b1);
-      padding-top: 10px;
-      margin-top: 4px;
+      padding-top: 7px;
+      margin-top: 3px;
     }
 
     .order-info-row .label {
@@ -2277,12 +2277,12 @@
     .countdown-wrap {
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 16px;
+      gap: 14px;
+      padding: 12px 14px;
       background: linear-gradient(135deg, rgba(61, 143, 232, .06), rgba(255, 184, 77, .04));
       border: 1.5px solid rgba(61, 143, 232, .2);
       border-radius: var(--r-m);
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .countdown-wrap.expired {
@@ -2292,8 +2292,8 @@
 
     .countdown-ring {
       position: relative;
-      width: 76px;
-      height: 76px;
+      width: 62px;
+      height: 62px;
       flex-shrink: 0;
     }
 
@@ -2331,7 +2331,7 @@
       justify-content: center;
       font-family: var(--mono);
       font-weight: 800;
-      font-size: 1.08rem;
+      font-size: 0.92rem;
       color: var(--txt);
       letter-spacing: -0.01em;
     }
@@ -2339,85 +2339,29 @@
     .countdown-info { flex: 1; min-width: 0; }
 
     .countdown-info .ctitle {
-      font-size: 0.92rem;
+      font-size: 0.85rem;
       font-weight: 800;
       color: var(--txt);
       letter-spacing: -0.01em;
     }
 
     .countdown-info .csub {
-      font-size: 0.74rem;
+      font-size: 0.7rem;
       color: var(--dim);
-      margin-top: 3px;
+      margin-top: 2px;
       font-weight: 500;
-      line-height: 1.5;
+      line-height: 1.45;
     }
 
     .countdown-wrap.expired .ctitle {
       color: var(--err);
     }
 
-    /* Receipt instructions */
-    .receipt-rules {
-      background: var(--inp);
-      border: 1px solid var(--b1);
-      border-radius: var(--r-m);
-      padding: 14px;
-      margin-bottom: 14px;
-    }
-
-    .receipt-rules .rules-title {
-      font-size: 0.78rem;
-      font-weight: 800;
-      color: var(--txt);
-      margin-bottom: 8px;
-      letter-spacing: -0.005em;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .receipt-rules ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .receipt-rules li {
-      font-size: 0.74rem;
-      color: var(--dim);
-      display: flex;
-      align-items: flex-start;
-      gap: 7px;
-      line-height: 1.55;
-      font-weight: 500;
-    }
-
-    .receipt-rules li svg {
-      flex-shrink: 0;
-      color: var(--ok);
-      margin-top: 2px;
-    }
-
-    .receipt-rules code {
-      background: var(--card);
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-family: var(--mono);
-      font-size: 0.95em;
-      color: var(--acc);
-      border: 1px solid var(--b1);
-      font-weight: 700;
-    }
-
     /* Upload zone */
     .upload-zone {
       border: 2px dashed var(--b2);
       border-radius: var(--r-m);
-      padding: 22px 18px;
+      padding: 16px 16px 14px;
       text-align: center;
       cursor: pointer;
       transition: all .2s;
@@ -2425,7 +2369,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 7px;
     }
 
     .upload-zone:hover, .upload-zone.dragover {
@@ -2440,8 +2384,8 @@
     }
 
     .upload-zone .uicon {
-      width: 48px;
-      height: 48px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       background: rgba(61, 143, 232, .12);
       color: var(--acc);
@@ -2450,15 +2394,20 @@
       justify-content: center;
     }
 
+    .upload-zone .uicon svg {
+      width: 18px;
+      height: 18px;
+    }
+
     .upload-zone .utitle {
-      font-size: 0.88rem;
+      font-size: 0.84rem;
       font-weight: 800;
       color: var(--txt);
       letter-spacing: -0.005em;
     }
 
     .upload-zone .usub {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: var(--dim);
       font-weight: 500;
     }
@@ -2471,11 +2420,12 @@
     .receipt-preview {
       border: 1.5px solid var(--b1);
       border-radius: var(--r-m);
-      padding: 14px;
+      padding: 11px 12px;
       background: var(--inp);
       display: none;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      margin-top: 10px;
     }
 
     .receipt-preview.show { display: flex; }
@@ -2487,8 +2437,8 @@
     }
 
     .preview-thumb {
-      width: 70px;
-      height: 70px;
+      width: 54px;
+      height: 54px;
       border-radius: var(--r-s);
       background: var(--card);
       border: 1px solid var(--b1);
@@ -2547,38 +2497,18 @@
       margin-top: 3px;
     }
 
-    .verify-checks {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      padding: 4px 0 0;
-    }
-
-    .verify-check {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.72rem;
-      color: var(--dim);
-    }
-
-    .verify-check.ok { color: var(--ok); }
-    .verify-check.fail { color: var(--err); }
-
-    .verify-check svg { flex-shrink: 0; }
-
     /* Success step */
     .success-illu {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
-      padding: 20px 0;
+      gap: 11px;
+      padding: 12px 0 8px;
     }
 
     .success-icon {
-      width: 80px;
-      height: 80px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
       background: linear-gradient(135deg, rgba(46, 184, 102, .12), rgba(46, 184, 102, .06));
       color: var(--ok);
@@ -2586,6 +2516,11 @@
       align-items: center;
       justify-content: center;
       animation: popIn .4s cubic-bezier(.34, 1.4, .64, 1);
+    }
+
+    .success-icon svg {
+      width: 36px;
+      height: 36px;
     }
 
     @keyframes popIn {
@@ -3938,35 +3873,6 @@ if __name__ == "__main__":
             </div>
           </div>
 
-          <div class="receipt-rules">
-            <div class="rules-title">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--acc)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              What Gemini AI looks for on your receipt
-            </div>
-            <ul>
-              <li>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Recipient must be: <code>JO&bull;&bull;O EM&bull;&bull;&bull;&bull;&bull;L D.</code>
-              </li>
-              <li>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Mobile number must be: <code>+63 998 807 9228</code>
-              </li>
-              <li>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Amount on the receipt must equal: <code id="rule-amount">&#8369;1,000.00</code>
-              </li>
-              <li>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Transaction time on the receipt must fall in the 2-minute window
-              </li>
-              <li>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                When the timer expires, you'll need to start a new top-up order
-              </li>
-            </ul>
-          </div>
-
           <label class="upload-zone" id="upload-zone" for="receipt-file">
             <div class="uicon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -3990,11 +3896,10 @@ if __name__ == "__main__":
             <div class="verify-state" id="verify-state">
               <div class="spinner sm"></div>
               <div>
-                <div>Verifying receipt with AI…</div>
-                <div class="verify-detail">Reading amount, timestamp, and matching to your order</div>
+                <div>Verifying your receipt…</div>
+                <div class="verify-detail">This usually takes a few seconds.</div>
               </div>
             </div>
-            <div class="verify-checks" id="verify-checks"></div>
           </div>
         </div>
 
@@ -5628,9 +5533,11 @@ if __name__ == "__main__":
   // NOTE: API key is intentionally embedded for private use only.
   // Anyone who can view this page's source can read the key.
   // Override at runtime via: localStorage.setItem('ssu_gemini_key', '<key>')
-  var GEMINI_API_KEY_DEFAULT = 'AQ.Ab8RN6KwgDC9AxhAp7GE7wGA0k6k8NJVPSMctQDztglKmz8Frg';
-  var GEMINI_MODEL = 'gemini-2.0-flash';
-  var GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent';
+  var GEMINI_API_KEY_DEFAULT = 'AIzaSyAD6XZyozbVEdwNpwKICuX6N-g3QrdFPW8';
+  // Try models in order — if the first hits quota, fall back to the next.
+  // Each model has its own quota bucket on the free tier.
+  var GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  var GEMINI_ENDPOINT_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
   // Strict expected receipt fields (the receipt MUST show exactly these)
   var EXPECTED_NAME = 'JO••O EM•••••L D.';
@@ -5679,49 +5586,117 @@ if __name__ == "__main__":
     try { return JSON.parse(t); } catch (e) { return null; }
   }
 
+  // Custom error types so the caller can tell quota errors apart from real failures.
+  function makeOcrError(code, message, retryAfterSec) {
+    var e = new Error(message);
+    e.code = code;
+    if (retryAfterSec != null) e.retryAfterSec = retryAfterSec;
+    return e;
+  }
+
+  function classifyGeminiError(status, errBody) {
+    var rawMsg = (errBody && errBody.error && errBody.error.message) || ('Gemini HTTP ' + status);
+    var details = (errBody && errBody.error && errBody.error.details) || [];
+    var retrySec = null;
+    for (var i = 0; i < details.length; i++) {
+      var d = details[i] || {};
+      if (d['@type'] && String(d['@type']).indexOf('RetryInfo') >= 0 && d.retryDelay) {
+        var m = String(d.retryDelay).match(/([\d\.]+)s/);
+        if (m) retrySec = Math.ceil(parseFloat(m[1]));
+      }
+    }
+    if (retrySec == null) {
+      var rm = String(rawMsg).match(/retry in\s+([\d\.]+)s/i);
+      if (rm) retrySec = Math.ceil(parseFloat(rm[1]));
+    }
+    if (status === 429 || /quota|rate.?limit|exceeded/i.test(rawMsg)) {
+      return makeOcrError('QUOTA', 'Gemini quota / rate limit reached', retrySec);
+    }
+    if (status === 401 || status === 403 || /api key|permission|unauthorized|forbidden/i.test(rawMsg)) {
+      return makeOcrError('AUTH', 'Gemini rejected the API key', null);
+    }
+    if (status === 400 || /invalid argument|image|mime/i.test(rawMsg)) {
+      return makeOcrError('BAD_REQUEST', rawMsg, null);
+    }
+    return makeOcrError('OTHER', rawMsg, retrySec);
+  }
+
+  // Single-model attempt
+  function geminiCall(model, b64, mimeType, key) {
+    var body = {
+      contents: [{
+        role: 'user',
+        parts: [
+          { text: OCR_PROMPT },
+          { inline_data: { mime_type: mimeType, data: b64 } }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0,
+        response_mime_type: 'application/json'
+      }
+    };
+    return fetch(GEMINI_ENDPOINT_BASE + model + ':generateContent?key=' + encodeURIComponent(key), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (resp) {
+      return resp.json().then(function (data) {
+        return { ok: resp.ok, status: resp.status, data: data, model: model };
+      }).catch(function () {
+        return { ok: false, status: resp.status, data: null, model: model };
+      });
+    });
+  }
+
+  function parseGeminiResponse(r) {
+    var cands = (r.data && r.data.candidates) || [];
+    if (!cands.length) throw makeOcrError('EMPTY', 'Gemini returned no candidates');
+    var parts = (cands[0].content && cands[0].content.parts) || [];
+    var text = parts.map(function (p) { return p.text || ''; }).join('').trim();
+    if (!text) throw makeOcrError('EMPTY', 'Gemini response was empty');
+    var parsed = safeParseJson(text);
+    if (!parsed) throw makeOcrError('PARSE', 'Gemini did not return valid JSON');
+    return {
+      name: parsed.name == null ? null : String(parsed.name),
+      number: parsed.number == null ? null : String(parsed.number),
+      amount: parsed.amount == null ? null : Number(parsed.amount),
+      datetime: parsed.datetime == null ? null : String(parsed.datetime),
+      ref_no: parsed.ref_no == null ? null : String(parsed.ref_no),
+      _model: r.model
+    };
+  }
+
+  // Public OCR call — tries each model in GEMINI_MODELS until one succeeds.
+  // On QUOTA error, automatically falls through to the next model.
+  // On AUTH/BAD_REQUEST/PARSE, fails fast (different model won't help).
   function ocrReceiptWithGemini(file) {
     return fileToBase64(file).then(function (b64) {
       var key = getGeminiKey();
-      if (!key) throw new Error('Missing Gemini API key');
-      var body = {
-        contents: [{
-          role: 'user',
-          parts: [
-            { text: OCR_PROMPT },
-            { inline_data: { mime_type: file.type || 'image/jpeg', data: b64 } }
-          ]
-        }],
-        generationConfig: {
-          temperature: 0,
-          response_mime_type: 'application/json'
-        }
-      };
-      return fetch(GEMINI_ENDPOINT + '?key=' + encodeURIComponent(key), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      }).then(function (resp) {
-        return resp.json().then(function (data) { return { ok: resp.ok, status: resp.status, data: data }; });
-      });
-    }).then(function (r) {
-      if (!r.ok) {
-        var msg = (r.data && r.data.error && r.data.error.message) || ('Gemini HTTP ' + r.status);
-        throw new Error(msg);
+      if (!key) throw makeOcrError('AUTH', 'Missing Gemini API key');
+      var mime = file.type || 'image/jpeg';
+
+      var models = GEMINI_MODELS.slice();
+      var lastErr = null;
+
+      function tryNext() {
+        if (!models.length) throw lastErr || makeOcrError('OTHER', 'All Gemini models failed');
+        var model = models.shift();
+        return geminiCall(model, b64, mime, key).then(function (r) {
+          if (!r.ok) {
+            var err = classifyGeminiError(r.status, r.data);
+            lastErr = err;
+            // Fall through to the next model only on quota errors.
+            if (err.code === 'QUOTA') {
+              return tryNext();
+            }
+            throw err;
+          }
+          return parseGeminiResponse(r);
+        });
       }
-      var cands = (r.data && r.data.candidates) || [];
-      if (!cands.length) throw new Error('Gemini returned no candidates');
-      var parts = (cands[0].content && cands[0].content.parts) || [];
-      var text = parts.map(function (p) { return p.text || ''; }).join('').trim();
-      if (!text) throw new Error('Gemini response was empty');
-      var parsed = safeParseJson(text);
-      if (!parsed) throw new Error('Gemini did not return valid JSON');
-      return {
-        name: parsed.name == null ? null : String(parsed.name),
-        number: parsed.number == null ? null : String(parsed.number),
-        amount: parsed.amount == null ? null : Number(parsed.amount),
-        datetime: parsed.datetime == null ? null : String(parsed.datetime),
-        ref_no: parsed.ref_no == null ? null : String(parsed.ref_no)
-      };
+
+      return tryNext();
     });
   }
 
@@ -5939,7 +5914,6 @@ if __name__ == "__main__":
     $('receipt-preview').classList.remove('show');
     $('upload-zone').classList.remove('disabled');
     $('receipt-file').value = '';
-    $('verify-checks').innerHTML = '';
   }
 
   $('topup-btn').addEventListener('click', openTopup);
@@ -5984,14 +5958,11 @@ if __name__ == "__main__":
     $('order-amount').textContent = fmtPHP(amount);
     $('order-confirmed-at').textContent = fmtTime(now);
     $('order-expires-at').textContent = fmtTime(expiresAt);
-    $('rule-amount').textContent = fmtPHP(amount);
 
     // Reset receipt preview
     $('receipt-preview').classList.remove('show');
     $('upload-zone').classList.remove('disabled');
     $('receipt-file').value = '';
-    $('verify-checks').innerHTML = '';
-
     showStep('topup-step-upload');
     setTopupConfirmText('Waiting for receipt…', 'primary', false);
     $('topup-confirm').disabled = true;
@@ -6073,7 +6044,6 @@ if __name__ == "__main__":
   $('preview-remove').addEventListener('click', function () {
     $('receipt-preview').classList.remove('show');
     $('receipt-file').value = '';
-    $('verify-checks').innerHTML = '';
   });
 
   function handleReceiptFile(file) {
@@ -6104,29 +6074,31 @@ if __name__ == "__main__":
     $('preview-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
 
     setVerifyChecking('Sending receipt to Gemini…', 'Extracting recipient, amount, time and reference number');
-    $('verify-checks').innerHTML = '';
-
     runReceiptVerification(file);
   }
 
   function setVerifyChecking(title, detail) {
     var v = $('verify-state');
     v.className = 'verify-state checking';
+    v.style.alignItems = '';
     v.innerHTML = '<div class="spinner sm"></div><div><div>' + esc(title) + '</div><div class="verify-detail">' + esc(detail) + '</div></div>';
   }
   function setVerifyAccepted(title, detail) {
     var v = $('verify-state');
     v.className = 'verify-state accepted';
+    v.style.alignItems = '';
     v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(46,184,102,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.check + '</div><div><div>' + esc(title) + '</div><div class="verify-detail">' + esc(detail) + '</div></div>';
   }
   function setVerifyRejected(title, detail) {
     var v = $('verify-state');
     v.className = 'verify-state rejected';
+    v.style.alignItems = '';
     v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.x + '</div><div><div>' + esc(title) + '</div><div class="verify-detail">' + esc(detail) + '</div></div>';
   }
   function setVerifyError(title, detail) {
     var v = $('verify-state');
     v.className = 'verify-state rejected';
+    v.style.alignItems = '';
     v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.warn + '</div><div><div>' + esc(title) + '</div><div class="verify-detail">' + esc(detail) + '</div></div>';
   }
 
@@ -6151,76 +6123,17 @@ if __name__ == "__main__":
     setVerifyChecking('Sending receipt to Gemini…', 'Reading recipient, number, amount, time and reference');
 
     ocrReceiptWithGemini(file).then(function (ocr) {
-      // Always show what Gemini returned (helps debugging)
-      var checks = [];
-
-      // CHECK 1: Recipient name
+      // Run all checks silently — never expose what we're checking to the user.
       var nameOk = matchMaskedName(EXPECTED_NAME, ocr.name);
-      checks.push({
-        ok: nameOk,
-        label: nameOk
-          ? 'Recipient matches: ' + EXPECTED_NAME
-          : (ocr.name == null
-            ? 'Recipient name not detected on receipt'
-            : 'Recipient mismatch — got "' + ocr.name + '", expected "' + EXPECTED_NAME + '"')
-      });
-
-      // CHECK 2: Mobile number
       var numberOk = matchExactNumber(EXPECTED_NUMBER, ocr.number);
-      checks.push({
-        ok: numberOk,
-        label: numberOk
-          ? 'Number matches: ' + EXPECTED_NUMBER
-          : (ocr.number == null
-            ? 'Mobile number not detected on receipt'
-            : 'Number mismatch — got "' + ocr.number + '", expected "' + EXPECTED_NUMBER + '"')
-      });
-
-      // CHECK 3: Amount
       var amountOk = ocr.amount != null && Math.abs(Number(ocr.amount) - order.amount) < 0.01;
-      checks.push({
-        ok: amountOk,
-        label: amountOk
-          ? 'Amount matches: ' + fmtPHP(order.amount)
-          : (ocr.amount == null
-            ? 'Amount not detected on receipt'
-            : 'Amount mismatch — got ' + fmtPHP(ocr.amount) + ', expected ' + fmtPHP(order.amount))
-      });
-
-      // CHECK 4: Datetime within 2-min window
       var ts = parseGcashDatetime(ocr.datetime);
       var tsInWindow = ts != null && ts >= order.confirmedAtMs && ts <= order.expiresAtMs;
-      checks.push({
-        ok: tsInWindow,
-        label: tsInWindow
-          ? 'Time within window: ' + fmtDateTime(new Date(ts))
-          : (ts == null
-            ? (ocr.datetime ? 'Could not parse "' + ocr.datetime + '" as a date' : 'Date/time not detected on receipt')
-            : 'Time outside window — receipt shows ' + fmtDateTime(new Date(ts))
-              + ', window was ' + fmtTime(new Date(order.confirmedAtMs)) + '–' + fmtTime(new Date(order.expiresAtMs)))
-      });
-
-      // CHECK 5: Reference number present
       var refOk = !!(ocr.ref_no && String(ocr.ref_no).length >= 6);
-      checks.push({
-        ok: refOk,
-        label: refOk
-          ? 'Reference: ' + ocr.ref_no
-          : 'Reference number not detected on receipt'
-      });
-
-      var checksHtml = checks.map(function (c) {
-        return '<div class="verify-check ' + (c.ok ? 'ok' : 'fail') + '">'
-          + (c.ok ? ICONS.check : ICONS.x)
-          + '<span>' + esc(c.label) + '</span></div>';
-      }).join('');
-      $('verify-checks').innerHTML = checksHtml;
 
       // Re-check expiry — the Gemini call may have taken a few seconds.
-      // If the order expired mid-call, the upload-arrived-on-time invariant
-      // is violated even if all 5 fields look right.
       if (Date.now() > order.expiresAtMs) {
-        setVerifyRejected('Window expired during verification', 'The 2-minute timer ran out before Gemini could finish checking.');
+        setVerifyRejected('Window expired', 'The 2-minute timer ran out before verification could finish.');
         return;
       }
 
@@ -6229,26 +6142,93 @@ if __name__ == "__main__":
         setVerifyAccepted('Receipt verified', 'Crediting ' + order.gt + ' GT to your wallet…');
         $('upload-zone').classList.add('disabled');
         if (_topupTimer) { clearInterval(_topupTimer); _topupTimer = null; }
-        // Capture ref_no for the top-up history record
         order.ref_no = ocr.ref_no || null;
         setTimeout(function () { creditTopup(order); }, 700);
       } else {
-        // Decline — but keep order alive so the user can re-upload while timer runs.
-        var failLabel = !nameOk ? 'Receiver name does not match'
-          : !numberOk ? 'Receiver number does not match'
-          : !amountOk ? 'Amount on receipt does not match order'
-          : !tsInWindow ? 'Receipt time is outside the 2-minute window'
-          : !refOk ? 'Reference number missing'
-          : 'Receipt could not be verified';
-        setVerifyRejected('Receipt declined', failLabel + ' — fix and re-upload while the timer is still running.');
+        // Generic decline — never reveal which field failed or what was expected.
+        setVerifyRejected('Receipt could not be verified',
+          'Please double-check your receipt and try uploading again while the timer is running.');
       }
     }).catch(function (err) {
-      var msg = err && err.message ? err.message : String(err || 'Unknown error');
-      // Distinct OCR error state — the order is NOT consumed; user can retry.
-      setVerifyError('Couldn\'t read the receipt', msg + ' — try uploading again.');
-      $('verify-checks').innerHTML = '';
-      toast('e', 'Receipt OCR failed: ' + msg);
+      handleOcrError(err, file);
     });
+  }
+
+  // Show a friendly error UI based on the typed OCR error.
+  // QUOTA -> live retry countdown + Retry button (re-runs OCR on the same file)
+  // AUTH  -> instruct user to swap key
+  // OTHER -> generic error with raw message + Retry button
+  function handleOcrError(err, file) {
+    var code = (err && err.code) || 'OTHER';
+    var rawMsg = (err && err.message) || 'Unknown error';
+    var v = $('verify-state');
+    v.className = 'verify-state rejected';
+
+    if (code === 'QUOTA') {
+      var wait = Math.max(1, err.retryAfterSec || 30);
+      v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--warn)">' + ICONS.clock + '</div>'
+        + '<div style="flex:1;min-width:0">'
+        + '<div>Gemini quota / rate limit reached</div>'
+        + '<div class="verify-detail">All Gemini models tried hit per-minute limits. Auto-retrying in <b id="ocr-retry-secs">' + wait + 's</b>… or tap below.</div>'
+        + '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'
+        + '<button class="btn-ghost btn-xs" id="ocr-retry-now" type="button">' + ICONS.refresh + ' Retry now</button>'
+        + '<a class="btn-secondary btn-xs" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">' + ICONS.arrowRight + ' Get new key</a>'
+        + '</div></div>';
+      v.style.alignItems = 'flex-start';
+      var secs = wait;
+      var secEl = $('ocr-retry-secs');
+      var btn = $('ocr-retry-now');
+      var stop = false;
+      function retry() {
+        if (stop) return;
+        stop = true;
+        if (timerId) clearInterval(timerId);
+        if (Date.now() > _activeTopupOrder.expiresAtMs) {
+          setVerifyRejected('Window expired', 'The 2-minute timer ran out before Gemini was reachable.');
+          return;
+        }
+        runReceiptVerification(file);
+      }
+      var timerId = setInterval(function () {
+        secs--;
+        if (secEl) secEl.textContent = secs + 's';
+        if (secs <= 0) retry();
+      }, 1000);
+      if (btn) btn.addEventListener('click', retry);
+      toast('w', 'Gemini quota hit — retrying in ' + wait + 's');
+      return;
+    }
+
+    if (code === 'AUTH') {
+      v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.lock + '</div>'
+        + '<div style="flex:1;min-width:0">'
+        + '<div>Gemini API key invalid</div>'
+        + '<div class="verify-detail">' + esc(rawMsg) + '. Generate a fresh key at aistudio.google.com/apikey, then run <code>localStorage.setItem(\'ssu_gemini_key\', \'AIza…\')</code> in DevTools and reload.</div>'
+        + '<div style="margin-top:8px"><a class="btn-ghost btn-xs" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">' + ICONS.arrowRight + ' Get new key</a></div>'
+        + '</div>';
+      v.style.alignItems = 'flex-start';
+      toast('e', 'Gemini key rejected — generate a new one');
+      return;
+    }
+
+    // Generic / parse / bad-request / network
+    var short = String(rawMsg).split('\n')[0].slice(0, 200);
+    v.innerHTML = '<div style="width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + ICONS.warn + '</div>'
+      + '<div style="flex:1;min-width:0">'
+      + '<div>Couldn\'t read the receipt</div>'
+      + '<div class="verify-detail">' + esc(short) + '</div>'
+      + '<div style="margin-top:8px"><button class="btn-ghost btn-xs" id="ocr-retry-now" type="button">' + ICONS.refresh + ' Retry</button></div>'
+      + '</div>';
+    v.style.alignItems = 'flex-start';
+    var rb = $('ocr-retry-now');
+    if (rb) rb.addEventListener('click', function () {
+      if (Date.now() > _activeTopupOrder.expiresAtMs) {
+        setVerifyRejected('Window expired', 'The 2-minute timer ran out before the receipt could be verified.');
+        return;
+      }
+      runReceiptVerification(file);
+    });
+    toast('e', 'Receipt OCR failed: ' + short);
   }
 
   function creditTopup(order) {
