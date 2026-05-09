@@ -5669,12 +5669,29 @@ if __name__ == "__main__":
   var _results = { claimed: [], failed: [], warned: [], login: [], raw: [] };
 
   function classifyLine(line) {
+    // Login error — check before anything else
     if (line.indexOf('NOT LOGGED IN') >= 0 || line.indexOf('Please login') >= 0) return 'login';
-    if (line.indexOf('[!]') >= 0 || line.indexOf('501405') >= 0 || line.indexOf('ALREADY') >= 0) return 'warn';
-    if (line.indexOf('[STAR]') >= 0 || line.indexOf('CLAIMED!') >= 0 ||
-      (line.indexOf('CLAIMED') >= 0 && line.indexOf('ALREADY') < 0) ||
-      /\d+\s+claimed/.test(line)) return 'ok';
-    if (line.indexOf('[X]') >= 0 || line.indexOf('EXC') >= 0 || line.indexOf('TIMEOUT') >= 0 || line.indexOf('Connection error') >= 0) return 'err';
+    // Warnings: ⚠ U+26A0, "501405", "ALREADY", lowercase "already owned/claimed", "Ambiguous"
+    if (line.indexOf('⚠') >= 0 ||
+        line.indexOf('501405') >= 0 ||
+        line.indexOf('ALREADY') >= 0 ||
+        line.indexOf('already owned') >= 0 ||
+        line.indexOf('already claimed') >= 0 ||
+        line.indexOf('Ambiguous') >= 0) return 'warn';
+    // Success: ★ U+2605, ✅ U+2705, "CLAIMED!", "N claimed"
+    if (line.indexOf('★') >= 0 ||
+        line.indexOf('✅') >= 0 ||
+        line.indexOf('CLAIMED!') >= 0 ||
+        (line.indexOf('CLAIMED') >= 0 && line.indexOf('ALREADY') < 0) ||
+        /\d+\s+claimed/.test(line)) return 'ok';
+    // Errors: ❌ U+274C, ✗ U+2717, "FAILED", "EXC", "TIMEOUT", "Connection error", "ERR "
+    if (line.indexOf('❌') >= 0 ||
+        line.indexOf('✗') >= 0 ||
+        line.indexOf('FAILED') >= 0 ||
+        line.indexOf(' ERR ') >= 0 ||
+        line.indexOf('EXC') >= 0 ||
+        line.indexOf('TIMEOUT') >= 0 ||
+        line.indexOf('Connection error') >= 0) return 'err';
     return '';
   }
 
