@@ -4415,7 +4415,23 @@ if __name__ == "__main__":
       <!-- Groups Tab -->
       <div class="admin-body" id="atab-groups">
         <div style="font-size:.74rem;color:var(--dim);margin-bottom:12px;font-weight:500;line-height:1.55">
-          Group access keys let multiple users share one key with a seat limit and per-user daily claim cap. Users enter their first name to claim a seat on first login.
+          Group access keys let multiple users share one key with a seat limit and per-user daily claim cap. Each phone can only hold one seat — kicking a seat frees that device to rejoin.
+        </div>
+
+        <!-- Allowed names whitelist -->
+        <div class="topup-section-label">Allowed First Names</div>
+        <div style="font-size:.7rem;color:var(--dim);margin-bottom:10px;line-height:1.5">
+          Only people whose first name is on this list can take a seat. Case and extra spaces are ignored.
+        </div>
+        <div id="wl-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:32px">
+          <span style="color:var(--mut);font-size:.74rem;font-style:italic">Loading…</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+          <input class="input" id="wl-add-input" type="text" placeholder="Add name e.g. Dela Cerna" autocomplete="off" maxlength="30" style="flex:1;min-width:180px">
+          <button class="btn-ghost btn-sm" id="wl-add-btn" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add
+          </button>
         </div>
 
         <div class="topup-section-label">Create Group Key</div>
@@ -5311,6 +5327,24 @@ if __name__ == "__main__":
   var _sessionClaimsToday = 0;
   var _sessionMaxClaimsPerDay = 0;
   var _serverBase = 'https://sheinscript.up.railway.app';
+
+  // Persistent device identifier — used to enforce "1 phone = 1 seat".
+  // Stored in localStorage; survives logout. Lost only if the user clears
+  // browser storage (in which case the admin must kick their old seat).
+  function getDeviceId() {
+    try {
+      var d = localStorage.getItem('ssu_device_id');
+      if (!d) {
+        if (window.crypto && crypto.randomUUID) d = crypto.randomUUID();
+        else d = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+        localStorage.setItem('ssu_device_id', d);
+      }
+      return d;
+    } catch (e) {
+      return 'dev-nostorage-' + Date.now();
+    }
+  }
+  var _deviceId = getDeviceId();
   // Server-set Gemini key — fetched on login, applies to all users.
   var _serverGeminiKey = '';
 
@@ -6372,8 +6406,9 @@ if __name__ == "__main__":
     }
 
     // Sends a login request. If group: optional first_name picks the seat.
+    // device_id always tags along so the server can enforce 1-device-1-seat.
     function loginRequest(accessKey, firstName) {
-      var body = { access_key: accessKey };
+      var body = { access_key: accessKey, device_id: _deviceId };
       if (firstName) body.first_name = firstName;
       setLoginLoading(true);
       errEl.innerHTML = '';
@@ -6394,6 +6429,14 @@ if __name__ == "__main__":
       var k = keyInput.value.trim();
       if (!k) { errEl.innerHTML = ICONS.warn + ' Please enter your access key'; return; }
       loginRequest(k).then(function (data) {
+        // Device is already seated in this group — auto-resume as that name.
+        if (data.code === 'device_seated' && data.seated_as) {
+          loginRequest(k, data.seated_as).then(function (d2) {
+            if (d2 && d2.ok) { applySession(k, d2); toast('s', 'Welcome back, ' + _sessionUser + '!'); }
+            else errEl.innerHTML = ICONS.warn + ' ' + ((d2 && d2.error) || 'Could not resume seat');
+          }).catch(function () { errEl.innerHTML = ICONS.warn + ' Connection error — check server'; });
+          return;
+        }
         if (data.requires_name) {
           $('login-name-group-label').textContent = data.group_label || 'Group';
           showLoginStep('name');
@@ -6427,6 +6470,31 @@ if __name__ == "__main__":
           $('login-full-group-label').textContent = (data.group_label || 'This group') + ' has no available seats.';
           $('login-full-count').textContent = (data.seats_used || 0) + ' / ' + (data.max_seats || 0) + ' seats used';
           showLoginStep('full');
+          return;
+        }
+        // Device already on a different seat in this group — offer to resume.
+        if (data.code === 'device_seated') {
+          var seated = (data.seated_as || '');
+          errEl.innerHTML = ICONS.warn + ' This phone is already seated as "<b>' + esc(seated) + '</b>". Re-entering with that name.';
+          if (seated) {
+            $('login-name-input').value = seated;
+            setTimeout(function () {
+              loginRequest(k, seated).then(function (d2) {
+                if (d2 && d2.ok) { applySession(k, d2); toast('s', 'Welcome back, ' + _sessionUser + '!'); }
+                else errEl.innerHTML = ICONS.warn + ' ' + ((d2 && d2.error) || 'Could not resume seat');
+              }).catch(function () {
+                errEl.innerHTML = ICONS.warn + ' Connection error — check server';
+              });
+            }, 700);
+          }
+          return;
+        }
+        if (data.code === 'name_not_allowed') {
+          errEl.innerHTML = ICONS.warn + ' This name is not on the allowed list. Please contact your admin.';
+          return;
+        }
+        if (data.code === 'name_taken') {
+          errEl.innerHTML = ICONS.warn + ' Someone else has already taken that name. Try a different name.';
           return;
         }
         if (!data.ok) {
@@ -6587,7 +6655,7 @@ if __name__ == "__main__":
       if (t === 'users') adminRefreshUsers();
       if (t === 'daily') adminLoadDailyConfig();
       if (t === 'apikey') onApiKeyTabOpened();
-      if (t === 'groups') adminRefreshGroups();
+      if (t === 'groups') { adminRefreshGroups(); loadWhitelist(); }
     });
   });
 
@@ -7398,6 +7466,69 @@ if __name__ == "__main__":
   }
 
   // Called whenever the admin "API Key" tab becomes active.
+  // ════════════════════════════════════════════════════════════
+  // ADMIN — NAME WHITELIST (controls which first names can join a group)
+  // ════════════════════════════════════════════════════════════
+  var _whitelist = [];
+
+  function renderWhitelist() {
+    var wrap = $('wl-chips');
+    if (!wrap) return;
+    if (!_whitelist.length) {
+      wrap.innerHTML = '<span style="color:var(--mut);font-size:.74rem;font-style:italic">Whitelist is empty — no one can join until you add a name.</span>';
+      return;
+    }
+    var html = _whitelist.map(function (n, i) {
+      return '<span class="chip active" style="cursor:default;display:inline-flex;align-items:center;gap:6px">'
+        + esc(n)
+        + '<button type="button" data-wl-rm="' + i + '" style="background:none;border:none;color:inherit;font-weight:900;cursor:pointer;padding:0;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">'
+        + ICONS.x + '</button></span>';
+    }).join('');
+    wrap.innerHTML = html;
+    wrap.querySelectorAll('[data-wl-rm]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var idx = parseInt(this.getAttribute('data-wl-rm'));
+        if (!confirm('Remove "' + _whitelist[idx] + '" from the whitelist?')) return;
+        var next = _whitelist.slice(); next.splice(idx, 1);
+        saveWhitelist(next);
+      });
+    });
+  }
+
+  function loadWhitelist() {
+    adminPost('/admin/get_name_whitelist', {}, function (data) {
+      if (data && data.ok && Array.isArray(data.names)) {
+        _whitelist = data.names;
+        renderWhitelist();
+      }
+    });
+  }
+
+  function saveWhitelist(names) {
+    adminPost('/admin/set_name_whitelist', { names: names }, function (data) {
+      if (data && data.ok) {
+        _whitelist = data.names || [];
+        renderWhitelist();
+        toast('s', 'Allowed names updated');
+      } else {
+        toast('e', (data && data.error) || 'Could not save whitelist');
+      }
+    });
+  }
+
+  $('wl-add-btn').addEventListener('click', function () {
+    var v = ($('wl-add-input').value || '').trim();
+    if (!v) { toast('w', 'Type a name first'); return; }
+    var normNew = v.replace(/\s+/g, ' ').toLowerCase();
+    var dup = _whitelist.some(function (n) { return n.replace(/\s+/g, ' ').toLowerCase() === normNew; });
+    if (dup) { toast('w', 'Already on the list'); $('wl-add-input').value = ''; return; }
+    saveWhitelist(_whitelist.concat([v]));
+    $('wl-add-input').value = '';
+  });
+  $('wl-add-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); $('wl-add-btn').click(); }
+  });
+
   // ════════════════════════════════════════════════════════════
   // ADMIN — GROUP KEYS
   // ════════════════════════════════════════════════════════════
