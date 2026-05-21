@@ -3625,7 +3625,7 @@ CODES = [
 # ─────────────────────────────────────────────────────────────────────────────
 
 COUPON_URL    = "https://api-service.shein.com/promotion/coupon/bind_coupon"
-COUPON_PKG_ID = "17143310"
+COUPON_PKG_ID = "17145850"
 ACCOUNT_DELAY = 3   # seconds between accounts
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -5364,18 +5364,21 @@ if __name__ == "__main__":
   // ════════════════════════════════════════════════════════════
   // CODE BATCHES (now use a single 'gt' coin)
   // ════════════════════════════════════════════════════════════
+  // SHEIN rotates pkgId periodically — keep this in sync with the Termux
+  // working version (Termux's COUPON_PKG_ID is authoritative). The server's
+  // BATCH_PKG_IDS in app.py must match these.
   var CODE_BATCHES = {
     'ph0313': {
       codes: ['ph0313n1', 'ph0313n2', 'ph0313n3', 'ph0313n4', 'ph0313n5', 'ph0313n6', 'ph0313n9', 'ph0313n10'],
-      pkgId: '17143310', type: 'bind', coin: 'gt', label: 'ph0313 (79%)', adminOnly: false
+      pkgId: '17145850', type: 'bind', coin: 'gt', label: 'ph0313 (79%)', adminOnly: false
     },
     'ph0313 4vc': {
       codes: ['ph0313n3', 'ph0313n4', 'ph0313n5', 'ph0313n6'],
-      pkgId: '17143310', type: 'bind', coin: 'gt', label: 'ph0313 4vc', adminOnly: false
+      pkgId: '17145850', type: 'bind', coin: 'gt', label: 'ph0313 4vc', adminOnly: false
     },
     'ph031381': {
       codes: ['ph0313n5', 'ph0313n10', 'ph0313n15', 'ph0313n19'],
-      pkgId: '17143310', type: 'bind', coin: 'gt', label: 'ph0313 (81%)', adminOnly: false
+      pkgId: '17145850', type: 'bind', coin: 'gt', label: 'ph0313 (81%)', adminOnly: false
     },
     'gm0pha': {
       codes: ['gm0pha11', 'gm0pha12', 'gm0pha13', 'gm0pha14'],
