@@ -1409,6 +1409,209 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
+       LOGIN — SEAT FULL / NAME PROMPT
+       ═══════════════════════════════════════════════════════════ */
+    .login-step { width: 100%; display: none; }
+    .login-step.active { display: block; }
+
+    .login-back-btn {
+      background: none;
+      border: none;
+      color: var(--dim);
+      font-family: var(--font);
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+      padding: 6px 0;
+      margin-bottom: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      align-self: flex-start;
+      transition: color .15s;
+    }
+    .login-back-btn:hover { color: var(--txt); }
+
+    .login-group-tag {
+      width: 100%;
+      padding: 9px 12px;
+      background: linear-gradient(135deg, rgba(61, 143, 232, .08), rgba(255, 184, 77, .08));
+      border: 1px solid rgba(61, 143, 232, .22);
+      border-radius: var(--r-m);
+      font-size: 0.78rem;
+      color: var(--acc);
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .seat-full-illu {
+      width: 80px;
+      height: 80px;
+      margin: 6px auto 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(239, 68, 68, .12), rgba(245, 158, 11, .12));
+      color: var(--err);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .seat-full-illu svg { width: 40px; height: 40px; }
+    .seat-full-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--err);
+      letter-spacing: -0.02em;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .seat-full-sub {
+      font-size: 0.84rem;
+      color: var(--dim);
+      text-align: center;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .seat-full-count {
+      font-family: var(--mono);
+      font-weight: 800;
+      color: var(--txt);
+      font-size: 1.1rem;
+      margin: 8px 0 18px;
+      text-align: center;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       ADMIN PANEL — GROUP KEYS
+       ═══════════════════════════════════════════════════════════ */
+    .group-card {
+      background: var(--inp);
+      border: 1px solid var(--b1);
+      border-radius: var(--r-m);
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .group-card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .group-name {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--txt);
+      letter-spacing: -0.01em;
+    }
+    .group-key-text {
+      font-size: 0.7rem;
+      color: var(--mut);
+      font-family: var(--mono);
+      margin-top: 1px;
+    }
+    .group-stats {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+    .group-stat {
+      background: var(--card);
+      border: 1px solid var(--b1);
+      border-radius: 100px;
+      padding: 3px 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--dim);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .group-stat.full { color: var(--err); border-color: rgba(239, 68, 68, .3); }
+    .group-stat.gt { color: var(--acc); border-color: rgba(61, 143, 232, .3); }
+
+    .group-seats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--b2);
+    }
+    .group-seat-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      background: var(--card);
+      border: 1px solid var(--b1);
+      border-radius: var(--r-s);
+      font-size: 0.78rem;
+    }
+    .group-seat-name {
+      font-weight: 700;
+      color: var(--txt);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .group-seat-claims {
+      font-size: 0.7rem;
+      color: var(--dim);
+      font-weight: 700;
+      background: var(--inp);
+      padding: 2px 8px;
+      border-radius: 100px;
+      border: 1px solid var(--b1);
+    }
+    .group-empty-seats {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--mut);
+      padding: 8px;
+      font-style: italic;
+    }
+    .group-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+      margin-top: 8px;
+      border-top: 1px solid var(--b1);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       PROFILE — GROUP INFO BADGE
+       ═══════════════════════════════════════════════════════════ */
+    .profile-group-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      margin-top: 14px;
+      background: linear-gradient(135deg, rgba(61, 143, 232, .06), rgba(255, 184, 77, .06));
+      border: 1px solid var(--b1);
+      border-radius: var(--r-m);
+    }
+    .profile-group-info .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+    }
+    .profile-group-info .label { color: var(--dim); font-weight: 600; }
+    .profile-group-info .val { font-weight: 800; color: var(--txt); }
+    .profile-group-info .val.ok { color: var(--ok); }
+    .profile-group-info .val.warn { color: var(--warn); }
+    .profile-group-info .val.err { color: var(--err); }
+
+    /* ═══════════════════════════════════════════════════════════
        ADMIN PANEL
        ═══════════════════════════════════════════════════════════ */
     #admin-panel {
@@ -3422,7 +3625,7 @@ CODES = [
 # ─────────────────────────────────────────────────────────────────────────────
 
 COUPON_URL    = "https://api-service.shein.com/promotion/coupon/bind_coupon"
-COUPON_PKG_ID = "17145850"
+COUPON_PKG_ID = "17143310"
 ACCOUNT_DELAY = 3   # seconds between accounts
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -3798,36 +4001,82 @@ if __name__ == "__main__":
         </svg>
       </div>
       <div class="login-title">SHEIN <span class="accent">Script</span> Updater</div>
-      <div class="login-sub">Sign in to your account</div>
+      <div class="login-sub" id="login-sub">Sign in to your account</div>
 
-      <div class="login-field">
-        <label>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-          </svg>
-          Access Key
-        </label>
-        <div class="input-with-eye">
-          <input class="input" id="login-key-input" type="password" placeholder="Enter your unique access key" autocomplete="off">
-          <button class="eye-btn" id="login-eye-btn" type="button" aria-label="Toggle key visibility">
-            <svg id="login-eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-              <line x1="1" y1="1" x2="23" y2="23"/>
+      <!-- Step 1: enter access key -->
+      <div class="login-step active" id="login-step-key">
+        <div class="login-field">
+          <label>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
             </svg>
-            <svg id="login-eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
+            Access Key
+          </label>
+          <div class="input-with-eye">
+            <input class="input" id="login-key-input" type="password" placeholder="Enter your unique access key" autocomplete="off">
+            <button class="eye-btn" id="login-eye-btn" type="button" aria-label="Toggle key visibility">
+              <svg id="login-eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+              <svg id="login-eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
         </div>
+
+        <button class="login-btn" id="login-submit-btn">
+          <span id="login-btn-text">Sign In</span>
+          <svg id="login-btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
       </div>
 
-      <button class="login-btn" id="login-submit-btn">
-        <span id="login-btn-text">Sign In</span>
-        <svg id="login-btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </button>
+      <!-- Step 2: group key — ask for first name -->
+      <div class="login-step" id="login-step-name">
+        <button class="login-back-btn" id="login-name-back" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Use a different key
+        </button>
+        <div class="login-group-tag" id="login-name-group-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span id="login-name-group-label">Group</span>
+        </div>
+        <div class="login-field">
+          <label>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Your First Name
+          </label>
+          <input class="input" id="login-name-input" type="text" placeholder="e.g. Caspe" autocomplete="given-name" maxlength="30">
+        </div>
+        <button class="login-btn" id="login-name-submit-btn" type="button">
+          <span id="login-name-btn-text">Continue</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Step 3: seat full -->
+      <div class="login-step" id="login-step-full">
+        <div class="seat-full-illu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2.5"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            <line x1="9" y1="16" x2="15" y2="16"/>
+          </svg>
+        </div>
+        <div class="seat-full-title">Seat is full</div>
+        <div class="seat-full-sub" id="login-full-group-label">This group key has no available seats.</div>
+        <div class="seat-full-count" id="login-full-count">0 / 0 seats used</div>
+        <button class="login-btn" id="login-full-back-btn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Use a different key
+        </button>
+      </div>
 
       <div class="login-err" id="login-err"></div>
       <div class="login-footer">SSU · Secure Session · v3</div>
@@ -4017,6 +4266,17 @@ if __name__ == "__main__":
           </svg>
         </button>
       </div>
+      <!-- Group info — only rendered when signed in via a group seat -->
+      <div class="profile-group-info" id="profile-group-info" style="display:none">
+        <div class="row">
+          <span class="label">Group</span>
+          <span class="val" id="profile-group-label">—</span>
+        </div>
+        <div class="row">
+          <span class="label">Daily claims</span>
+          <span class="val" id="profile-claims-line">0 / 0</span>
+        </div>
+      </div>
     </div>
 
     <!-- ═══ ADMIN PANEL ═══ -->
@@ -4046,6 +4306,10 @@ if __name__ == "__main__":
         <button class="admin-tab" data-atab="daily" type="button">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Daily
+        </button>
+        <button class="admin-tab" data-atab="groups" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Groups
         </button>
         <button class="admin-tab" data-atab="apikey" type="button">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
@@ -4146,6 +4410,60 @@ if __name__ == "__main__":
           Save Daily Config
         </button>
         <div class="admin-status" id="admin-daily-status"></div>
+      </div>
+
+      <!-- Groups Tab -->
+      <div class="admin-body" id="atab-groups">
+        <div style="font-size:.74rem;color:var(--dim);margin-bottom:12px;font-weight:500;line-height:1.55">
+          Group access keys let multiple users share one key with a seat limit and per-user daily claim cap. Users enter their first name to claim a seat on first login.
+        </div>
+
+        <div class="topup-section-label">Create Group Key</div>
+        <div class="admin-row">
+          <div class="admin-field">
+            <span class="field-label">Group Key</span>
+            <input class="input" id="grp-new-key" type="text" placeholder="e.g. group-team-alpha" autocomplete="off">
+          </div>
+          <div class="admin-field">
+            <span class="field-label">Label</span>
+            <input class="input" id="grp-new-label" type="text" placeholder="e.g. Team Alpha">
+          </div>
+        </div>
+        <div class="admin-row">
+          <div class="admin-field" style="max-width:140px">
+            <span class="field-label">Seats</span>
+            <input class="input" id="grp-new-max-seats" type="number" min="1" max="100" value="5">
+          </div>
+          <div class="admin-field" style="max-width:200px">
+            <span class="field-label">Claims/seat/day</span>
+            <input class="input" id="grp-new-max-claims" type="number" min="0" value="3">
+          </div>
+          <div class="admin-field" style="max-width:160px">
+            <span class="field-label">Starter GT</span>
+            <input class="input" id="grp-new-gt" type="number" min="0" value="0">
+          </div>
+        </div>
+        <button class="btn-warn" id="grp-create-btn" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create Group
+        </button>
+        <div class="admin-status" id="grp-create-status"></div>
+
+        <div style="margin-top:18px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span class="topup-section-label" style="margin:0">Existing Groups</span>
+            <button class="btn-warn btn-sm" id="grp-refresh-btn" type="button" style="margin-left:auto">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Refresh
+            </button>
+          </div>
+          <div id="grp-list">
+            <div class="list-empty" style="padding:18px;text-align:center;color:var(--mut);font-size:.78rem">
+              <div class="spinner md" style="margin:0 auto 10px"></div>
+              Loading…
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- API Key Tab -->
@@ -4986,6 +5304,12 @@ if __name__ == "__main__":
   var _sessionUser = '';
   var _sessionIsAdmin = false;
   var _sessionGT = 0;
+  // Group-key session extras (only populated when logged in via a group seat)
+  var _sessionIsGroup = false;
+  var _sessionFirstName = '';
+  var _sessionGroupLabel = '';
+  var _sessionClaimsToday = 0;
+  var _sessionMaxClaimsPerDay = 0;
   var _serverBase = 'https://sheinscript.up.railway.app';
   // Server-set Gemini key — fetched on login, applies to all users.
   var _serverGeminiKey = '';
@@ -5725,6 +6049,12 @@ if __name__ == "__main__":
 
     _postLogResult(resultCode, detail);
 
+    // Group seat: bump local claims-today counter on success so wallet UI is fresh
+    if (resultCode === 'success' && _sessionIsGroup) {
+      _sessionClaimsToday = (_sessionClaimsToday || 0) + 1;
+      updateWallet();
+    }
+
     // REFUND FLOW: if all attempts failed-as-already-claimed, return GT
     if (!aborted && (resultCode === 'already_claimed' || (resultCode === 'failed' && nClaimed === 0))) {
       attemptRefund(resultCode, detail);
@@ -5949,6 +6279,11 @@ if __name__ == "__main__":
       _sessionKey = k;
       _sessionUser = data.username || 'User';
       _sessionIsAdmin = !!data.is_admin;
+      _sessionIsGroup = !!data.is_group;
+      _sessionFirstName = data.first_name || '';
+      _sessionGroupLabel = data.group_label || '';
+      _sessionClaimsToday = Number(data.claims_today || 0);
+      _sessionMaxClaimsPerDay = Number(data.max_claims_per_day || 0);
       // Server-stored Gemini key (set by admin via /admin/set_gemini_key, returned on login)
       if (typeof data.gemini_key === 'string') {
         _serverGeminiKey = data.gemini_key || '';
@@ -5970,6 +6305,13 @@ if __name__ == "__main__":
       localStorage.setItem('ssu_session_user', _sessionUser);
       localStorage.setItem('ssu_session_admin', _sessionIsAdmin ? '1' : '0');
       localStorage.setItem('ssu_session_gt', String(_sessionGT));
+      if (_sessionIsGroup && _sessionFirstName) {
+        localStorage.setItem('ssu_session_first_name', _sessionFirstName);
+        localStorage.setItem('ssu_session_is_group', '1');
+      } else {
+        localStorage.removeItem('ssu_session_first_name');
+        localStorage.removeItem('ssu_session_is_group');
+      }
       $('run-key').value = k;
       localStorage.setItem('ssu_run_key', k);
       $('key-apply').click();
@@ -5996,27 +6338,74 @@ if __name__ == "__main__":
 
     function setLoginLoading(on) {
       submitBtn.disabled = on;
+      var nb = $('login-name-submit-btn');
+      if (nb) nb.disabled = on;
       if (on) {
         $('login-btn-text').textContent = 'Signing in';
-        $('login-btn-icon').outerHTML = '<div id="login-btn-icon" class="btn-spinner"></div>';
+        var icEl = $('login-btn-icon');
+        if (icEl && icEl.tagName !== 'DIV') icEl.outerHTML = '<div id="login-btn-icon" class="btn-spinner"></div>';
+        $('login-name-btn-text').textContent = 'Signing in';
       } else {
         $('login-btn-text').textContent = 'Sign In';
         var ic = $('login-btn-icon');
-        if (ic) ic.outerHTML = '<svg id="login-btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+        if (ic && ic.tagName !== 'svg') ic.outerHTML = '<svg id="login-btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+        $('login-name-btn-text').textContent = 'Continue';
       }
+    }
+
+    function showLoginStep(name) {
+      $$('.login-step').forEach(function (el) { el.classList.remove('active'); });
+      var el = $('login-step-' + name);
+      if (el) el.classList.add('active');
+      var sub = $('login-sub');
+      if (sub) {
+        if (name === 'name') sub.textContent = 'Almost there — what should we call you?';
+        else if (name === 'full') sub.textContent = '';
+        else sub.textContent = 'Sign in to your account';
+      }
+    }
+
+    function clearLoginToKeyStep() {
+      errEl.innerHTML = '';
+      $('login-name-input').value = '';
+      showLoginStep('key');
+    }
+
+    // Sends a login request. If group: optional first_name picks the seat.
+    function loginRequest(accessKey, firstName) {
+      var body = { access_key: accessKey };
+      if (firstName) body.first_name = firstName;
+      setLoginLoading(true);
+      errEl.innerHTML = '';
+      return fetch(_serverBase + '/user/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (r) { return r.json(); }).then(function (data) {
+        setLoginLoading(false);
+        return data;
+      }).catch(function (err) {
+        setLoginLoading(false);
+        throw err;
+      });
     }
 
     function doLogin() {
       var k = keyInput.value.trim();
-      if (!k) { errEl.textContent = 'Please enter your access key'; return; }
-      setLoginLoading(true);
-      errEl.textContent = '';
-      fetch(_serverBase + '/user/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_key: k })
-      }).then(function (r) { return r.json(); }).then(function (data) {
-        setLoginLoading(false);
+      if (!k) { errEl.innerHTML = ICONS.warn + ' Please enter your access key'; return; }
+      loginRequest(k).then(function (data) {
+        if (data.requires_name) {
+          $('login-name-group-label').textContent = data.group_label || 'Group';
+          showLoginStep('name');
+          setTimeout(function () { var n = $('login-name-input'); if (n) n.focus(); }, 50);
+          return;
+        }
+        if (data.seat_full) {
+          $('login-full-group-label').textContent = (data.group_label || 'This group') + ' has no available seats.';
+          $('login-full-count').textContent = (data.seats_used || 0) + ' / ' + (data.max_seats || 0) + ' seats used';
+          showLoginStep('full');
+          return;
+        }
         if (!data.ok) {
           errEl.innerHTML = ICONS.warn + ' ' + (data.error || 'Invalid access key');
           return;
@@ -6024,21 +6413,59 @@ if __name__ == "__main__":
         applySession(k, data);
         toast('s', 'Welcome, ' + _sessionUser + '!');
       }).catch(function () {
-        setLoginLoading(false);
+        errEl.innerHTML = ICONS.warn + ' Connection error — check server';
+      });
+    }
+
+    function doNameLogin() {
+      var k = keyInput.value.trim();
+      var name = ($('login-name-input').value || '').trim();
+      if (!k) { showLoginStep('key'); return; }
+      if (!name) { errEl.innerHTML = ICONS.warn + ' Please enter your first name'; return; }
+      loginRequest(k, name).then(function (data) {
+        if (data.seat_full) {
+          $('login-full-group-label').textContent = (data.group_label || 'This group') + ' has no available seats.';
+          $('login-full-count').textContent = (data.seats_used || 0) + ' / ' + (data.max_seats || 0) + ' seats used';
+          showLoginStep('full');
+          return;
+        }
+        if (!data.ok) {
+          errEl.innerHTML = ICONS.warn + ' ' + (data.error || 'Could not join group');
+          return;
+        }
+        applySession(k, data);
+        toast('s', 'Welcome, ' + _sessionUser + '!');
+      }).catch(function () {
         errEl.innerHTML = ICONS.warn + ' Connection error — check server';
       });
     }
 
     submitBtn.addEventListener('click', doLogin);
     keyInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+    $('login-name-submit-btn').addEventListener('click', doNameLogin);
+    $('login-name-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') doNameLogin(); });
+    $('login-name-back').addEventListener('click', clearLoginToKeyStep);
+    $('login-full-back-btn').addEventListener('click', function () {
+      keyInput.value = ''; clearLoginToKeyStep();
+    });
 
     var savedSessionKey = localStorage.getItem('ssu_session_key');
+    var savedFirstName = localStorage.getItem('ssu_session_first_name') || '';
     if (savedSessionKey) {
-      fetch(_serverBase + '/user/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_key: savedSessionKey })
-      }).then(function (r) { return r.json(); }).then(function (data) {
+      loginRequest(savedSessionKey, savedFirstName).then(function (data) {
+        if (data.requires_name) {
+          // Saved key was a group key but no first_name stored — ask
+          keyInput.value = savedSessionKey;
+          $('login-name-group-label').textContent = data.group_label || 'Group';
+          showLoginStep('name');
+          return;
+        }
+        if (data.seat_full) {
+          $('login-full-group-label').textContent = (data.group_label || 'This group') + ' has no available seats.';
+          $('login-full-count').textContent = (data.seats_used || 0) + ' / ' + (data.max_seats || 0) + ' seats used';
+          showLoginStep('full');
+          return;
+        }
         if (data.ok) {
           keyInput.value = savedSessionKey;
           applySession(savedSessionKey, data);
@@ -6048,6 +6475,8 @@ if __name__ == "__main__":
           localStorage.removeItem('ssu_session_user');
           localStorage.removeItem('ssu_session_admin');
           localStorage.removeItem('ssu_session_gt');
+          localStorage.removeItem('ssu_session_first_name');
+          localStorage.removeItem('ssu_session_is_group');
           updateBatchLocks();
           updateAdminPanels();
         }
@@ -6063,17 +6492,22 @@ if __name__ == "__main__":
 
     $('wallet-logout-btn').addEventListener('click', function () {
       _sessionKey = ''; _sessionUser = ''; _sessionIsAdmin = false; _sessionGT = 0;
+      _sessionIsGroup = false; _sessionFirstName = ''; _sessionGroupLabel = '';
+      _sessionClaimsToday = 0; _sessionMaxClaimsPerDay = 0;
       localStorage.removeItem('ssu_session_key');
       localStorage.removeItem('ssu_session_user');
       localStorage.removeItem('ssu_session_admin');
       localStorage.removeItem('ssu_session_gt');
+      localStorage.removeItem('ssu_session_first_name');
+      localStorage.removeItem('ssu_session_is_group');
       overlay.classList.remove('hidden');
       $('wallet-card').classList.remove('show');
       $('admin-panel').classList.remove('show');
       $('wallet-admin-btn').classList.add('hidden');
       $('panel-topup-history').classList.add('hidden');
       keyInput.value = '';
-      $('login-err').textContent = '';
+      $('login-err').innerHTML = '';
+      showLoginStep('key');
       updateBatchLocks();
       updateAdminPanels();
     });
@@ -6112,9 +6546,31 @@ if __name__ == "__main__":
     $('wallet-name').textContent = _sessionUser;
     $('wallet-avatar').textContent = (_sessionUser || 'U').charAt(0).toUpperCase();
     var tag = $('wallet-tag');
-    tag.textContent = _sessionIsAdmin ? 'Administrator' : 'Member';
-    tag.className = _sessionIsAdmin ? 'wallet-tag admin' : 'wallet-tag';
+    if (_sessionIsAdmin) { tag.textContent = 'Administrator'; tag.className = 'wallet-tag admin'; }
+    else if (_sessionIsGroup) { tag.textContent = (_sessionGroupLabel || 'Group') + ' · Member'; tag.className = 'wallet-tag'; }
+    else { tag.textContent = 'Member'; tag.className = 'wallet-tag'; }
     $('gt-count').textContent = _sessionIsAdmin ? '∞' : fmtGT(_sessionGT || 0);
+
+    // Group profile card (only when signed in via a group seat)
+    var grpEl = $('profile-group-info');
+    if (grpEl) {
+      if (_sessionIsGroup) {
+        grpEl.style.display = 'flex';
+        $('profile-group-label').textContent = _sessionGroupLabel || 'Group';
+        var claims = _sessionClaimsToday || 0;
+        var limit = _sessionMaxClaimsPerDay || 0;
+        var line = $('profile-claims-line');
+        if (limit > 0) {
+          line.textContent = claims + ' / ' + limit;
+          line.className = claims >= limit ? 'val err' : (claims >= limit - 1 ? 'val warn' : 'val ok');
+        } else {
+          line.textContent = claims + ' (no limit)';
+          line.className = 'val ok';
+        }
+      } else {
+        grpEl.style.display = 'none';
+      }
+    }
   }
 
   // ════════════════════════════════════════════════════════════
@@ -6131,6 +6587,7 @@ if __name__ == "__main__":
       if (t === 'users') adminRefreshUsers();
       if (t === 'daily') adminLoadDailyConfig();
       if (t === 'apikey') onApiKeyTabOpened();
+      if (t === 'groups') adminRefreshGroups();
     });
   });
 
@@ -6287,9 +6744,16 @@ if __name__ == "__main__":
     fetch(url + '/user/use_coin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ access_key: key, batch: batch, coin_type: 'gt' })
-    }).then(function (r) { return r.json(); }).then(function (coinData) {
+      body: JSON.stringify({ access_key: key, batch: batch, coin_type: 'gt', first_name: _sessionFirstName || '' })
+    }).then(function (r) {
+      var status = r.status;
+      return r.json().then(function (j) { j.__status = status; return j; });
+    }).then(function (coinData) {
       if (!coinData.ok) {
+        // Server may include daily-limit context (group seats)
+        if (typeof coinData.claims_today === 'number') _sessionClaimsToday = coinData.claims_today;
+        if (typeof coinData.max_claims_per_day === 'number') _sessionMaxClaimsPerDay = coinData.max_claims_per_day;
+        updateWallet();
         toast('e', coinData.error || 'Not enough GT — top up your wallet');
         return;
       }
@@ -6329,7 +6793,7 @@ if __name__ == "__main__":
     fetch(url + '/logs/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ access_key: key, log_id: _currentLogId, result: result, detail: detail })
+      body: JSON.stringify({ access_key: key, log_id: _currentLogId, result: result, detail: detail, first_name: _sessionFirstName || '' })
     }).catch(function () { });
     _currentLogId = null;
   }
@@ -6417,11 +6881,14 @@ if __name__ == "__main__":
       var refunded = (res === 'already_claimed' || res === 'failed' || res === 'refunded');
       var gtTag = '<span class="lm-gt">' + ICONS.coins + ' ' + gtUsed + ' GT' + (refunded ? ' (refunded)' : '') + '</span>';
 
+      // Prefer the seat first_name when available (group claims); else fall back to user/username
+      var who = (l.first_name && l.first_name.trim()) || l.user || '';
+      var whoTag = who ? '<span style="font-weight:800;color:var(--txt)">' + esc(who) + '</span>' : '';
       html += '<div class="log-item ' + cls + '">'
         + '<div class="log-icon ' + cls + '">' + iconHtml + '</div>'
         + '<div class="log-body">'
         + '<div class="log-title">' + esc(label) + ' · ' + esc(l.batch || '') + '</div>'
-        + '<div class="log-meta">' + (l.user ? '<span>' + esc(l.user) + '</span>' : '') + gtTag
+        + '<div class="log-meta">' + whoTag + gtTag
         + (l.detail ? '<span style="color:var(--err);font-size:.62rem;font-weight:500">' + esc(String(l.detail).slice(0, 60)) + '</span>' : '') + '</div>'
         + '</div>'
         + '<div class="log-time">' + fmtLogTime(l.created_at) + '</div>'
@@ -6931,6 +7398,145 @@ if __name__ == "__main__":
   }
 
   // Called whenever the admin "API Key" tab becomes active.
+  // ════════════════════════════════════════════════════════════
+  // ADMIN — GROUP KEYS
+  // ════════════════════════════════════════════════════════════
+  function renderGroups(groups) {
+    var list = $('grp-list');
+    if (!groups || !groups.length) {
+      list.innerHTML = '<div class="list-empty" style="padding:18px;text-align:center;color:var(--mut);font-size:.78rem">No group keys yet. Create one above.</div>';
+      return;
+    }
+    var html = '';
+    groups.forEach(function (g) {
+      var seatsHtml = '';
+      if (!g.seats || !g.seats.length) {
+        seatsHtml = '<div class="group-empty-seats">No one has joined this group yet</div>';
+      } else {
+        seatsHtml = g.seats.map(function (s) {
+          var firstChar = (s.first_name || '?').charAt(0).toUpperCase();
+          var claims = Number(s.claims_today || 0);
+          var max = Number(g.max_claims_per_day || 0);
+          var claimText = max > 0 ? (claims + ' / ' + max) : (claims + ' today');
+          return '<div class="group-seat-row">'
+            + '<div class="group-seat-name">'
+            + '<span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--accH));color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900">' + esc(firstChar) + '</span>'
+            + esc(s.first_name || '') + '</div>'
+            + '<span class="group-seat-claims">' + esc(claimText) + '</span>'
+            + '<button class="btn-danger btn-xs" data-grp-kick-key="' + esc(g.key) + '" data-grp-kick-name="' + esc(s.first_name) + '" type="button">' + ICONS.x + '</button>'
+            + '</div>';
+        }).join('');
+      }
+      var seatsBadge = g.seats_used + ' / ' + g.max_seats + ' seats';
+      var fullClass = (g.seats_used >= g.max_seats) ? ' full' : '';
+      var gtVal = g.coins && ('gt' in g.coins ? g.coins.gt : (g.coins.gold || 0)) || 0;
+      html += '<div class="group-card">'
+        + '<div class="group-card-head">'
+        + '<div><div class="group-name">' + esc(g.label) + '</div><div class="group-key-text">' + esc(g.key) + '</div></div>'
+        + '<div class="group-stats">'
+        + '<span class="group-stat' + fullClass + '">' + ICONS.user + ' ' + seatsBadge + '</span>'
+        + '<span class="group-stat">' + ICONS.clock + ' ' + (g.max_claims_per_day || '∞') + ' / seat / day</span>'
+        + '<span class="group-stat gt">' + ICONS.coins + ' ' + fmtGT(gtVal) + ' GT</span>'
+        + '</div></div>'
+        + '<div class="group-seats-list">' + seatsHtml + '</div>'
+        + '<div class="group-actions">'
+        + '<button class="btn-warn btn-sm" data-grp-edit="' + esc(g.key) + '" type="button">' + ICONS.edit + ' Edit</button>'
+        + '<button class="btn-ghost btn-sm" data-grp-credit="' + esc(g.key) + '" type="button">' + ICONS.coins + ' Set GT</button>'
+        + '<button class="btn-danger btn-sm" data-grp-delete="' + esc(g.key) + '" type="button" style="margin-left:auto">' + ICONS.trash + ' Delete group</button>'
+        + '</div></div>';
+    });
+    list.innerHTML = html;
+
+    list.querySelectorAll('[data-grp-kick-key]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var k = b.getAttribute('data-grp-kick-key');
+        var n = b.getAttribute('data-grp-kick-name');
+        if (!confirm('Kick "' + n + '" from this group?')) return;
+        adminPost('/admin/kick_seat', { key: k, first_name: n }, function (d) {
+          if (d.ok) { toast('s', 'Seat removed'); adminRefreshGroups(); }
+          else toast('e', d.error || 'Error');
+        });
+      });
+    });
+    list.querySelectorAll('[data-grp-delete]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var k = b.getAttribute('data-grp-delete');
+        if (!confirm('Delete group "' + k + '"? All seats will lose access.')) return;
+        adminPost('/admin/delete_user', { key: k }, function (d) {
+          if (d.ok) { toast('s', 'Group deleted'); adminRefreshGroups(); }
+          else toast('e', d.error || 'Error');
+        });
+      });
+    });
+    list.querySelectorAll('[data-grp-edit]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var k = b.getAttribute('data-grp-edit');
+        var newSeats = prompt('New max seats (1-100) for "' + k + '":');
+        if (newSeats == null) return;
+        var newClaims = prompt('New daily claim limit per seat (0 = unlimited):');
+        if (newClaims == null) return;
+        adminPost('/admin/edit_group_key', {
+          key: k, max_seats: parseInt(newSeats), max_claims_per_day: parseInt(newClaims)
+        }, function (d) {
+          if (d.ok) { toast('s', 'Group updated'); adminRefreshGroups(); }
+          else toast('e', d.error || 'Error');
+        });
+      });
+    });
+    list.querySelectorAll('[data-grp-credit]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var k = b.getAttribute('data-grp-credit');
+        var amt = prompt('Set total GT balance for this group (current: see GT chip):');
+        if (amt == null) return;
+        var n = parseFloat(amt);
+        if (isNaN(n) || n < 0) { toast('e', 'Invalid amount'); return; }
+        adminPost('/admin/set_coins', {
+          key: k, coins: { gt: n, bronze: 0, silver: 0, gold: n }, gt: n
+        }, function (d) {
+          if (d.ok) { toast('s', 'GT updated'); adminRefreshGroups(); }
+          else toast('e', d.error || 'Error');
+        });
+      });
+    });
+  }
+
+  function adminRefreshGroups() {
+    adminPost('/admin/users', {}, function (data) {
+      if (!data || !data.ok) {
+        $('grp-list').innerHTML = '<div style="color:var(--err);font-size:.78rem;padding:14px;text-align:center">' + (data && data.error || 'Error loading groups') + '</div>';
+        return;
+      }
+      renderGroups(data.groups || []);
+    });
+  }
+
+  $('grp-refresh-btn').addEventListener('click', adminRefreshGroups);
+
+  $('grp-create-btn').addEventListener('click', function () {
+    var key = $('grp-new-key').value.trim();
+    var label = $('grp-new-label').value.trim() || 'Group';
+    var maxSeats = parseInt($('grp-new-max-seats').value) || 1;
+    var maxClaims = parseInt($('grp-new-max-claims').value) || 0;
+    var gt = parseFloat($('grp-new-gt').value) || 0;
+    var st = $('grp-create-status');
+    if (!key) { st.style.color = 'var(--err)'; st.textContent = 'Enter a group key'; return; }
+    if (maxSeats < 1) { st.style.color = 'var(--err)'; st.textContent = 'Seats must be at least 1'; return; }
+    adminPost('/admin/create_group_key', {
+      key: key, label: label, max_seats: maxSeats, max_claims_per_day: maxClaims, gt: gt
+    }, function (data) {
+      if (data.ok) {
+        st.style.color = 'var(--ok)';
+        st.textContent = 'Group "' + key + '" created!';
+        $('grp-new-key').value = ''; $('grp-new-label').value = '';
+        $('grp-new-max-seats').value = '5'; $('grp-new-max-claims').value = '3';
+        $('grp-new-gt').value = '0';
+        adminRefreshGroups();
+      } else {
+        st.style.color = 'var(--err)'; st.textContent = data.error || 'Error';
+      }
+    });
+  });
+
   function onApiKeyTabOpened() {
     refreshGeminiSettingsStatus();
     $('gs-test-result').style.display = 'none';
