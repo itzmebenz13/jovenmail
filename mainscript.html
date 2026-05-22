@@ -1,1 +1,157 @@
-<h3>Fetch code error.</h3>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Emergency Potato Alert</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Comic Sans MS", cursive;
+      background: linear-gradient(135deg, #ffefba, #ffffff);
+      overflow: hidden;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 40px;
+      font-size: 4rem;
+      color: #ff3c00;
+      animation: shake 0.4s infinite;
+    }
+
+    p {
+      font-size: 1.5rem;
+      color: #333;
+    }
+
+    .potato {
+      position: absolute;
+      font-size: 3rem;
+      animation: fall linear infinite;
+      user-select: none;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 20px 40px;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 20px;
+      background: #ff3c00;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    button:hover {
+      transform: scale(1.1) rotate(-3deg);
+    }
+
+    #message {
+      margin-top: 25px;
+      font-size: 2rem;
+      color: #6a00ff;
+      min-height: 60px;
+      padding: 10px;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0px); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0px); }
+    }
+
+    @keyframes fall {
+      from {
+        transform: translateY(-100px) rotate(0deg);
+      }
+      to {
+        transform: translateY(120vh) rotate(720deg);
+      }
+    }
+
+    .cat {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 250px;
+      animation: float 2s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🚨 POTATO EMERGENCY 🚨</h1>
+  <p>The potatoes have escaped containment.</p>
+
+  <button onclick="panic()">PRESS FOR ABSOLUTE CHAOS</button>
+
+  <div id="message"></div>
+
+  <img class="cat" src="https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif" alt="Dancing Cat">
+
+  <audio id="scream">
+    <source src="https://www.soundjay.com/human/sounds/scream-01.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const messages = [
+      "🧀 Cheese detected in sector 4.",
+      "🥔 The potato knows your location.",
+      "🐸 A frog has been promoted to manager.",
+      "🚽 Toilet overflow level: CRITICAL.",
+      "🍕 Pizza diplomacy has failed.",
+      "🦆 Duck army approaching rapidly.",
+      "🤡 Clown detected behind you.",
+      "🐔 Chicken has entered stealth mode.",
+      "💀 Your FBI agent is disappointed.",
+      "🦖 Tiny dinosaur requesting WiFi password."
+    ];
+
+    function createPotato() {
+      const potato = document.createElement("div");
+      potato.classList.add("potato");
+      potato.innerText = "🥔";
+      potato.style.left = Math.random() * window.innerWidth + "px";
+      potato.style.animationDuration = (Math.random() * 3 + 2) + "s";
+      potato.style.fontSize = (Math.random() * 40 + 30) + "px";
+      document.body.appendChild(potato);
+
+      setTimeout(() => {
+        potato.remove();
+      }, 5000);
+    }
+
+    setInterval(createPotato, 150);
+
+    function panic() {
+      const msg = document.getElementById("message");
+      const random = messages[Math.floor(Math.random() * messages.length)];
+      msg.innerHTML = random;
+
+      document.body.style.background =
+        `hsl(${Math.random()*360}, 100%, 85%)`;
+
+      document.getElementById("scream").play();
+
+      for(let i = 0; i < 20; i++) {
+        createPotato();
+      }
+
+      document.body.style.transform =
+        `rotate(${Math.random()*6-3}deg)`;
+    }
+  </script>
+
+</body>
+</html>
