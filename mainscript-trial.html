@@ -3788,31 +3788,6 @@
       border-radius: 50%;
       animation: eg-spin .6s linear infinite;
     }
-
-    /* ── Background Music Toggle ───────────────────────── */
-    @keyframes disc-rotate { to { transform: rotate(360deg); } }
-    .music-toggle {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 10px; flex-shrink: 0;
-      background: var(--card); border: 1.5px solid var(--bdr);
-      border-radius: 20px; cursor: pointer; color: var(--mut);
-      font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
-      transition: all .15s;
-    }
-    .music-toggle:hover { border-color: var(--acc); color: var(--acc); }
-    .music-toggle.playing {
-      border-color: #58CC02; color: #58CC02;
-      background: rgba(88,204,2,.08);
-    }
-    .music-toggle .disc {
-      width: 18px; height: 18px; flex-shrink: 0;
-      transition: filter .2s;
-    }
-    .music-toggle.playing .disc {
-      animation: disc-rotate 2s linear infinite;
-      filter: drop-shadow(0 0 3px rgba(88,204,2,.6));
-    }
-    /* ─────────────────────────────────────────────────── */
 </style>
 </head>
 
@@ -4408,19 +4383,6 @@ if __name__ == "__main__":
       <a href="/" class="app-header-logo" aria-label="KoreoScript home">
         <img src="/photos/banner-script.png" alt="KoreoScript" decoding="async" fetchpriority="high" id="banner-logo-img">
       </a>
-
-      <!-- Background Music Toggle -->
-      <button class="music-toggle" id="music-toggle-btn" type="button" title="Background music" onclick="musicToggle()">
-        <svg class="disc" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10.5" fill="#2A2A2A" stroke="currentColor" stroke-width="1.5"/>
-          <circle cx="12" cy="12" r="6.5" fill="#1A1A1A" stroke="currentColor" stroke-width=".8" opacity=".6"/>
-          <circle cx="12" cy="12" r="3.5" fill="#333" stroke="currentColor" stroke-width=".8" opacity=".5"/>
-          <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity=".9"/>
-          <!-- Groove lines -->
-          <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width=".4" opacity=".25"/>
-          <circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width=".4" opacity=".2"/>
-        </svg>
-      </button>
 
       <div class="hctl">
         <span class="status-pill" id="header-status-pill" style="display:none"><span class="status-dot" id="status-dot"></span><span id="status-text">IDLE</span></span>
@@ -7502,85 +7464,7 @@ if __name__ == "__main__":
   // ════════════════════════════════════════════════════════════
   // BACKGROUND MUSIC — loops AM.mp3 → Travel.mp3 → repeat
   // ════════════════════════════════════════════════════════════
-  var _musicTracks = ['/music/AM.mp3', '/music/Travel.mp3'];
-  var _musicIdx    = 0;
-  var _musicPlaying = false;
-  var _musicAudio   = null;
-
-  function _musicCreateAudio() {
-    // Use createElement — more compatible on Android Chrome than new Audio()
-    var a = document.createElement('audio');
-    a.preload = 'auto';
-    a.src = _musicTracks[_musicIdx];
-    a.addEventListener('ended', _musicNext);
-    a.addEventListener('error', function(e) {
-      console.warn('Music error:', e);
-      _musicPlaying = false;
-      _musicUpdateBtn();
-    });
-    return a;
-  }
-
-  function _musicNext() {
-    _musicIdx = (_musicIdx + 1) % _musicTracks.length;
-    if (_musicAudio) {
-      _musicAudio.src = _musicTracks[_musicIdx];
-      _musicAudio.load();
-      _musicAudio.play().catch(function(e){ console.warn('Next track error:', e); });
-    }
-  }
-
-  function _musicUpdateBtn() {
-    var btn = $('music-toggle-btn');
-    if (!btn) return;
-    if (_musicPlaying) {
-      btn.classList.add('playing');
-      btn.title = 'Now playing — tap to stop';
-    } else {
-      btn.classList.remove('playing');
-      btn.title = 'Background music';
-    }
-  }
-
-  function musicToggle() {
-    // Pause / stop
-    if (_musicPlaying && _musicAudio) {
-      _musicAudio.pause();
-      _musicPlaying = false;
-      _musicUpdateBtn();
-      return;
-    }
-
-    // Create audio element if needed (inside click = valid user gesture)
-    if (!_musicAudio) {
-      _musicAudio = _musicCreateAudio();
-    }
-
-    // Play — must be called directly inside user gesture handler
-    var p = _musicAudio.play();
-    if (p && typeof p.then === 'function') {
-      p.then(function() {
-        _musicPlaying = true;
-        _musicUpdateBtn();
-      }).catch(function(err) {
-        console.error('Play failed:', err.name, err.message);
-        // Try re-creating the audio element and playing again
-        _musicAudio = _musicCreateAudio();
-        _musicAudio.play().then(function() {
-          _musicPlaying = true;
-          _musicUpdateBtn();
-        }).catch(function(err2) {
-          toast('e', 'Music error: ' + err2.message);
-        });
-      });
-    } else {
-      // Legacy browser — assume played
-      _musicPlaying = true;
-      _musicUpdateBtn();
-    }
-  }
-
-  $('run-btn').addEventListener('click', doRun);
+    $('run-btn').addEventListener('click', doRun);
 
   function _postLogResult(result, detail) {
     if (!_currentLogId) return;
