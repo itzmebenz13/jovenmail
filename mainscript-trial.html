@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" href="/photos/happy.png" as="image" type="image/png">
+  <link rel="preload" href="/photos/banner-script-light.png" as="image" type="image/png">
   <link rel="preload" href="/photos/sad.png" as="image" type="image/png">
   <link rel="preload" href="/photos/banner-script.png" as="image" type="image/png">
   <link rel="preload" href="/photos/koreo-hi.png" as="image" type="image/png">
@@ -4371,7 +4372,7 @@ if __name__ == "__main__":
     <!-- ═══ APP HEADER (KoreoMail-style: image logo + controls) ═══ -->
     <header class="app-header">
       <a href="/" class="app-header-logo" aria-label="KoreoScript home">
-        <img src="/photos/banner-script.png" alt="KoreoScript" decoding="async" fetchpriority="high">
+        <img src="/photos/banner-script.png" alt="KoreoScript" decoding="async" fetchpriority="high" id="banner-logo-img">
       </a>
       <div class="hctl">
         <span class="status-pill" id="header-status-pill" style="display:none"><span class="status-dot" id="status-dot"></span><span id="status-text">IDLE</span></span>
@@ -4480,11 +4481,6 @@ if __name__ == "__main__":
         <div class="collapse-body" id="eg-body">
           <div style="padding:0 14px 14px">
 
-            <!-- Intro -->
-            <p style="font-family:'Nunito',sans-serif;font-size:12px;color:var(--mut);line-height:1.6;font-weight:600;margin-bottom:14px;padding-top:4px">
-              Google ignores dots — <b style="color:var(--txt)">j.ohn</b> and <b style="color:var(--txt)">jo.hn</b> both land in <b style="color:var(--txt)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d9b3b6b1b799beb4b8b0b5f7bab6b4">[email&#160;protected]</a></b>. Create unique aliases for SHEIN accounts. Runs entirely in your browser.
-            </p>
-
             <!-- Input -->
             <div class="eg-input-group" id="eg-input-group">
               <input class="eg-input-user" id="eg-user-input" type="text"
@@ -4497,10 +4493,11 @@ if __name__ == "__main__":
             <!-- Count pills -->
             <div class="eg-bulk-row">
               <span class="eg-bulk-label">Count</span>
-              <button class="eg-bulk-pill active" id="eg-pill1"    onclick="egSelectBulk(1)">1</button>
-              <button class="eg-bulk-pill"        id="eg-pill10"   onclick="egSelectBulk(10)">10</button>
-              <button class="eg-bulk-pill"        id="eg-pill50"   onclick="egSelectBulk(50)">50</button>
+              <button class="eg-bulk-pill active" id="eg-pill50"   onclick="egSelectBulk(50)">50</button>
               <button class="eg-bulk-pill"        id="eg-pill100"  onclick="egSelectBulk(100)">100</button>
+              <button class="eg-bulk-pill"        id="eg-pill500"  onclick="egSelectBulk(500)">500</button>
+              <button class="eg-bulk-pill"        id="eg-pill1000" onclick="egSelectBulk(1000)">1k</button>
+              <button class="eg-bulk-pill"        id="eg-pill5000" onclick="egSelectBulk(5000)">5k</button>
               <button class="eg-bulk-pill"        id="eg-pill-all" onclick="egSelectBulk('all')">All</button>
             </div>
 
@@ -5700,7 +5697,7 @@ if __name__ == "__main__":
   <div id="toast"></div>
 
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 (function () {
   'use strict';
 
@@ -5750,8 +5747,11 @@ if __name__ == "__main__":
   }
 
   var _toastTimer;
-  // Preload character mascot images for instant modal display
-  (function(){var h=new Image();h.src='/photos/happy.png';var s=new Image();s.src='/photos/sad.png';})();
+  // Silent background preload — all images cached before they're needed
+  (function(){
+    var imgs=['/photos/happy.png','/photos/sad.png','/photos/banner-script-light.png','/photos/koreo-hi.png'];
+    imgs.forEach(function(src){var i=new Image();i.src=src;});
+  })();
   function toast(type, msg) {
     var t = $('toast');
     var iconMap = { s: ICONS.check, e: ICONS.x, w: ICONS.warn, i: ICONS.info };
@@ -7387,6 +7387,9 @@ if __name__ == "__main__":
   function _applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem('ssu_theme', t);
+    // Swap banner logo for light/dark
+    var bi = document.getElementById('banner-logo-img');
+    if (bi) bi.src = (t === 'dark') ? '/photos/banner-script.png' : '/photos/banner-script-light.png';
     // Sync login toggle icons
     var sun  = $('ltt-sun'),  moon  = $('ltt-moon');
     var dark = (t === 'dark');
@@ -9351,7 +9354,7 @@ if __name__ == "__main__":
 // ════════════════════════════════════════════════════════════
 
 // ── State ──
-var eg_bulk = 1;
+var eg_bulk = 50;
 var eg_batchStore = [];
 var eg_vsData = [];
 var eg_vsStart = 0;
@@ -9511,17 +9514,17 @@ function egEnumAllShuffle(base, gaps, opts) {
 // ── Pill selection ──
 function egSelectBulk(m) {
   eg_bulk = m;
-  ['eg-pill1', 'eg-pill10', 'eg-pill50', 'eg-pill100', 'eg-pill-all'].forEach(function (id) {
+  ['eg-pill50', 'eg-pill100', 'eg-pill500', 'eg-pill1000', 'eg-pill5000', 'eg-pill-all'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  var map = { 1: 'eg-pill1', 10: 'eg-pill10', 50: 'eg-pill50', 100: 'eg-pill100', 'all': 'eg-pill-all' };
+  var map = { 50: 'eg-pill50', 100: 'eg-pill100', 500: 'eg-pill500', 1000: 'eg-pill1000', 5000: 'eg-pill5000', 'all': 'eg-pill-all' };
   if (map[m]) {
     var t = document.getElementById(map[m]);
     if (t) t.classList.add('active');
   }
   var lbl = document.getElementById('eg-gen-label');
-  if (lbl) lbl.textContent = m === 'all' ? 'Generate All' : m === 1 ? 'Generate' : 'Generate ' + m;
+  if (lbl) lbl.textContent = m === 'all' ? 'Generate All' : 'Generate ' + (m >= 1000 ? (m / 1000) + 'k' : m);
 }
 
 // ── Option chips ──
@@ -9538,38 +9541,49 @@ function egGenerate() {
   var raw = document.getElementById('eg-user-input');
   if (!raw) return;
   var base = egSanitize(raw.value.trim());
-  if (!base || base.length < 2) {
-    toast('w', 'Enter a username (at least 2 chars)');
-    return;
-  }
+  if (!base || base.length < 2) { toast('w', 'Enter a username first'); return; }
 
-  var opts = {
-    highEntropy:  document.getElementById('eg-opt-hi') ? document.getElementById('eg-opt-hi').checked : true,
-    noSequential: document.getElementById('eg-opt-ns') ? document.getElementById('eg-opt-ns').checked : true,
-    minGap:       document.getElementById('eg-opt-mg') ? document.getElementById('eg-opt-mg').checked : false
-  };
+  // Show loading state on button
+  var btn = document.getElementById('eg-gen-btn');
+  var lbl = document.getElementById('eg-gen-label');
+  if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+  if (lbl) lbl.textContent = 'Generating…';
 
-  var items = egCryptoSample(base, eg_bulk === 'all' ? 'all' : eg_bulk, opts);
-  if (!items || items.length === 0) {
-    toast('w', 'Username too short to generate variants');
-    return;
-  }
+  var loadMs = 2000 + Math.floor(Math.random() * 1000); // 2-3s random delay
+  setTimeout(function() {
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+    if (lbl) {
+      var m = eg_bulk;
+      lbl.textContent = m === 'all' ? 'Generate All' : 'Generate ' + (m >= 1000 ? (m/1000) + 'k' : m);
+    }
 
-  // Append @gmail.com to each alias
-  items = items.map(function (it) {
-    return { alias: it.alias + '@gmail.com', mask: it.mask, gaps: it.gaps };
-  });
+    var opts = {
+      highEntropy: document.getElementById('eg-opt-hi') ? document.getElementById('eg-opt-hi').checked : true,
+      noSequential: document.getElementById('eg-opt-ns') ? document.getElementById('eg-opt-ns').checked : true,
+      minGap: document.getElementById('eg-opt-mg') ? document.getElementById('eg-opt-mg').checked : false
+    };
 
-  eg_batchStore = items;
+    var items = egCryptoSample(base, eg_bulk === 'all' ? 'all' : eg_bulk, opts);
+    if (!items || items.length === 0) { toast('w', 'Username too short to generate variants'); return; }
 
-  var bc = document.getElementById('eg-batch-card');
-  if (!bc) return;
-  bc.style.display = '';
-  var cp = document.getElementById('eg-count-pill');
-  if (cp) cp.textContent = items.length + (eg_bulk === 'all' ? ' (all)' : '');
+    items = items.map(function(it) {
+      if (it.alias && it.alias.length > 0) it.alias = it.alias.charAt(0).toUpperCase() + it.alias.slice(1);
+      return it;
+    });
 
-  egVsLoad(items);
-  toast('s', 'Generated ' + items.length + ' alias' + (items.length !== 1 ? 'es' : ''));
+    // Append @gmail.com
+    items = items.map(function(it) {
+      return { alias: it.alias + '@gmail.com', mask: it.mask, gaps: it.gaps };
+    });
+
+    eg_batchStore = items;
+
+    var bc = document.getElementById('eg-batch-card');
+    if (bc) bc.style.display = '';
+    var pill = document.getElementById('eg-count-pill');
+    if (pill) pill.textContent = items.length + (eg_bulk === 'all' ? ' (all)' : '');
+    egVsLoad(items);
+  }, loadMs);
 }
 
 // ── Virtual scroll ──
