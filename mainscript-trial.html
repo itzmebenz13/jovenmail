@@ -17,7 +17,10 @@
     rel="stylesheet">
   <script>
     (function () {
-      var t = localStorage.getItem('ssu_theme') || 'dark';
+      // Default to dark; respect explicit user choice if already toggled
+      var _storedTheme = localStorage.getItem('ssu_theme');
+      var t = _storedTheme ? _storedTheme : 'dark';
+      if (!_storedTheme) localStorage.setItem('ssu_theme', 'dark');
       document.documentElement.setAttribute('data-theme', t);
       if (localStorage.getItem('ssu_session_key')) {
         document.addEventListener('DOMContentLoaded', function () {
@@ -3704,6 +3707,48 @@
     .ico-pulse  { animation: ico-pulse-kf  2.0s ease-in-out infinite; }
     .ico-glow   { animation: ico-glow-kf   2.5s ease-in-out infinite; }
     /* ─────────────────────────────────────────────────── */
+
+    /* ── Login page dark mode ─────────────────────────────────── */
+    [data-theme="dark"] #login-overlay {
+      background: linear-gradient(160deg, #0b1a08 0%, #112009 40%, #0d1a0b 100%);
+    }
+    [data-theme="dark"] .login-box {
+      background: #1C2D3F;
+      box-shadow: 0 8px 40px rgba(0,0,0,.45);
+    }
+    [data-theme="dark"] .login-brand { color: #FFFDE6; }
+    [data-theme="dark"] .login-title { color: #FFFDE6; }
+    [data-theme="dark"] .login-sub   { color: #7B91A7; }
+    [data-theme="dark"] .login-tagline { color: #7B91A7; }
+    [data-theme="dark"] .login-field-label { color: #7B91A7; }
+    [data-theme="dark"] .login-field .input {
+      background: rgba(255,255,255,.06);
+      border-color: #2A3D52;
+      color: #FFFDE6;
+    }
+    [data-theme="dark"] .login-field .input::placeholder { color: #4A6070; }
+    [data-theme="dark"] .login-field .input:focus {
+      border-color: #58CC02;
+      background: rgba(255,255,255,.08);
+    }
+    [data-theme="dark"] .login-feature {
+      background: rgba(255,255,255,.05);
+    }
+    [data-theme="dark"] .login-feature-label { color: #FFFDE6; }
+    [data-theme="dark"] .login-feature-sub   { color: #7B91A7; }
+    [data-theme="dark"] .login-footer        { color: #4A6070; }
+    [data-theme="dark"] #login-theme-toggle {
+      background: rgba(19,31,51,.85);
+      border-color: rgba(88,204,2,.4);
+      color: #58CC02;
+    }
+    [data-theme="dark"] .login-bubble-tl,
+    [data-theme="dark"] .login-bubble-bl,
+    [data-theme="dark"] #login-overlay::before,
+    [data-theme="dark"] #login-overlay::after {
+      background: rgba(88,204,2,.08);
+    }
+    /* ─────────────────────────────────────────────────────────── */
 </style>
 </head>
 
@@ -7144,21 +7189,24 @@ if __name__ == "__main__":
   $('ark-btn').addEventListener('click', doArkRun);
 
 
-  // Login page theme toggle
+  // Login page theme toggle — syncs with main app toggle
+  function _applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('ssu_theme', t);
+    // Sync login toggle icons
+    var sun  = $('ltt-sun'),  moon  = $('ltt-moon');
+    var dark = (t === 'dark');
+    if (sun)  sun.style.display  = dark ? 'none' : '';
+    if (moon) moon.style.display = dark ? ''     : 'none';
+  }
+  // Apply immediately on page load so login page is already dark
+  _applyTheme(localStorage.getItem('ssu_theme') || 'dark');
+
   var lttBtn = $('login-theme-toggle');
   if (lttBtn) {
-    function _syncLttIcon() {
-      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      $('ltt-sun').style.display  = isDark ? 'none'  : '';
-      $('ltt-moon').style.display = isDark ? ''      : 'none';
-    }
-    _syncLttIcon();
     lttBtn.addEventListener('click', function () {
       var cur = document.documentElement.getAttribute('data-theme');
-      var next = cur === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('ssu_theme', next);
-      _syncLttIcon();
+      _applyTheme(cur === 'dark' ? 'light' : 'dark');
     });
   }
   $('run-btn').addEventListener('click', doRun);
