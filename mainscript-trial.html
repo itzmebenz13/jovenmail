@@ -6131,7 +6131,7 @@ if __name__ == "__main__":
     }
 
     function extractErrCode(line) {
-      var m = line.match(/\b(5\d{5}|1000)\b/);
+      var m = line.match(/\b(5\d{5}|1\d{3})\b/);  // 5xxxxx or 4-digit 1xxx
       return m ? m[1] : null;
     }
 
