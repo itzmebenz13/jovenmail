@@ -172,7 +172,7 @@
     }
 
     .app-header-logo img {
-      height: 36px;
+      height: 48px;
       width: auto;
       max-width: 100%;
       display: block;
@@ -180,7 +180,7 @@
     }
 
     @media (max-width: 480px) {
-      .app-header-logo img { height: 32px; }
+      .app-header-logo img { height: 40px; }
     }
 
     .hctl {
@@ -286,174 +286,107 @@
     /* ═══════════════════════════════════════════════════════════
        WALLET CARD
        ═══════════════════════════════════════════════════════════ */
+    /* ─── Wallet / Profile Card ────────────────────────────── */
     .wallet-card {
-      align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 0;
       background: var(--card);
       border: 2px solid var(--bdr);
       border-radius: 16px;
       box-shadow: none;
       margin-bottom: 14px;
-      flex-wrap: wrap;
+      overflow: hidden;
     }
 
+    /* Profile row */
+    .wallet-card .wallet-profile-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+    }
     .wallet-avatar {
-      width: 36px;
-      height: 36px;
-      flex-shrink: 0;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--acc), var(--acc-dark));
+      width: 44px; height: 44px;
+      flex-shrink: 0; border-radius: 50%;
+      background: #58CC02;
       color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.95rem;
-      box-shadow: 0 2px 6px rgba(88, 204, 2, .35);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 18px;
     }
-
-    .wallet-info {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
+    .wallet-info { flex: 1; min-width: 0; }
     .wallet-name {
-      font-size: 0.85rem;
-      font-weight: 800;
-      color: var(--txt);
-      line-height: 1.2;
-      letter-spacing: -0.01em;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px; font-weight: 800;
+      color: var(--txt); line-height: 1.2;
     }
-
     .wallet-tag {
-      font-size: 0.65rem;
-      color: var(--dim);
-      font-weight: 600;
-      margin-top: 1px;
+      display: inline-block; margin-top: 3px;
+      background: rgba(88,204,2,.1); border: 1px solid rgba(88,204,2,.25);
+      border-radius: 20px; padding: 1px 8px;
+      font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 700;
+      color: #46A302;
     }
+    .wallet-tag.admin { color: #FF9600; background: rgba(255,150,0,.1); border-color: rgba(255,150,0,.25); }
 
-    .wallet-tag.admin {
-      color: var(--acc2H);
+    /* GT section */
+    .wallet-card .wallet-gt-section {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px;
+      border-top: 1.5px solid var(--bdr);
+      border-bottom: 1.5px solid var(--bdr);
     }
-
     .gt-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      background: rgba(88, 204, 2, .1);
-      border: 1.5px solid rgba(88, 204, 2, .25);
-      border-radius: var(--r-m);
-      font-weight: 700;
-      color: var(--txt);
-      transition: all .2s;
-      cursor: default;
+      display: flex; align-items: center; gap: 8px;
+      flex: 1;
     }
-
-    .gt-badge .gt-icon {
-      width: 22px;
-      height: 22px;
-      flex-shrink: 0;
-    }
-
+    .gt-badge .gt-icon { width: 20px; height: 20px; flex-shrink: 0; }
     .gt-badge .gt-num {
-      font-size: 1.05rem;
-      font-weight: 900;
-      color: var(--acc);
-      letter-spacing: -0.02em;
-      line-height: 1;
+      font-family: 'Nunito', sans-serif;
+      font-size: 20px; font-weight: 900;
+      color: var(--acc); line-height: 1;
     }
-
+    .gt-badge .gt-meta { display: flex; flex-direction: column; gap: 1px; }
     .gt-badge .gt-label {
-      font-size: 0.6rem;
-      font-weight: 800;
-      color: var(--dim);
-      letter-spacing: 0.08em;
-      line-height: 1;
-      margin-top: 2px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 9px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--mut); line-height: 1;
     }
 
-    .gt-badge .gt-meta {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
+    /* Actions row */
     .wallet-actions {
-      margin-left: auto;
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      flex-wrap: wrap;
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px;
     }
+    .topup-btn {
+      flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 10px 14px;
+      background: #58CC02;
+      border: none; border-bottom: 3px solid #46A302;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px;
+      cursor: pointer; transition: transform .1s, border-bottom-width .1s;
+    }
+    .topup-btn:active { border-bottom-width: 1px; transform: translateY(2px); }
+    .topup-btn:hover { filter: brightness(1.06); }
 
     .icon-btn {
-      width: 34px;
-      height: 34px;
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--inp);
-      border: 1px solid var(--b1);
-      border-radius: var(--r-s);
-      color: var(--dim);
-      cursor: pointer;
-      transition: all .18s;
+      width: 36px; height: 36px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--bg); border: 1.5px solid var(--bdr);
+      border-radius: 10px; cursor: pointer; transition: all .15s;
     }
+    .icon-btn:hover { border-color: var(--acc); background: rgba(88,204,2,.06); }
+    .icon-btn svg { display: block; }
+    .icon-btn.danger { border-color: rgba(255,75,75,.25); }
+    .icon-btn.danger:hover { background: rgba(255,75,75,.08); border-color: #FF4B4B; }
+    .icon-btn.admin { border-color: rgba(255,150,0,.3); }
+    .icon-btn.admin:hover { background: rgba(255,150,0,.08); }
+    /* ─────────────────────────────────────────────────────── */
 
-    .icon-btn:hover {
-      background: var(--hov);
-      color: var(--txt);
-      border-color: var(--b2);
-      transform: translateY(-1px);
-    }
-
-    .icon-btn.danger:hover {
-      background: rgba(239, 68, 68, .08);
-      color: var(--err);
-      border-color: rgba(239, 68, 68, .25);
-    }
-
-    .icon-btn.admin {
-      background: rgba(255, 184, 77, .12);
-      border-color: rgba(255, 184, 77, .3);
-      color: var(--acc2H);
-    }
-
-    .icon-btn.admin:hover {
-      background: rgba(255, 184, 77, .22);
-      color: var(--acc2H);
-    }
-
-    .topup-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      background: linear-gradient(135deg, var(--acc), var(--accH));
-      border: none;
-      border-radius: var(--r-s);
-      color: #fff;
-      font-family: var(--font);
-      font-weight: 800;
-      font-size: 0.78rem;
-      cursor: pointer;
-      box-shadow: 0 3px 10px rgba(61, 143, 232, .35);
-      transition: all .2s;
-      letter-spacing: -0.005em;
-    }
-
-    .topup-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(61, 143, 232, .45);
-    }
-
-    .topup-btn:active {
-      transform: translateY(0);
-    }
 
     /* ═══════════════════════════════════════════════════════════
        PANELS / CARDS
@@ -2901,204 +2834,151 @@
       box-shadow: 0 0 0 3px rgba(88,204,2,.12);
     }
 
+    /* ══════════════════════════════ DRAWER — Duolingo ══════════════════════════════ */
     #drawer-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(8, 20, 36, .5);
-      z-index: 950;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .25s;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      position: fixed; inset: 0; z-index: 1100;
+      background: rgba(0,0,0,.35);
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s, visibility .25s;
     }
-    #drawer-backdrop.show {
-      opacity: 1;
-      pointer-events: all;
-    }
+    #drawer-backdrop.show { opacity: 1; visibility: visible; }
 
     #drawer {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 86%;
-      max-width: 360px;
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: min(300px, 88vw);
+      z-index: 1101;
       background: var(--card);
-      border-left: 1px solid var(--b1);
-      box-shadow: -8px 0 30px rgba(0, 0, 0, .15);
-      z-index: 951;
       transform: translateX(100%);
-      transition: transform .3s cubic-bezier(.2, .8, .25, 1);
-      display: flex;
-      flex-direction: column;
+      transition: transform .28s cubic-bezier(.4,0,.2,1);
+      display: flex; flex-direction: column;
+      border-left: 1px solid var(--bdr);
       overflow: hidden;
     }
     #drawer.show { transform: translateX(0); }
 
+    /* ── Header ── */
     .drawer-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 18px 14px;
-      border-bottom: 1px solid var(--b1);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--bdr);
+      flex-shrink: 0;
     }
     .drawer-head .title {
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px; font-weight: 800;
+      letter-spacing: .1em; text-transform: uppercase;
       color: var(--mut);
     }
     .drawer-close {
-      width: 32px;
-      height: 32px;
-      background: var(--inp);
-      border: 1px solid var(--b1);
-      border-radius: 50%;
-      color: var(--dim);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 8px; border: 1.5px solid var(--bdr);
+      background: var(--card); color: var(--txt);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: all .15s;
     }
-    .drawer-close:hover { background: var(--hov); color: var(--txt); }
+    .drawer-close:hover { border-color: var(--acc); color: var(--acc); }
 
+    /* ── Profile ── */
     .drawer-profile {
-      padding: 18px 18px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid var(--b1);
+      display: flex; align-items: center; gap: 11px;
+      padding: 14px 16px 10px;
+      flex-shrink: 0;
     }
     .drawer-profile .avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--acc), var(--accH));
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1.05rem;
-      box-shadow: 0 2px 8px rgba(61, 143, 232, .35);
+      width: 40px; height: 40px; border-radius: 50%;
+      background: #58CC02; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 16px;
       flex-shrink: 0;
     }
     .drawer-profile .info { flex: 1; min-width: 0; }
     .drawer-profile .name {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--txt);
-      letter-spacing: -0.01em;
-      line-height: 1.2;
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px;
+      color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .drawer-profile .tag {
-      font-size: 0.7rem;
-      color: var(--dim);
-      font-weight: 700;
-      margin-top: 2px;
+      display: inline-block; margin-top: 2px;
+      background: rgba(88,204,2,.12); border: 1px solid rgba(88,204,2,.28);
+      border-radius: 20px; padding: 1px 8px;
+      font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 700;
+      color: #46A302;
     }
-    .drawer-profile .tag.admin { color: var(--acc2H); }
+    .drawer-profile .tag.admin { color: #FF9600; background: rgba(255,150,0,.12); border-color: rgba(255,150,0,.28); }
 
+    /* ── GT Row ── */
     .drawer-gt-row {
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-bottom: 1px solid var(--b1);
+      margin: 0 12px 4px;
+      background: linear-gradient(135deg, rgba(61,143,232,.06), rgba(255,184,77,.08));
+      border: 1.5px solid var(--bdr);
+      border-radius: 12px; padding: 10px 12px;
+      display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0;
     }
     .drawer-gt-badge {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      padding: 10px 12px;
-      background: linear-gradient(135deg, rgba(61, 143, 232, .08), rgba(255, 184, 77, .08));
-      border: 1px solid rgba(61, 143, 232, .22);
-      border-radius: var(--r-m);
+      flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0;
     }
-    .drawer-gt-badge .gt-icon { width: 22px; height: 22px; flex-shrink: 0; }
+    .drawer-gt-badge .gt-icon { width: 20px; height: 20px; flex-shrink: 0; }
     .drawer-gt-badge .gt-num {
-      font-weight: 900;
-      color: var(--acc);
-      font-size: 1rem;
-      letter-spacing: -0.02em;
+      font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900;
+      color: var(--txt); line-height: 1;
     }
     .drawer-gt-badge .gt-lab {
-      font-size: 0.62rem;
-      font-weight: 800;
-      color: var(--dim);
-      letter-spacing: 0.08em;
+      font-family: 'Nunito', sans-serif; font-size: 9px; font-weight: 800;
+      letter-spacing: .06em; text-transform: uppercase; color: var(--mut);
     }
 
+    /* ── Nav ── */
     .drawer-nav {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px 10px;
+      flex: 1; overflow-y: auto; padding: 8px 10px;
+      display: flex; flex-direction: column; gap: 2px;
     }
     .drawer-link {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 11px 12px;
-      border-radius: var(--r-m);
-      color: var(--txt);
-      font-size: 0.92rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background .15s;
-      background: transparent;
-      border: none;
-      width: 100%;
-      text-align: left;
-      font-family: var(--font);
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      justify-content: flex-start;
+      padding: 10px 10px; border-radius: 10px;
+      border: none; background: none; cursor: pointer;
+      text-align: left; color: var(--txt);
+      font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
+      transition: background .15s, color .15s;
     }
-    .drawer-link:hover, .drawer-link:active { background: var(--hov); }
-    .drawer-link.active { background: rgba(61, 143, 232, .08); color: var(--acc); }
-    .drawer-link svg { color: var(--dim); flex-shrink: 0; }
-    .drawer-link.active svg { color: var(--acc); }
+    .drawer-link:hover { background: var(--bdr); }
+    .drawer-link.active {
+      background: rgba(88,204,2,.1);
+      color: #46A302;
+    }
+    .drawer-link svg { color: var(--mut); flex-shrink: 0; transition: color .15s; }
+    .drawer-link.active svg { color: #58CC02; }
     .drawer-link .badge {
       margin-left: auto;
-      background: rgba(61, 143, 232, .12);
-      color: var(--acc);
-      font-size: 0.66rem;
-      font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 100px;
+      min-width: 20px; height: 20px; padding: 0 6px;
+      border-radius: 20px; background: rgba(88,204,2,.12);
+      border: 1px solid rgba(88,204,2,.25);
+      font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 800;
+      color: #46A302; display: flex; align-items: center; justify-content: center;
     }
-
     .drawer-section {
-      font-size: 0.62rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--mut);
-      padding: 14px 14px 6px;
+      font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 800;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--mut); padding: 10px 10px 4px; margin-top: 4px;
     }
 
+    /* ── Footer / Sign Out ── */
     .drawer-foot {
-      padding: 14px 18px 18px;
-      border-top: 1px solid var(--b1);
+      padding: 8px 10px 16px; flex-shrink: 0;
+      border-top: 1px solid var(--bdr);
     }
     .drawer-logout-btn {
-      width: 100%;
-      padding: 11px 14px;
-      background: rgba(239, 68, 68, .08);
-      color: var(--err);
-      border: 1px solid rgba(239, 68, 68, .25);
-      border-radius: var(--r-m);
-      font-weight: 700;
-      font-size: 0.85rem;
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 10px 14px; border-radius: 10px;
+      border: 1.5px solid rgba(255,75,75,.22);
+      background: rgba(255,75,75,.06); color: #FF4B4B;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800;
       transition: all .15s;
     }
-    .drawer-logout-btn:hover { background: rgba(239, 68, 68, .14); }
+    .drawer-logout-btn:hover { background: rgba(255,75,75,.14); border-color: #FF4B4B; }
+    /* ══════════════════════════════════════════════════════════════════════════════ */
+
 
     /* ═══════════════════════════════════════════════════════════
        TOP-UP MODAL
@@ -3761,6 +3641,143 @@
       overscroll-behavior: none;
       touch-action: none;
     }
+
+    [data-theme="dark"] .drawer-close svg line { stroke: #FFFDE6; }
+
+    /* ─── Site Footer ─────────────────────────────────────────── */
+    .site-footer {
+      padding: 20px 16px 32px;
+      text-align: center;
+      border-top: 1.5px solid var(--bdr);
+      margin-top: 8px;
+    }
+    .site-footer-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .site-footer-logo {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #58CC02, #46A302);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .site-footer-name {
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px; font-weight: 900;
+      color: var(--txt);
+    }
+    .site-footer-name span { color: #58CC02; }
+    .site-footer-tagline {
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px; font-weight: 600;
+      color: var(--mut);
+      line-height: 1.5;
+    }
+    .site-footer-tagline a {
+      color: #58CC02; text-decoration: none; font-weight: 700;
+    }
+    .site-footer-tagline a:hover { text-decoration: underline; }
+    .site-footer-divider {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin: 8px 0 0;
+      font-family: 'Nunito', sans-serif;
+      font-size: 10px; font-weight: 700;
+      color: var(--mut); letter-spacing: .04em;
+    }
+    /* ─────────────────────────────────────────────────────────── */
+
+/* ── Email Dot Generator ─────────────────────────── */
+.eg-input-group {
+  display:flex; align-items:stretch;
+  border:1.5px solid var(--bdr); border-radius:10px;
+  background:var(--bg); overflow:hidden; margin-bottom:10px;
+  transition:border-color .2s;
+}
+.eg-input-group:focus-within { border-color:#58CC02; box-shadow:0 0 0 3px rgba(88,204,2,.1); }
+.eg-input-user {
+  flex:1; padding:11px 13px; border:none; background:transparent;
+  color:var(--txt); font-family:'JetBrains Mono',monospace;
+  font-size:13px; outline:none;
+}
+.eg-input-user::placeholder { color:var(--mut); }
+.eg-bulk-row { display:flex; align-items:center; gap:5px; margin-bottom:12px; flex-wrap:wrap; }
+.eg-bulk-label {
+  font-family:'Nunito',sans-serif; font-size:10px; color:var(--mut);
+  font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin-right:3px;
+}
+.eg-bulk-pill {
+  padding:5px 12px; border-radius:20px; border:1.5px solid var(--bdr);
+  background:var(--bg); color:var(--mut); font-size:12px; font-weight:700;
+  font-family:'Nunito',sans-serif; cursor:pointer; transition:all .15s;
+}
+.eg-bulk-pill.active {
+  background:#58CC02; border-color:#46A302; color:#fff;
+  box-shadow:0 2px 8px rgba(88,204,2,.25);
+}
+.eg-btn-gen {
+  width:100%; padding:11px 16px; border-radius:12px;
+  background:#58CC02; color:#fff; border:none; border-bottom:4px solid #46A302;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:14px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  margin-bottom:14px; transition:transform .1s, border-bottom-width .1s;
+}
+.eg-btn-gen:active { border-bottom-width:2px; transform:translateY(2px); }
+.eg-btn-gen:hover { filter:brightness(1.05); }
+.eg-options-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.eg-option-chip {
+  display:flex; align-items:center; gap:8px; padding:8px 10px;
+  border-radius:9px; border:1.5px solid var(--bdr); background:var(--bg);
+  cursor:pointer; transition:border-color .15s, background .15s;
+}
+.eg-option-chip.active { border-color:#58CC02; background:rgba(88,204,2,.06); }
+.eg-option-chip input { display:none; }
+.eg-chip-box {
+  width:15px; height:15px; border-radius:4px; border:1.5px solid var(--bdr);
+  background:var(--bg); display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:all .15s;
+}
+.eg-option-chip.active .eg-chip-box { background:#58CC02; border-color:#46A302; }
+.eg-chip-text { font-family:'Nunito',sans-serif; font-size:11px; color:var(--mut); font-weight:700; }
+.eg-option-chip.active .eg-chip-text { color:var(--txt); }
+.eg-batch-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
+.eg-btn-sm {
+  display:flex; align-items:center; gap:5px; padding:6px 10px; border-radius:8px;
+  border:1.5px solid var(--bdr); background:var(--bg); color:var(--mut);
+  font-family:'Nunito',sans-serif; font-size:11px; font-weight:700; cursor:pointer;
+  transition:all .15s;
+}
+.eg-btn-sm:hover { background:var(--bdr); color:var(--txt); }
+.eg-vlist-wrap { border-radius:10px; border:1.5px solid var(--bdr); overflow:hidden; }
+.eg-vlist-con { position:relative; overflow-y:auto; max-height:320px; overscroll-behavior:contain; }
+.eg-vlist-con::-webkit-scrollbar { width:4px; }
+.eg-vlist-con::-webkit-scrollbar-thumb { background:var(--bdr); border-radius:4px; }
+.eg-vlist-spacer { position:relative; width:100%; }
+.eg-vlist-items { position:absolute; top:0; left:0; right:0; }
+.eg-bi {
+  display:flex; align-items:center; gap:8px; padding:0 12px;
+  height:44px; border-bottom:1px solid var(--bdr); cursor:pointer; transition:background .08s;
+}
+.eg-bi:last-child { border-bottom:none; }
+.eg-bi:hover { background:var(--bg); }
+.eg-bi-num { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--mut); flex-shrink:0; width:28px; text-align:right; }
+.eg-bi-email { font-family:'JetBrains Mono',monospace; font-size:12px; color:#46A302; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.eg-bi-ent {
+  font-size:10px; font-weight:700; font-family:'JetBrains Mono',monospace;
+  flex-shrink:0; padding:2px 5px; border-radius:4px;
+  background:rgba(88,204,2,.1); color:#58CC02;
+}
+.eg-bi-copy {
+  flex-shrink:0; width:26px; height:26px; border-radius:6px;
+  background:transparent; border:1px solid var(--bdr); color:var(--mut); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:all .12s;
+}
+.eg-bi-copy:hover { border-color:#58CC02; color:#58CC02; }
+.eg-bi-copy.eg-copied { border-color:#22c55e; color:#22c55e; }
+/* ──────────────────────────────────────────────── */
 </style>
 </head>
 
@@ -3846,8 +3863,6 @@ CODES = [
     "ph0313n4",
     "ph0313n5",
     "ph0313n6",
-    "ph0313n7",
-    "ph0313n8",
     "ph0313n9",
     "ph0313n10",
 ]
@@ -4416,9 +4431,137 @@ if __name__ == "__main__":
       <p class="paste-hint">Paste your RAW request to claim.</p>
     </div>
 
+    <!-- ═══ HOME — LIVE STATS ═══ -->
+    <div class="view view-home" id="stats-section" style="margin-top:0">
+      <div class="card" style="padding:14px 16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:7px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#58CC02" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span style="font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)">Live Statistics</span>
+          </div>
+          <span id="stats-badge" style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--mut)">—</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:rgba(88,204,2,.08);border:1.5px solid rgba(88,204,2,.2);border-radius:12px;padding:12px 14px">
+            <div style="font-family:'Nunito',sans-serif;font-size:22px;font-weight:900;color:#58CC02;line-height:1" id="stats-claims">—</div>
+            <div style="font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--mut);margin-top:3px">Total Claims</div>
+          </div>
+          <div style="background:rgba(255,150,0,.08);border:1.5px solid rgba(255,150,0,.22);border-radius:12px;padding:12px 14px">
+            <div style="font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:#FF9600;line-height:1.2" id="stats-income">—</div>
+            <div style="font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--mut);margin-top:3px">Est. Income</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ HOME — FEATURE SECTIONS ═══ -->
 
     <!-- Section 1: Hero headline -->
+
+    <!-- ═══ HOME — EMAIL DOT GENERATOR (collapsible) ═══ -->
+    <div class="view view-home" style="margin-top:0">
+      <div class="card" style="padding:0;overflow:hidden">
+        <!-- Collapse head -->
+        <div class="collapse-head" id="eg-toggle" style="padding:12px 16px">
+          <div class="card-title" style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <div style="width:28px;height:28px;border-radius:8px;background:rgba(88,204,2,.12);border:1.5px solid rgba(88,204,2,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#58CC02" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </div>
+            Email Dot Generator
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--mut)">Gmail aliases</span>
+            <span class="chev" id="eg-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+        </div>
+        <!-- Collapse body (closed by default) -->
+        <div class="collapse-body" id="eg-body">
+          <div style="padding:0 14px 14px">
+
+            <!-- Intro -->
+            <p style="font-family:'Nunito',sans-serif;font-size:12px;color:var(--mut);line-height:1.6;font-weight:600;margin-bottom:14px;padding-top:4px">
+              Google ignores dots — <b style="color:var(--txt)">j.ohn</b> and <b style="color:var(--txt)">jo.hn</b> both land in <b style="color:var(--txt)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d9b3b6b1b799beb4b8b0b5f7bab6b4">[email&#160;protected]</a></b>. Create unique aliases for SHEIN accounts. Runs entirely in your browser.
+            </p>
+
+            <!-- Input -->
+            <div class="eg-input-group" id="eg-input-group">
+              <input class="eg-input-user" id="eg-user-input" type="text"
+                placeholder="Enter username (e.g. johndoe)"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                oninput="egOnInput()"
+                onkeydown="if(event.key==='Enter')egGenerate()"/>
+            </div>
+
+            <!-- Count pills -->
+            <div class="eg-bulk-row">
+              <span class="eg-bulk-label">Count</span>
+              <button class="eg-bulk-pill active" id="eg-pill1"    onclick="egSelectBulk(1)">1</button>
+              <button class="eg-bulk-pill"        id="eg-pill10"   onclick="egSelectBulk(10)">10</button>
+              <button class="eg-bulk-pill"        id="eg-pill50"   onclick="egSelectBulk(50)">50</button>
+              <button class="eg-bulk-pill"        id="eg-pill100"  onclick="egSelectBulk(100)">100</button>
+              <button class="eg-bulk-pill"        id="eg-pill-all" onclick="egSelectBulk('all')">All</button>
+            </div>
+
+            <!-- Generate button -->
+            <button class="eg-btn-gen" id="eg-gen-btn" onclick="egGenerate()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              <span id="eg-gen-label">Generate</span>
+            </button>
+
+            <!-- Options -->
+            <div class="eg-options-grid">
+              <label class="eg-option-chip active" id="eg-chip-hi">
+                <input type="checkbox" id="eg-opt-hi" checked onchange="egToggleChip('eg-chip-hi',this)"/>
+                <div class="eg-chip-box"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <span class="eg-chip-text">90–99% entropy</span>
+              </label>
+              <label class="eg-option-chip active" id="eg-chip-ns">
+                <input type="checkbox" id="eg-opt-ns" checked onchange="egToggleChip('eg-chip-ns',this)"/>
+                <div class="eg-chip-box"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <span class="eg-chip-text">No sequential dots</span>
+              </label>
+              <label class="eg-option-chip" id="eg-chip-mg">
+                <input type="checkbox" id="eg-opt-mg" onchange="egToggleChip('eg-chip-mg',this)"/>
+                <div class="eg-chip-box"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <span class="eg-chip-text">Min 2-char gap</span>
+              </label>
+            </div>
+
+            <!-- Batch results -->
+            <div id="eg-batch-card" style="margin-top:12px;display:none">
+              <div class="eg-batch-top">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)">Results</span>
+                  <span id="eg-count-pill" style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;background:rgba(88,204,2,.1);color:#46A302;padding:2px 8px;border-radius:20px;border:1px solid rgba(88,204,2,.25)">0</span>
+                </div>
+                <div style="display:flex;gap:6px">
+                  <button class="eg-btn-sm" onclick="egCopyAll()">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copy all
+                  </button>
+                  <button class="eg-btn-sm" style="color:#46A302;border-color:rgba(88,204,2,.3)" onclick="egDownload()">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download
+                  </button>
+                </div>
+              </div>
+              <div class="eg-vlist-wrap">
+                <div class="eg-vlist-con" id="eg-vlist-con">
+                  <div class="eg-vlist-spacer" id="eg-vlist-spacer">
+                    <div class="eg-vlist-items" id="eg-vlist-items"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <div class="view view-home" style="padding:20px 16px 0;text-align:center">
       <h2 style="font-family:'Nunito',sans-serif;font-size:28px;font-weight:900;color:#58CC02;line-height:1.15;margin-bottom:10px">
         fast. easy.<br>automatic.
@@ -4507,48 +4650,58 @@ if __name__ == "__main__":
 
     <!-- ═══ WALLET CARD (now only shown on Profile view) ═══ -->
     <div id="wallet-card" class="wallet-card view view-profile flex">
-      <div class="wallet-avatar" id="wallet-avatar">U</div>
-      <div class="wallet-info">
-        <div class="wallet-name" id="wallet-name">User</div>
-        <div class="wallet-tag" id="wallet-tag">Member</div>
-      </div>
-      <div class="gt-badge" id="gt-badge" title="1 GT = ₱200.00">
-        <span class="gt-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <defs>
-              <linearGradient id="gtGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#3D8FE8"/>
-                <stop offset="100%" stop-color="#FFB84D"/>
-              </linearGradient>
-            </defs>
-            <circle cx="12" cy="12" r="10" fill="url(#gtGrad)" opacity="0.18"/>
-            <circle cx="12" cy="12" r="9" fill="none" stroke="url(#gtGrad)" stroke-width="1.6"/>
-            <path d="M9 8l3-3 3 3M9 16l3 3 3-3M12 5v14" stroke="url(#gtGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </span>
-        <div class="gt-meta">
-          <span class="gt-num" id="gt-count">0</span>
-          <span class="gt-label">GENERATION TOKEN</span>
+
+      <!-- Profile row -->
+      <div class="wallet-profile-row">
+        <div class="wallet-avatar" id="wallet-avatar">U</div>
+        <div class="wallet-info">
+          <div class="wallet-name" id="wallet-name">User</div>
+          <div class="wallet-tag" id="wallet-tag">Member</div>
         </div>
       </div>
+
+      <!-- GT Balance row -->
+      <div class="wallet-gt-section">
+        <div class="gt-badge" id="gt-badge" title="1 GT = ₱200.00">
+          <span class="gt-icon">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+              <defs>
+                <linearGradient id="gtGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#58CC02"/><stop offset="100%" stop-color="#FFB84D"/>
+                </linearGradient>
+              </defs>
+              <circle cx="12" cy="12" r="10" fill="url(#gtGrad)" opacity="0.15"/>
+              <circle cx="12" cy="12" r="9" fill="none" stroke="url(#gtGrad)" stroke-width="1.6"/>
+              <path d="M9 8l3-3 3 3M9 16l3 3 3-3M12 5v14" stroke="url(#gtGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </span>
+          <div class="gt-meta">
+            <span class="gt-num" id="gt-count">0</span>
+            <span class="gt-label">Generation Token</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions row -->
       <div class="wallet-actions">
         <button class="topup-btn" id="topup-btn" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
           Top Up
         </button>
         <button class="icon-btn admin hidden" id="wallet-admin-btn" type="button" title="Admin Panel">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF9600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
         </button>
         <button class="icon-btn danger" id="wallet-logout-btn" type="button" title="Sign out">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF4B4B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
         </button>
       </div>
+
       <!-- Group info — only rendered when signed in via a group seat -->
       <div class="profile-group-info" id="profile-group-info" style="display:none">
         <div class="row">
@@ -4561,6 +4714,7 @@ if __name__ == "__main__":
         </div>
       </div>
     </div>
+
 
     <!-- ═══ ADMIN PANEL ═══ -->
     <div id="admin-panel" class="view view-admin">
@@ -5415,16 +5569,43 @@ if __name__ == "__main__":
     </div>
   </div>
 
+    <!-- ═══ SITE FOOTER ═══ -->
+    <footer class="site-footer">
+      <div class="site-footer-brand">
+        <div class="site-footer-logo">
+          <svg width="16" height="16" viewBox="0 0 20 14" fill="none">
+            <path d="M8 7 L1 1 L8 7 L1 13" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 7 L8 1 L15 7 L8 13" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="site-footer-name">Koreo<span>Script</span></div>
+      </div>
+      <div class="site-footer-tagline">
+        Powered by <a href="#" onclick="return false">KoreoMail</a>
+      </div>
+      <div class="site-footer-divider">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Secure &nbsp;·&nbsp; v3
+      </div>
+    </footer>
+
+
   <!-- ═══ HAMBURGER DRAWER ═══ -->
   <div id="drawer-backdrop"></div>
   <aside id="drawer" aria-hidden="true">
+
+    <!-- Header -->
     <div class="drawer-head">
       <span class="title">Menu</span>
       <button class="drawer-close" id="drawer-close" type="button" aria-label="Close menu">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" stroke="#3C3C3C"/>
+          <line x1="6" y1="6" x2="18" y2="18" stroke="#3C3C3C"/>
+        </svg>
       </button>
     </div>
 
+    <!-- Profile -->
     <div class="drawer-profile" id="drawer-profile" style="display:none">
       <div class="avatar" id="drawer-avatar">U</div>
       <div class="info">
@@ -5433,6 +5614,7 @@ if __name__ == "__main__":
       </div>
     </div>
 
+    <!-- GT Balance -->
     <div class="drawer-gt-row" id="drawer-gt-row" style="display:none">
       <div class="drawer-gt-badge">
         <span class="gt-icon">
@@ -5447,57 +5629,57 @@ if __name__ == "__main__":
             <path d="M9 8l3-3 3 3M9 16l3 3 3-3M12 5v14" stroke="url(#drawerGtGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
         </span>
-        <div style="display:flex;flex-direction:column">
+        <div style="display:flex;flex-direction:column;gap:1px">
           <span class="gt-num" id="drawer-gt-count">0</span>
           <span class="gt-lab">GENERATION TOKEN</span>
         </div>
       </div>
-      <button class="home-topup-btn" id="drawer-topup-btn" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+      <button class="home-topup-btn" id="drawer-topup-btn" type="button" style="padding:7px 13px;font-size:12px;height:auto">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Top Up
       </button>
     </div>
 
+    <!-- Navigation -->
     <nav class="drawer-nav">
       <button class="drawer-link active" data-go-view="home" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Home
       </button>
       <button class="drawer-link" data-go-view="profile" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         Profile
       </button>
       <button class="drawer-link" data-go-view="vouchers" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
         Voucher Codes
         <span class="badge" id="drawer-voucher-cnt">0</span>
       </button>
       <button class="drawer-link" data-go-view="logs" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         Claim Logs
         <span class="badge" id="drawer-logs-cnt">0</span>
       </button>
       <button class="drawer-link" data-go-view="topup-history" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
         Top-Up History
         <span class="badge" id="drawer-topup-cnt">0</span>
       </button>
       <button class="drawer-link" data-go-view="apk" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         SHEIN Patched App
       </button>
       <div class="drawer-section" id="drawer-admin-section" style="display:none">Admin</div>
       <button class="drawer-link" data-go-view="admin" type="button" id="drawer-admin-link" style="display:none">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1l3 6 6 1-4.5 4.5L18 19l-6-3-6 3 1.5-6.5L3 8l6-1z"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1l3 6 6 1-4.5 4.5L18 19l-6-3-6 3 1.5-6.5L3 8l6-1z"/></svg>
         Admin Panel
       </button>
     </nav>
 
+    <!-- Sign Out -->
     <div class="drawer-foot" id="drawer-foot" style="display:none">
       <button class="drawer-logout-btn" id="drawer-logout-btn" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Sign Out
       </button>
     </div>
@@ -5518,7 +5700,7 @@ if __name__ == "__main__":
   <div id="toast"></div>
 
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function () {
   'use strict';
 
@@ -5703,6 +5885,7 @@ if __name__ == "__main__":
   initCollapse('bf-toggle', 'bf-body', 'bf-arrow');
   initCollapse('logs-toggle', 'logs-body', 'logs-arrow');
   initCollapse('topup-history-toggle', 'topup-history-body', 'topup-history-arrow');
+  initCollapse('eg-toggle', 'eg-body', 'eg-arrow');
 
   // ════════════════════════════════════════════════════════════
   // THEME TOGGLE
@@ -6409,7 +6592,7 @@ if __name__ == "__main__":
     } else if (nWarned > 0) {
       iconWrap.className = 'res-icon warn'; iconWrap.innerHTML = ICONS.warnBig;
       title.textContent = 'Already Claimed';
-      sub.textContent = 'These coupons are already in your account. Your GT has been refunded.';
+      sub.textContent = 'These coupons are already in your account.';
     } else {
       iconWrap.className = 'res-icon info'; iconWrap.innerHTML = ICONS.infoBig;
       title.textContent = 'Session Complete';
@@ -6438,14 +6621,9 @@ if __name__ == "__main__":
         html += '<div class="rm-item err"><span class="rm-icon-wrap err">' + ICONS.x + '</span><div><div class="rm-text">Claim failed</div><div class="rm-sub">' + subLine + '</div></div></div>';
       });
     }
-    // Only show warn items in the list when there are no claimed items
+    // Show single universal message for already-claimed results
     if (_results.warned.length && nClaimed === 0) {
-      _results.warned.forEach(function (line) {
-        // Extract code names after "— " in the warn line
-        var codesMatch = line.match(/—\s*(.+)$/);
-        var subText = codesMatch ? codesMatch[1].trim() : ('Error code: ' + (extractErrCode(line) || '501405'));
-        html += '<div class="rm-item warn"><span class="rm-icon-wrap warn">' + ICONS.warn + '</span><div><div class="rm-text">Already owned</div><div class="rm-sub" style="word-break:break-all">' + esc(subText) + '</div></div></div>';
-      });
+      html += '<div class="rm-item warn"><span class="rm-icon-wrap warn">' + ICONS.warn + '</span><div><div class="rm-text">Coupons already received</div><div class="rm-sub">These coupons have already been claimed before, or this account is not eligible to claim.</div></div></div>';
     }
     if (_results.login.length) {
       html += '<div class="rm-item err"><span class="rm-icon-wrap err">' + ICONS.lock + '</span><div><div class="rm-text">' + _results.login.length + ' account(s) not logged in</div><div class="rm-sub">Token may be expired</div></div></div>';
@@ -7232,6 +7410,45 @@ if __name__ == "__main__":
     _loginOvEl.addEventListener('wheel', function(e) { e.preventDefault(); }, { passive: false });
     _loginOvEl.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
   }
+
+  // ════════════════════════════════════════════════════════════
+  // LIVE STATS — fetch from server and update display
+  // ════════════════════════════════════════════════════════════
+  function _fmtNumber(n) {
+    return n.toLocaleString('en-PH');
+  }
+  function loadStats() {
+    var url = $('run-url') ? $('run-url').value.trim().replace(/\/+$/, '') : '';
+    if (!url) return;
+    fetch(url + '/stats')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d || !d.ok) return;
+        var claimsEl = $('stats-claims');
+        var incomeEl = $('stats-income');
+        var badgeEl  = $('stats-badge');
+        if (claimsEl) claimsEl.textContent = _fmtNumber(d.total_claims);
+        if (incomeEl) {
+          var lo = _fmtNumber(d.min_income);
+          var hi = _fmtNumber(d.max_income);
+          incomeEl.textContent = '\u20b1' + lo + '\u2013\u20b1' + hi;
+        }
+        if (badgeEl && d.last_updated) {
+          var dt = new Date(d.last_updated);
+          badgeEl.textContent = 'Updated ' + dt.toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit'});
+        }
+      })
+      .catch(function() {});
+  }
+  // Load stats when server URL is set and on page load
+  setTimeout(loadStats, 1200);
+  // Also reload after each successful claim
+  var _origPostLogResult = _postLogResult;
+  _postLogResult = function(result, detail) {
+    _origPostLogResult(result, detail);
+    if (result === 'success') setTimeout(loadStats, 1500);
+  };
+
   $('run-btn').addEventListener('click', doRun);
 
   function _postLogResult(result, detail) {
@@ -9128,6 +9345,349 @@ if __name__ == "__main__":
   showView('home');
 
 })();
+
+// ════════════════════════════════════════════════════════════
+// EMAIL DOT GENERATOR — scoped with eg_ / eg prefix
+// ════════════════════════════════════════════════════════════
+
+// ── State ──
+var eg_bulk = 1;
+var eg_batchStore = [];
+var eg_vsData = [];
+var eg_vsStart = 0;
+var eg_vsEnd = 0;
+var eg_vsCon, eg_vsSpacer, eg_vsItems;
+var EG_IH = 44; // item height px
+
+// ── Helpers ──
+function egSanitize(s) {
+  return s.toLowerCase().split('@')[0].replace(/[^a-z0-9]/g, '').slice(0, 30);
+}
+
+// ── CSPRNG ──
+function egCryptoRandBatch(n) {
+  var a = new Uint32Array(n);
+  if (window.crypto && window.crypto.getRandomValues) {
+    var maxChunk = 16384;
+    for (var i = 0; i < n; i += maxChunk) {
+      window.crypto.getRandomValues(a.subarray(i, Math.min(i + maxChunk, n)));
+    }
+  } else {
+    for (var i = 0; i < n; i++) a[i] = Math.floor(Math.random() * 0x100000000);
+  }
+  return a;
+}
+
+// ── nCr ──
+function egNcr(n, k) {
+  if (k < 0 || k > n) return 0;
+  if (k === 0 || k === n) return 1;
+  k = Math.min(k, n - k);
+  var r = 1;
+  for (var i = 0; i < k; i++) r = r * (n - i) / (i + 1);
+  return Math.round(r);
+}
+
+// ── Entropy score ──
+function egGuessScore(mask, gaps) {
+  if (!gaps) return { pct: 0, label: '?' };
+  var dots = 0;
+  for (var b = 0; b < gaps; b++) if (mask & (1 << b)) dots++;
+  var p = dots / gaps;
+  if (p <= 0 || p >= 1) return { pct: 0, label: 'trivial' };
+  var h = -p * Math.log2(p) - (1 - p) * Math.log2(1 - p);
+  var pct = Math.min(99, Math.max(10, Math.round(h * 100)));
+  var combos = egNcr(gaps, dots);
+  var label = combos >= 1000000 ? (combos / 1000000).toFixed(1) + 'M'
+            : combos >= 1000    ? (combos / 1000).toFixed(1) + 'k'
+            : combos + '';
+  return { pct: pct, label: '1/' + label };
+}
+
+// ── Generation engine ──
+var EG_MIN_D = 0.46;
+var EG_MAX_D = 0.55;
+
+function egCryptoSample(base, count, opts) {
+  var gaps = base.length - 1;
+  if (gaps <= 0) return [{ alias: base, mask: 0, gaps: 0 }];
+
+  var noS  = opts.noSequential !== false;
+  var minG = opts.minGap       !== false;
+  var hiE  = opts.highEntropy  !== false;
+  var totalMasks = Math.pow(2, gaps);
+
+  if (count === 'all' || count >= totalMasks - 1) {
+    return egEnumAllShuffle(base, gaps, opts);
+  }
+
+  var wanted  = count;
+  var seen    = new Set();
+  var out     = [];
+  var budget  = wanted * 50 + 4000;
+  var bufSize = Math.min(budget * 2, 65536);
+  var rng     = egCryptoRandBatch(bufSize);
+  var ri      = 0;
+
+  function nr() {
+    if (ri >= rng.length) { rng = egCryptoRandBatch(bufSize); ri = 0; }
+    return rng[ri++] / 0x100000000;
+  }
+
+  for (var tries = 0; tries < budget && out.length < wanted; tries++) {
+    var density = hiE
+      ? EG_MIN_D + nr() * (EG_MAX_D - EG_MIN_D)
+      : 0.08 + nr() * 0.60;
+
+    var mask = 0;
+    for (var b = 0; b < gaps; b++) if (nr() < density) mask |= (1 << b);
+    if (mask === 0) mask = 1 << Math.floor(nr() * gaps);
+
+    if (minG || noS) {
+      var pos = [];
+      for (var b2 = 0; b2 < gaps; b2++) if (mask & (1 << b2)) pos.push(b2);
+      var ok = true;
+      for (var pi = 1; pi < pos.length; pi++) {
+        var g = pos[pi] - pos[pi - 1];
+        if (minG && g < 2) { ok = false; break; }
+        if (noS && pi >= 2 && pos[pi - 1] - pos[pi - 2] === 1 && g === 1) { ok = false; break; }
+      }
+      if (!ok) continue;
+    }
+
+    if (hiE) {
+      var dc = 0;
+      for (var b3 = 0; b3 < gaps; b3++) if (mask & (1 << b3)) dc++;
+      if (dc < Math.max(1, Math.floor(gaps * EG_MIN_D))) continue;
+    }
+
+    if (seen.has(mask)) continue;
+    seen.add(mask);
+
+    var r = '';
+    for (var ci = 0; ci < base.length; ci++) {
+      r += base[ci];
+      if (ci < gaps && (mask & (1 << ci))) r += '.';
+    }
+    out.push({ alias: r, mask: mask, gaps: gaps });
+  }
+
+  return out;
+}
+
+function egEnumAllShuffle(base, gaps, opts) {
+  var noS  = opts.noSequential !== false;
+  var minG = opts.minGap       !== false;
+  var results = [];
+
+  for (var mask = 1; mask < (1 << gaps); mask++) {
+    var pos = [];
+    for (var b = 0; b < gaps; b++) if (mask & (1 << b)) pos.push(b);
+    var ok = true;
+    for (var i = 1; i < pos.length; i++) {
+      var g = pos[i] - pos[i - 1];
+      if (minG && g < 2) { ok = false; break; }
+      if (noS && i >= 2 && pos[i - 1] - pos[i - 2] === 1 && g === 1) { ok = false; break; }
+    }
+    if (!ok) continue;
+
+    var r = '';
+    for (var ci = 0; ci < base.length; ci++) {
+      r += base[ci];
+      if (ci < gaps && (mask & (1 << ci))) r += '.';
+    }
+    results.push({ alias: r, mask: mask, gaps: gaps });
+  }
+
+  // crypto Fisher-Yates shuffle
+  var rng = egCryptoRandBatch(results.length);
+  for (var j = results.length - 1; j > 0; j--) {
+    var k = Math.floor((rng[j] / 0x100000000) * (j + 1));
+    var tmp = results[j]; results[j] = results[k]; results[k] = tmp;
+  }
+  return results;
+}
+
+// ── Pill selection ──
+function egSelectBulk(m) {
+  eg_bulk = m;
+  ['eg-pill1', 'eg-pill10', 'eg-pill50', 'eg-pill100', 'eg-pill-all'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  var map = { 1: 'eg-pill1', 10: 'eg-pill10', 50: 'eg-pill50', 100: 'eg-pill100', 'all': 'eg-pill-all' };
+  if (map[m]) {
+    var t = document.getElementById(map[m]);
+    if (t) t.classList.add('active');
+  }
+  var lbl = document.getElementById('eg-gen-label');
+  if (lbl) lbl.textContent = m === 'all' ? 'Generate All' : m === 1 ? 'Generate' : 'Generate ' + m;
+}
+
+// ── Option chips ──
+function egToggleChip(id, cb) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('active', cb.checked);
+}
+
+// ── Input handler (no-op) ──
+function egOnInput() {}
+
+// ── Main generate ──
+function egGenerate() {
+  var raw = document.getElementById('eg-user-input');
+  if (!raw) return;
+  var base = egSanitize(raw.value.trim());
+  if (!base || base.length < 2) {
+    toast('w', 'Enter a username (at least 2 chars)');
+    return;
+  }
+
+  var opts = {
+    highEntropy:  document.getElementById('eg-opt-hi') ? document.getElementById('eg-opt-hi').checked : true,
+    noSequential: document.getElementById('eg-opt-ns') ? document.getElementById('eg-opt-ns').checked : true,
+    minGap:       document.getElementById('eg-opt-mg') ? document.getElementById('eg-opt-mg').checked : false
+  };
+
+  var items = egCryptoSample(base, eg_bulk === 'all' ? 'all' : eg_bulk, opts);
+  if (!items || items.length === 0) {
+    toast('w', 'Username too short to generate variants');
+    return;
+  }
+
+  // Append @gmail.com to each alias
+  items = items.map(function (it) {
+    return { alias: it.alias + '@gmail.com', mask: it.mask, gaps: it.gaps };
+  });
+
+  eg_batchStore = items;
+
+  var bc = document.getElementById('eg-batch-card');
+  if (!bc) return;
+  bc.style.display = '';
+  var cp = document.getElementById('eg-count-pill');
+  if (cp) cp.textContent = items.length + (eg_bulk === 'all' ? ' (all)' : '');
+
+  egVsLoad(items);
+  toast('s', 'Generated ' + items.length + ' alias' + (items.length !== 1 ? 'es' : ''));
+}
+
+// ── Virtual scroll ──
+function egVsInit() {
+  eg_vsCon    = document.getElementById('eg-vlist-con');
+  eg_vsSpacer = document.getElementById('eg-vlist-spacer');
+  eg_vsItems  = document.getElementById('eg-vlist-items');
+  if (eg_vsCon) eg_vsCon.addEventListener('scroll', egVsRender, { passive: true });
+}
+
+function egVsLoad(data) {
+  eg_vsData  = data;
+  var cap    = Math.min(data.length * EG_IH, 320);
+  if (eg_vsCon) eg_vsCon.style.height = Math.max(cap, data.length ? EG_IH : 0) + 'px';
+  if (eg_vsSpacer) eg_vsSpacer.style.height = (data.length * EG_IH) + 'px';
+  if (eg_vsCon) eg_vsCon.scrollTop = 0;
+  eg_vsStart = 0; eg_vsEnd = 0;
+  egVsRender();
+}
+
+function egVsRender() {
+  if (!eg_vsCon || !eg_vsData.length) { if (eg_vsItems) eg_vsItems.innerHTML = ''; return; }
+  var st  = eg_vsCon.scrollTop;
+  var vh  = eg_vsCon.clientHeight;
+  var pad = 8;
+  var s   = Math.max(0, Math.floor(st / EG_IH) - pad);
+  var e   = Math.min(eg_vsData.length - 1, Math.ceil((st + vh) / EG_IH) + pad);
+  if (s === eg_vsStart && e === eg_vsEnd) return;
+  eg_vsStart = s; eg_vsEnd = e;
+
+  if (eg_vsItems) eg_vsItems.style.transform = 'translateY(' + (s * EG_IH) + 'px)';
+
+  var EG_CP_SM = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  var EG_CK_SM = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  var frag = document.createDocumentFragment();
+  for (var i = s; i <= e; i++) {
+    var item  = eg_vsData[i];
+    var email = item.alias;
+    var score = egGuessScore(item.mask, item.gaps);
+
+    var row = document.createElement('div');
+    row.className = 'eg-bi';
+    row.style.height = EG_IH + 'px';
+    row.dataset.email = email;
+    row.dataset.i = i;
+
+    var n1 = document.createElement('span'); n1.className = 'eg-bi-num'; n1.textContent = i + 1;
+    var n2 = document.createElement('span'); n2.className = 'eg-bi-email'; n2.textContent = email;
+    var n3 = document.createElement('span'); n3.className = 'eg-bi-ent';
+    n3.textContent = score.pct + '%';
+    n3.title = '~' + score.label + ' possible aliases at this dot density';
+
+    var n4 = document.createElement('button');
+    n4.className = 'eg-bi-copy';
+    n4.title = 'Copy';
+    n4.innerHTML = EG_CP_SM;
+    (function (copyBtn, copyEmail, cpSm, ckSm) {
+      copyBtn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        egCopyItem(copyBtn, copyEmail, cpSm, ckSm);
+      });
+    })(n4, email, EG_CP_SM, EG_CK_SM);
+
+    row.appendChild(n1); row.appendChild(n2); row.appendChild(n3); row.appendChild(n4);
+    frag.appendChild(row);
+  }
+  if (eg_vsItems) {
+    eg_vsItems.innerHTML = '';
+    eg_vsItems.appendChild(frag);
+  }
+}
+
+// ── Copy helpers ──
+function egCopyItem(btn, email, cpSm, ckSm) {
+  if (!cpSm) cpSm = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  if (!ckSm) ckSm = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  navigator.clipboard.writeText(email).then(function () {
+    btn.classList.add('eg-copied');
+    btn.innerHTML = ckSm;
+    toast('s', 'Copied');
+    setTimeout(function () {
+      btn.classList.remove('eg-copied');
+      btn.innerHTML = cpSm;
+    }, 2000);
+  }).catch(function () {
+    toast('e', 'Copy failed');
+  });
+}
+
+function egCopyAll() {
+  if (!eg_batchStore.length) { toast('w', 'Nothing to copy'); return; }
+  var lines = eg_batchStore.map(function (it) { return it.alias; });
+  navigator.clipboard.writeText(lines.join('\n')).then(function () {
+    toast('s', 'Copied ' + lines.length + ' aliases');
+  }).catch(function () {
+    toast('e', 'Copy failed');
+  });
+}
+
+function egDownload() {
+  if (!eg_batchStore.length) { toast('w', 'Nothing to download'); return; }
+  var rawInput = document.getElementById('eg-user-input');
+  var base = rawInput ? egSanitize(rawInput.value.trim()) || 'aliases' : 'aliases';
+  var lines = eg_batchStore.map(function (it) { return it.alias; });
+  var hdr = '# Dot aliases for ' + base + '\n# Generated: ' + new Date().toISOString() + '\n# Total: ' + lines.length + '\n\n';
+  var blob = new Blob([hdr + lines.join('\n')], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = base + '-aliases.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('s', 'Downloaded ' + lines.length + ' aliases');
+}
+
+// ── Init virtual scroll ──
+egVsInit();
+// ════════════════════════════════════════════════════════════
 </script>
 </body>
 </html>
