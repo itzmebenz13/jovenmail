@@ -5892,9 +5892,7 @@ if __name__ == "__main__":
   // ════════════════════════════════════════════════════════════
   $('themeToggle').addEventListener('click', function () {
     var cur = document.documentElement.getAttribute('data-theme');
-    var next = cur === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('ssu_theme', next);
+    _applyTheme(cur === 'dark' ? 'light' : 'dark');
   });
 
   // ════════════════════════════════════════════════════════════
