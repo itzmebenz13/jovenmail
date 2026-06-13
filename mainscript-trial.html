@@ -1094,7 +1094,41 @@
       font-size: 0.7rem;
     }
 
-    .gt-cost-row .label {
+
+    .ark-info-box {
+      display: none;
+      margin: 10px 14px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px solid var(--bdr);
+    }
+    .ark-info-box.show { display: block; }
+    .ark-info-title {
+      font-size: .67rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: var(--mut);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .ark-code-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .ark-code-chip {
+      padding: 4px 11px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--acc), #2563eb);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .03em;
+    }
+    /* ───────────────────────────────────────────────────────────────── */
+
+        .gt-cost-row .label {
       font-size: 0.66rem;
       color: var(--mut);
       font-weight: 800;
@@ -4612,7 +4646,7 @@ if __name__ == "__main__":
       <div class="btn-row">
         <button class="btn-primary btn-run-big" id="run-btn" type="button">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Run Script
+          <span id="run-btn-label">Run Script</span>
         </button>
         <span class="run-status" id="run-status"></span>
       </div>
@@ -4831,7 +4865,7 @@ if __name__ == "__main__":
           <button class="chip" data-batch="ph0313 4vc" type="button">ph0313 4vc <span class="chip-mini-tag active">ACTIVE</span></button>
           <button class="chip" data-batch="gm0pha" type="button">gm0pha <span class="chip-mini-tag test">TESTING</span></button>
         </div>
-        <div class="gt-cost-row">
+        <div class="gt-cost-row" id="bind-cost-row">
           <span class="label">COST</span>
           <span class="gt-cost-badge" id="gt-cost-badge">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a2.5 2.5 0 0 1 0 5H9M9 14h5"/></svg>
@@ -4839,7 +4873,7 @@ if __name__ == "__main__":
           </span>
           <span style="font-size:.66rem;color:var(--mut);margin-left:4px;font-weight:600">≈ ₱200</span>
         </div>
-        <div class="vbody">
+        <div class="vbody" id="bind-vbody">
           <div class="vadd" id="vadd-row">
             <input class="input" id="vinput" type="text" placeholder="Enter code or comma-separated codes" maxlength="200">
             <button class="btn-ghost btn-sm" id="add-btn" type="button">
@@ -4868,6 +4902,59 @@ if __name__ == "__main__":
             Clear
           </button>
         </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ ARK CLAIM ═══ -->
+    <div class="card view view-vouchers" id="panel-ark">
+      <div class="collapse-head" id="ark-toggle">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7z"/><path d="M14 11h3v9"/><path d="M11 14v6"/><path d="M14 17h3"/></svg>
+          ARK Claim
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="tag tag-blue">ark/11504</span>
+          <span class="chev" id="ark-arrow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </div>
+      </div>
+      <div class="collapse-body" id="ark-body">
+
+        <!-- fixed code chips -->
+        <div style="padding:10px 14px 0">
+          <div style="font-size:.67rem;font-weight:800;letter-spacing:.08em;color:var(--mut);text-transform:uppercase;margin-bottom:8px">
+            Codes · pkg 17131185
+          </div>
+          <div class="ark-code-chips">
+            <span class="ark-code-chip">gm0pha11</span>
+            <span class="ark-code-chip">gm0phi11</span>
+            <span class="ark-code-chip">gm365phi11</span>
+            <span class="ark-code-chip">gm365pha11</span>
+          </div>
+        </div>
+
+        <!-- RAW paste area -->
+        <div style="padding:12px 14px 0">
+          <div style="font-size:.67rem;font-weight:800;letter-spacing:.08em;color:var(--mut);text-transform:uppercase;margin-bottom:6px">
+            Paste RAW Request
+          </div>
+          <textarea id="ark-rawin" placeholder="Paste captured RAW request here…" style="width:100%;box-sizing:border-box;min-height:80px;font-size:.72rem;resize:vertical"></textarea>
+        </div>
+
+        <!-- action buttons -->
+        <div class="btn-row" style="padding:10px 14px 14px">
+          <button class="btn-primary" id="ark-run-btn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Parse &amp; Run ARK
+          </button>
+          <button class="btn-secondary" id="ark-paste-btn" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+            Paste
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -5316,6 +5403,7 @@ if __name__ == "__main__":
   var _running = false;
   var _activeBatch = 'ph0313';
   var _autoMode = false;
+
   var _lastParsed = null;
 
   var _sessionKey = '';
@@ -5383,7 +5471,7 @@ if __name__ == "__main__":
       pkgId: '17145850', type: 'bind', coin: 'gt', label: 'ph0313 (81%)', adminOnly: false
     },
     'gm0pha': {
-      codes: ['gm0pha11', 'gm0pha12', 'gm0pha13', 'gm0pha14'],
+      codes: ['gm0pha11', 'gm0phi11', 'gm365phi11', 'gm365pha11'],
       pkgId: '17131185', mid: '4142402', type: 'delivery', coin: 'gt', label: 'gm0pha', adminOnly: true
     }
   };
@@ -5415,6 +5503,7 @@ if __name__ == "__main__":
   initCollapse('voucher-toggle', 'voucher-body', 'voucher-arrow');
   initCollapse('bf-toggle', 'bf-body', 'bf-arrow');
   initCollapse('logs-toggle', 'logs-body', 'logs-arrow');
+  initCollapse('ark-toggle',  'ark-body',  'ark-arrow');
   initCollapse('topup-history-toggle', 'topup-history-body', 'topup-history-arrow');
 
   // ════════════════════════════════════════════════════════════
@@ -6269,7 +6358,7 @@ if __name__ == "__main__":
       gm_device_id: extract('GM0PHA_DEVICE_ID'), mode: mode,
       brute_start: extractInt('BRUTE_START'), brute_end: extractInt('BRUTE_END'),
       brute_threads: extractInt('BRUTE_THREADS'), brute_max_claims: extractInt('BRUTE_MAX_CLAIMS'),
-      account_delay: $('run-delay').value || 3
+      account_delay: $('run-delay').value || 3,
     };
   }
 
@@ -6857,6 +6946,111 @@ if __name__ == "__main__":
       }
     });
   }
+
+
+  // ════════════════════════════════════════════════════════════
+  // ARK CLAIM — separate parse & run for ark/11504
+  // ════════════════════════════════════════════════════════════
+
+  // Paste button for ARK textarea
+  $('ark-paste-btn').addEventListener('click', function () {
+    navigator.clipboard.readText().then(function (t) {
+      $('ark-rawin').value = t;
+      toast('s', 'Pasted into ARK textarea');
+    }).catch(function () { toast('e', 'Clipboard read failed — paste manually'); });
+  });
+
+  // Main ARK run: parse RAW then immediately run _collect_ark on the server
+  function doArkRun() {
+    var url = $('run-url').value.trim().replace(/\/+$/, '');
+    var key = $('run-key').value.trim();
+    if (!url) { toast('e', 'Enter your server URL first'); return; }
+    if (!key) { toast('e', 'Enter your access key first'); return; }
+
+    var raw = $('ark-rawin').value.trim();
+    if (!raw) { toast('e', 'Paste a RAW request into the ARK textarea first'); return; }
+
+    // ── Parse auth fields from the pasted RAW ──
+    var token       = getHdr(raw, 'token');
+    var gwAuth      = getHdr(raw, 'x-gw-auth');
+    var armorToken  = getHdr(raw, 'armortoken');
+    var smDeviceId  = getHdr(raw, 'smdeviceid');
+    var ugid        = getHdr(raw, 'ugid');
+    var sortuid     = getHdr(raw, 'sortuid') || getHdr(raw, 'newuid');
+    var deviceId    = getHdr(raw, 'dev-id') || getHdr(raw, 'deviceid');
+    var appCountry  = getHdr(raw, 'appcountry')   || 'PH';
+    var userCountry = getHdr(raw, 'usercountry')  || 'PH';
+    var localCountry= getHdr(raw, 'localcountry') || 'PH';
+    var appVersion  = getHdr(raw, 'appversion')   || getHdr(raw, 'version') || '11.3.4';
+    var deviceInfo  = getHdr(raw, 'device')       || '';
+
+    if (!token) { toast('e', 'No token found in RAW — check format'); return; }
+
+    var gmSite = 'andshph'; // PH default; adjust if other regions needed
+
+    var arkCfg = {
+      tokens:       [token],
+      gw_auth:      gwAuth      || '',
+      armor_token:  armorToken  || '',
+      smdevice_id:  smDeviceId  || '',
+      ugid:         ugid        || '',
+      sortuid:      sortuid     || '',
+      device_id:    deviceId    || '',
+      appcountry:   appCountry,
+      usercountry:  userCountry,
+      localcountry: localCountry,
+      claim_country:localCountry || 'PH',
+      currency:     'PHP',
+      appcurrency:  'PHP',
+      app_version:  appVersion,
+      device_info:  deviceInfo,
+      gm_site:      gmSite,
+      gm_device_id: deviceId    || '',
+      mode:         'ark',
+      account_delay: 0
+    };
+
+    // ── Deduct GT then run ──
+    fetch(url + '/user/use_coin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_key: key, batch: 'gm0pha', coin_type: 'gt', first_name: _sessionFirstName || '' })
+    }).then(function (r) {
+      var status = r.status;
+      return r.json().then(function (j) { j.__status = status; return j; });
+    }).then(function (coinData) {
+      if (!coinData.ok) {
+        toast('e', coinData.error || 'Not enough GT — top up your wallet');
+        return;
+      }
+      _currentLogId = coinData.log_id || null;
+      if (coinData.coins) {
+        if ('gt' in coinData.coins) _sessionGT = coinData.coins.gt;
+        else _sessionGT = (coinData.coins.bronze || 0) + (coinData.coins.silver || 0) + (coinData.coins.gold || 0);
+      } else if (typeof _sessionGT === 'number') {
+        _sessionGT = Math.max(0, _sessionGT - 1);
+      }
+      localStorage.setItem('ssu_session_gt', String(_sessionGT));
+      updateWallet();
+      $('ark-rawin').value = '';
+      toast('s', '1 GT used — starting ARK claim…');
+      _doActualRun(url, key, arkCfg);
+    }).catch(function (err) {
+      if (_sessionGT > 0) {
+        _sessionGT -= 1;
+        localStorage.setItem('ssu_session_gt', String(_sessionGT));
+        updateWallet();
+        _currentLogId = null;
+        toast('w', 'Server unreachable — running offline');
+        _doActualRun(url, key, arkCfg);
+      } else {
+        toast('e', 'GT error: ' + err.message);
+      }
+    });
+  }
+
+  $('ark-run-btn').addEventListener('click', doArkRun);
+
   $('run-btn').addEventListener('click', doRun);
 
   function _postLogResult(result, detail) {
