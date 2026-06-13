@@ -7507,11 +7507,27 @@ if __name__ == "__main__":
   var _musicPlaying = false;
   var _musicAudio   = null;
 
+  function _musicCreateAudio() {
+    // Use createElement — more compatible on Android Chrome than new Audio()
+    var a = document.createElement('audio');
+    a.preload = 'auto';
+    a.src = _musicTracks[_musicIdx];
+    a.addEventListener('ended', _musicNext);
+    a.addEventListener('error', function(e) {
+      console.warn('Music error:', e);
+      _musicPlaying = false;
+      _musicUpdateBtn();
+    });
+    return a;
+  }
+
   function _musicNext() {
     _musicIdx = (_musicIdx + 1) % _musicTracks.length;
-    _musicAudio.src = _musicTracks[_musicIdx];
-    _musicAudio.load();
-    _musicAudio.play().catch(function(){});
+    if (_musicAudio) {
+      _musicAudio.src = _musicTracks[_musicIdx];
+      _musicAudio.load();
+      _musicAudio.play().catch(function(e){ console.warn('Next track error:', e); });
+    }
   }
 
   function _musicUpdateBtn() {
@@ -7519,7 +7535,7 @@ if __name__ == "__main__":
     if (!btn) return;
     if (_musicPlaying) {
       btn.classList.add('playing');
-      btn.title = 'Now playing — click to stop';
+      btn.title = 'Now playing — tap to stop';
     } else {
       btn.classList.remove('playing');
       btn.title = 'Background music';
@@ -7527,23 +7543,41 @@ if __name__ == "__main__":
   }
 
   function musicToggle() {
-    if (!_musicAudio) {
-      _musicAudio = new Audio(_musicTracks[_musicIdx]);
-      _musicAudio.addEventListener('ended', _musicNext);
-    }
-    if (_musicPlaying) {
+    // Pause / stop
+    if (_musicPlaying && _musicAudio) {
       _musicAudio.pause();
       _musicPlaying = false;
-    } else {
-      _musicAudio.play().then(function() {
+      _musicUpdateBtn();
+      return;
+    }
+
+    // Create audio element if needed (inside click = valid user gesture)
+    if (!_musicAudio) {
+      _musicAudio = _musicCreateAudio();
+    }
+
+    // Play — must be called directly inside user gesture handler
+    var p = _musicAudio.play();
+    if (p && typeof p.then === 'function') {
+      p.then(function() {
         _musicPlaying = true;
         _musicUpdateBtn();
-      }).catch(function() {
-        toast('w', 'Tap again to start music');
+      }).catch(function(err) {
+        console.error('Play failed:', err.name, err.message);
+        // Try re-creating the audio element and playing again
+        _musicAudio = _musicCreateAudio();
+        _musicAudio.play().then(function() {
+          _musicPlaying = true;
+          _musicUpdateBtn();
+        }).catch(function(err2) {
+          toast('e', 'Music error: ' + err2.message);
+        });
       });
-      return; // wait for promise
+    } else {
+      // Legacy browser — assume played
+      _musicPlaying = true;
+      _musicUpdateBtn();
     }
-    _musicUpdateBtn();
   }
 
   $('run-btn').addEventListener('click', doRun);
