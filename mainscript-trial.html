@@ -17,7 +17,7 @@
     rel="stylesheet">
   <script>
     (function () {
-      var t = localStorage.getItem('ssu_theme') || 'light';
+      var t = localStorage.getItem('ssu_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', t);
       if (localStorage.getItem('ssu_session_key')) {
         document.addEventListener('DOMContentLoaded', function () {
@@ -4171,6 +4171,11 @@ if __name__ == "__main__":
   <div id="login-overlay">
     <div class="login-bubble-tl"></div>
     <div class="login-bubble-bl"></div>
+    <!-- Theme toggle in top-right of overlay -->
+    <button id="login-theme-toggle" type="button" aria-label="Toggle theme" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.7);border:1.5px solid rgba(88,204,2,.3);border-radius:20px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:#46A302;backdrop-filter:blur(4px)">
+      <svg id="ltt-sun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg id="ltt-moon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
     <div class="login-box">
 
       <!-- Mascot -->
@@ -6377,11 +6382,12 @@ if __name__ == "__main__":
       });
     }
     // Only show warn items in the list when there are no claimed items
-    // (multiple-account runs mix claimed + already-owned — claimed takes priority)
     if (_results.warned.length && nClaimed === 0) {
       _results.warned.forEach(function (line) {
-        var code = extractErrCode(line) || '501405';
-        html += '<div class="rm-item warn"><span class="rm-icon-wrap warn">' + ICONS.warn + '</span><div><div class="rm-text">Already owned</div><div class="rm-sub">Error code: ' + code + '</div></div></div>';
+        // Extract code names after "— " in the warn line
+        var codesMatch = line.match(/—\s*(.+)$/);
+        var subText = codesMatch ? codesMatch[1].trim() : ('Error code: ' + (extractErrCode(line) || '501405'));
+        html += '<div class="rm-item warn"><span class="rm-icon-wrap warn">' + ICONS.warn + '</span><div><div class="rm-text">Already owned</div><div class="rm-sub" style="word-break:break-all">' + esc(subText) + '</div></div></div>';
       });
     }
     if (_results.login.length) {
@@ -7137,6 +7143,24 @@ if __name__ == "__main__":
   }
   $('ark-btn').addEventListener('click', doArkRun);
 
+
+  // Login page theme toggle
+  var lttBtn = $('login-theme-toggle');
+  if (lttBtn) {
+    function _syncLttIcon() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      $('ltt-sun').style.display  = isDark ? 'none'  : '';
+      $('ltt-moon').style.display = isDark ? ''      : 'none';
+    }
+    _syncLttIcon();
+    lttBtn.addEventListener('click', function () {
+      var cur = document.documentElement.getAttribute('data-theme');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('ssu_theme', next);
+      _syncLttIcon();
+    });
+  }
   $('run-btn').addEventListener('click', doRun);
 
   function _postLogResult(result, detail) {
