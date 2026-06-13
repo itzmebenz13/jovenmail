@@ -6154,7 +6154,7 @@ if __name__ == "__main__":
       html += '<div class="rm-chips">';
       _results.claimed.forEach(function (l) {
         parseClaimedCodes(l).forEach(function (code) {
-          if (code !== '✓') html += '<span class="rm-chip">✓ ' + esc(code.substring(0, 40)) + '</span>';
+          if (code !== '✓') html += '<span class="rm-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + esc(code.substring(0, 40)) + '</span>';
         });
       });
       html += '</div>';
