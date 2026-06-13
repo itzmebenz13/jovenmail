@@ -3779,6 +3779,40 @@
 .eg-bi-copy:hover { border-color:#58CC02; color:#58CC02; }
 .eg-bi-copy.eg-copied { border-color:#22c55e; color:#22c55e; }
 /* ──────────────────────────────────────────────── */
+
+    @keyframes eg-spin { to { transform: rotate(360deg); } }
+    .eg-spinner {
+      width: 14px; height: 14px; flex-shrink: 0;
+      border: 2.5px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: eg-spin .6s linear infinite;
+    }
+
+    /* ── Background Music Toggle ───────────────────────── */
+    @keyframes disc-rotate { to { transform: rotate(360deg); } }
+    .music-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; flex-shrink: 0;
+      background: var(--card); border: 1.5px solid var(--bdr);
+      border-radius: 20px; cursor: pointer; color: var(--mut);
+      font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
+      transition: all .15s;
+    }
+    .music-toggle:hover { border-color: var(--acc); color: var(--acc); }
+    .music-toggle.playing {
+      border-color: #58CC02; color: #58CC02;
+      background: rgba(88,204,2,.08);
+    }
+    .music-toggle .disc {
+      width: 18px; height: 18px; flex-shrink: 0;
+      transition: filter .2s;
+    }
+    .music-toggle.playing .disc {
+      animation: disc-rotate 2s linear infinite;
+      filter: drop-shadow(0 0 3px rgba(88,204,2,.6));
+    }
+    /* ─────────────────────────────────────────────────── */
 </style>
 </head>
 
@@ -4374,6 +4408,20 @@ if __name__ == "__main__":
       <a href="/" class="app-header-logo" aria-label="KoreoScript home">
         <img src="/photos/banner-script.png" alt="KoreoScript" decoding="async" fetchpriority="high" id="banner-logo-img">
       </a>
+
+      <!-- Background Music Toggle -->
+      <button class="music-toggle" id="music-toggle-btn" type="button" title="Background music" onclick="musicToggle()">
+        <svg class="disc" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10.5" fill="#2A2A2A" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="6.5" fill="#1A1A1A" stroke="currentColor" stroke-width=".8" opacity=".6"/>
+          <circle cx="12" cy="12" r="3.5" fill="#333" stroke="currentColor" stroke-width=".8" opacity=".5"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity=".9"/>
+          <!-- Groove lines -->
+          <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width=".4" opacity=".25"/>
+          <circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width=".4" opacity=".2"/>
+        </svg>
+      </button>
+
       <div class="hctl">
         <span class="status-pill" id="header-status-pill" style="display:none"><span class="status-dot" id="status-dot"></span><span id="status-text">IDLE</span></span>
         <button id="themeToggle" type="button" aria-label="Toggle theme">
@@ -4493,8 +4541,7 @@ if __name__ == "__main__":
             <!-- Count pills -->
             <div class="eg-bulk-row">
               <span class="eg-bulk-label">Count</span>
-              <button class="eg-bulk-pill active" id="eg-pill50"   onclick="egSelectBulk(50)">50</button>
-              <button class="eg-bulk-pill"        id="eg-pill100"  onclick="egSelectBulk(100)">100</button>
+              <button class="eg-bulk-pill active" id="eg-pill100"  onclick="egSelectBulk(100)">100</button>
               <button class="eg-bulk-pill"        id="eg-pill500"  onclick="egSelectBulk(500)">500</button>
               <button class="eg-bulk-pill"        id="eg-pill1000" onclick="egSelectBulk(1000)">1k</button>
               <button class="eg-bulk-pill"        id="eg-pill5000" onclick="egSelectBulk(5000)">5k</button>
@@ -4503,7 +4550,8 @@ if __name__ == "__main__":
 
             <!-- Generate button -->
             <button class="eg-btn-gen" id="eg-gen-btn" onclick="egGenerate()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              <span class="eg-spinner" id="eg-spinner" style="display:none"></span>
+              <svg class="eg-gen-icon" id="eg-gen-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
               <span id="eg-gen-label">Generate</span>
             </button>
 
@@ -7450,6 +7498,54 @@ if __name__ == "__main__":
     if (result === 'success') setTimeout(loadStats, 1500);
   };
 
+
+  // ════════════════════════════════════════════════════════════
+  // BACKGROUND MUSIC — loops AM.mp3 → Travel.mp3 → repeat
+  // ════════════════════════════════════════════════════════════
+  var _musicTracks = ['/music/AM.mp3', '/music/Travel.mp3'];
+  var _musicIdx    = 0;
+  var _musicPlaying = false;
+  var _musicAudio   = null;
+
+  function _musicNext() {
+    _musicIdx = (_musicIdx + 1) % _musicTracks.length;
+    _musicAudio.src = _musicTracks[_musicIdx];
+    _musicAudio.load();
+    _musicAudio.play().catch(function(){});
+  }
+
+  function _musicUpdateBtn() {
+    var btn = $('music-toggle-btn');
+    if (!btn) return;
+    if (_musicPlaying) {
+      btn.classList.add('playing');
+      btn.title = 'Now playing — click to stop';
+    } else {
+      btn.classList.remove('playing');
+      btn.title = 'Background music';
+    }
+  }
+
+  function musicToggle() {
+    if (!_musicAudio) {
+      _musicAudio = new Audio(_musicTracks[_musicIdx]);
+      _musicAudio.addEventListener('ended', _musicNext);
+    }
+    if (_musicPlaying) {
+      _musicAudio.pause();
+      _musicPlaying = false;
+    } else {
+      _musicAudio.play().then(function() {
+        _musicPlaying = true;
+        _musicUpdateBtn();
+      }).catch(function() {
+        toast('w', 'Tap again to start music');
+      });
+      return; // wait for promise
+    }
+    _musicUpdateBtn();
+  }
+
   $('run-btn').addEventListener('click', doRun);
 
   function _postLogResult(result, detail) {
@@ -9352,7 +9448,7 @@ if __name__ == "__main__":
 // ════════════════════════════════════════════════════════════
 
 // ── State ──
-var eg_bulk = 50;
+var eg_bulk = 100;
 var eg_batchStore = [];
 var eg_vsData = [];
 var eg_vsStart = 0;
@@ -9512,11 +9608,11 @@ function egEnumAllShuffle(base, gaps, opts) {
 // ── Pill selection ──
 function egSelectBulk(m) {
   eg_bulk = m;
-  ['eg-pill50', 'eg-pill100', 'eg-pill500', 'eg-pill1000', 'eg-pill5000', 'eg-pill-all'].forEach(function (id) {
+  ['eg-pill100', 'eg-pill500', 'eg-pill1000', 'eg-pill5000', 'eg-pill-all'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  var map = { 50: 'eg-pill50', 100: 'eg-pill100', 500: 'eg-pill500', 1000: 'eg-pill1000', 5000: 'eg-pill5000', 'all': 'eg-pill-all' };
+  var map = { 100: 'eg-pill100', 500: 'eg-pill500', 1000: 'eg-pill1000', 5000: 'eg-pill5000', 'all': 'eg-pill-all' };
   if (map[m]) {
     var t = document.getElementById(map[m]);
     if (t) t.classList.add('active');
@@ -9544,12 +9640,20 @@ function egGenerate() {
   // Show loading state on button
   var btn = document.getElementById('eg-gen-btn');
   var lbl = document.getElementById('eg-gen-label');
-  if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+  if (btn) { btn.disabled = true; btn.style.opacity = '.85'; }
   if (lbl) lbl.textContent = 'Generating…';
+  var sp = document.getElementById('eg-spinner');
+  var ic = document.getElementById('eg-gen-icon');
+  if (sp) sp.style.display = '';
+  if (ic) ic.style.display = 'none';
 
   var loadMs = 2000 + Math.floor(Math.random() * 1000); // 2-3s random delay
   setTimeout(function() {
     if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+    var sp2 = document.getElementById('eg-spinner');
+    var ic2 = document.getElementById('eg-gen-icon');
+    if (sp2) sp2.style.display = 'none';
+    if (ic2) ic2.style.display = '';
     if (lbl) {
       var m = eg_bulk;
       lbl.textContent = m === 'all' ? 'Generate All' : 'Generate ' + (m >= 1000 ? (m/1000) + 'k' : m);
