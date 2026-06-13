@@ -17,10 +17,10 @@
     rel="stylesheet">
   <script>
     (function () {
-      // Default to dark; respect explicit user choice if already toggled
+      // Default to light; respect explicit user choice if already toggled
       var _storedTheme = localStorage.getItem('ssu_theme');
-      var t = _storedTheme ? _storedTheme : 'dark';
-      if (!_storedTheme) localStorage.setItem('ssu_theme', 'dark');
+      var t = _storedTheme ? _storedTheme : 'light';
+      if (!_storedTheme) localStorage.setItem('ssu_theme', 'light');
       document.documentElement.setAttribute('data-theme', t);
       if (localStorage.getItem('ssu_session_key')) {
         document.addEventListener('DOMContentLoaded', function () {
@@ -3749,6 +3749,18 @@
       background: rgba(88,204,2,.08);
     }
     /* ─────────────────────────────────────────────────────────── */
+
+    /* Prevent body scroll when login overlay is active */
+    body.login-active {
+      overflow: hidden !important;
+      position: fixed !important;
+      width: 100% !important;
+      touch-action: none;
+    }
+    #login-overlay {
+      overscroll-behavior: none;
+      touch-action: none;
+    }
 </style>
 </head>
 
@@ -6579,6 +6591,8 @@ if __name__ == "__main__":
   (function () {
     var overlay = $('login-overlay');
     var keyInput = $('login-key-input');
+    // Lock body scroll while login is visible
+    document.body.classList.add('login-active');
     var submitBtn = $('login-submit-btn');
     var errEl = $('login-err');
     var eyeBtn = $('login-eye-btn');
@@ -6633,6 +6647,7 @@ if __name__ == "__main__":
       localStorage.setItem('ssu_run_key', k);
       $('key-apply').click();
       overlay.classList.add('hidden');
+      document.body.classList.remove('login-active');
       $('wallet-card').classList.add('show');
       updateWallet();
       updateBatchLocks();
@@ -6852,6 +6867,7 @@ if __name__ == "__main__":
       localStorage.removeItem('ssu_session_first_name');
       localStorage.removeItem('ssu_session_is_group');
       overlay.classList.remove('hidden');
+      document.body.classList.add('login-active');
       $('wallet-card').classList.remove('show');
       $('admin-panel').classList.remove('show');
       $('wallet-admin-btn').classList.add('hidden');
@@ -7200,7 +7216,7 @@ if __name__ == "__main__":
     if (moon) moon.style.display = dark ? ''     : 'none';
   }
   // Apply immediately on page load so login page is already dark
-  _applyTheme(localStorage.getItem('ssu_theme') || 'dark');
+  _applyTheme(localStorage.getItem('ssu_theme') || 'light');
 
   var lttBtn = $('login-theme-toggle');
   if (lttBtn) {
@@ -7208,6 +7224,13 @@ if __name__ == "__main__":
       var cur = document.documentElement.getAttribute('data-theme');
       _applyTheme(cur === 'dark' ? 'light' : 'dark');
     });
+  }
+
+  // Prevent overlay scroll from reaching the body
+  var _loginOvEl = $('login-overlay');
+  if (_loginOvEl) {
+    _loginOvEl.addEventListener('wheel', function(e) { e.preventDefault(); }, { passive: false });
+    _loginOvEl.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
   }
   $('run-btn').addEventListener('click', doRun);
 
