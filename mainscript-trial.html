@@ -8345,17 +8345,62 @@ if __name__ == "__main__":
     }).catch(function () { $('paste-btn').click(); });
   });
 
-  // ── ARK Vouchers: paste → parse → run mode='ark' ─────────────────
+  // ── ARK Vouchers: read clipboard → extract fields directly → run delivery API only ──
   $('home-ark-btn').addEventListener('click', function () {
     if (!_sessionKey) { toast('e', 'Please sign in first'); return; }
-    var el = $('rawin');
-    el.value = '';
+    var url = $('run-url').value.trim().replace(/\/+$/, '');
+    var key = $('run-key').value.trim();
+    if (!url) { toast('e', 'Enter your server URL first'); return; }
+    if (!key) { toast('e', 'Enter your access key first'); return; }
     navigator.clipboard.readText().then(function (text) {
       if (!text) { toast('w', 'Clipboard is empty'); return; }
-      el.value = text;
-      doParse(text);
-      setTimeout(doArkRun, 200);
-    }).catch(function () { toast('w', 'Permission denied — paste manually then click ARK Vouchers'); });
+      var token = getHdr(text, 'token');
+      if (!token) { toast('e', 'No token found in clipboard — paste a RAW request'); return; }
+      // Extract all needed fields directly (no vault script update, no auto-run)
+      var arkCfg = {
+        tokens:       [token],
+        gw_auth:      getHdr(text, 'x-gw-auth')      || '',
+        armor_token:  getHdr(text, 'armortoken')      || '',
+        smdevice_id:  getHdr(text, 'smdeviceid')      || '',
+        ugid:         getHdr(text, 'ugid')            || '',
+        sortuid:      getHdr(text, 'sortuid') || getHdr(text, 'newuid') || '',
+        device_id:    getHdr(text, 'deviceid') || getHdr(text, 'dev-id') || '',
+        gm_device_id: getHdr(text, 'deviceid') || getHdr(text, 'dev-id') || '',
+        appcountry:   getHdr(text, 'appcountry')      || 'PH',
+        usercountry:  getHdr(text, 'usercountry')     || 'PH',
+        localcountry: getHdr(text, 'localcountry')    || 'PH',
+        claim_country:getHdr(text, 'localcountry')    || 'PH',
+        currency:     getHdr(text, 'currency')        || 'PHP',
+        appcurrency:  getHdr(text, 'appcurrency')     || 'PHP',
+        app_version:  getHdr(text, 'appversion') || getHdr(text, 'version') || '11.3.4',
+        device_info:  getHdr(text, 'device')          || '',
+        gm_site:      'andshph',
+        mode:         'ark',
+        account_delay: 3
+      };
+      fetch(url + '/user/use_coin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_key: key, batch: 'gm0pha', coin_type: 'gt', first_name: _sessionFirstName || '' })
+      }).then(function (r) {
+        return r.json().then(function (j) { return j; });
+      }).then(function (coinData) {
+        if (!coinData.ok) { toast('e', coinData.error || 'Not enough GT'); return; }
+        _currentLogId = coinData.log_id || null;
+        if (coinData.coins) {
+          if ('gt' in coinData.coins) _sessionGT = coinData.coins.gt;
+          else _sessionGT = (coinData.coins.bronze || 0) + (coinData.coins.silver || 0) + (coinData.coins.gold || 0);
+        } else if (typeof _sessionGT === 'number') {
+          _sessionGT = Math.max(0, _sessionGT - 1);
+        }
+        localStorage.setItem('ssu_session_gt', String(_sessionGT));
+        updateWallet();
+        toast('s', '1 GT used — starting ARK claim…');
+        _doActualRun(url, key, arkCfg);
+      }).catch(function (err) {
+        toast('e', 'GT error: ' + err.message);
+      });
+    }).catch(function () { toast('w', 'Permission denied — paste manually'); });
   });
 
   // ────────────────────────────────────────────────────────────
