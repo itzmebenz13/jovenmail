@@ -3788,6 +3788,16 @@
       border-radius: 50%;
       animation: eg-spin .6s linear infinite;
     }
+
+    /* Prevent long-press / save image on all images */
+    img {
+      -webkit-user-drag: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+      pointer-events: none;
+    }
+    /* Re-enable pointer events for images inside clickable elements */
+    a img, button img { pointer-events: auto; }
 </style>
 </head>
 
