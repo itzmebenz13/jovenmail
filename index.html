@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#09090b" />
+  <meta name="theme-color" content="#0a1208" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -36,62 +36,68 @@
   <style>
     :root {
       /* -- LIGHT MODE (KoreoMail Palette) -- */
-      --bg-app: #E6F2FF;
-      --bg-card: #ffffff;
-      --bg-input: #f0f7ff;
-      --bg-hover: #daeeff;
+      --bg-app: #F7F7F7;
+      --bg-card: #FFFFFF;
+      --bg-input: #FAFAFA;
+      --bg-hover: #F0F0F0;
 
-      --border: #c8e0f7;
-      --border-strong: #a8c8f0;
+      --border: #E5E5E5;
+      --border-strong: #CCCCCC;
 
-      --accent: #4DA6FF;
-      /* KoreoMail blue */
-      --accent-hover: #2e8fe8;
+      --accent: #58CC02;
+      /* Duolingo green */
+      --accent-hover: #46A302;
       --accent-text: #ffffff;
-      /* White text on blue button */
+      /* White text on green button */
       --code-text: #1B2A41;
-      /* Dark navy for code in light mode */
+      /* Dark for code in light mode */
 
-      --text-main: #1B2A41;
-      --text-dim: #4a6a8a;
-      --text-muted: #7a9ab8;
+      --text-main: #3C3C3C;
+      --text-dim: #6B6B6B;
+      --text-muted: #9B9B9B;
 
-      --shadow-card: 0 2px 8px -2px rgba(77, 166, 255, 0.10);
-      --radius-btn: 10px;
-      --radius-card: 14px;
-      --radius-input: 10px;
+      --shadow-card: 0 2px 8px -2px rgba(88, 204, 2, 0.10);
+      --radius-btn: 12px;
+      --radius-card: 16px;
+      --radius-input: 12px;
+      --accent-dark: #46A302;
+      --accent2: #FF9600;
+      --accent2-dark: #CC7000;
     }
 
     [data-theme="dark"] {
       /* -- DARK MODE (KoreoMail Palette) -- */
-      --bg-app: #0e1621;
+      --bg-app: #131F33;
       /* Very deep navy background */
-      --bg-card: #152030;
+      --bg-card: #1C2D3F;
       /* Card surface — navy-rich */
-      --bg-input: #0f1a28;
+      --bg-input: #162030;
       /* Input background */
-      --bg-hover: #1d2e42;
+      --bg-hover: #1F2F3F;
       /* Hover states */
 
-      --border: #1e3048;
-      --border-strong: #2a4060;
+      --border: #2A3D52;
+      --border-strong: #3A5070;
 
-      --accent: #4DA6FF;
-      /* KoreoMail blue — readable in dark mode */
-      --accent-hover: #6db8ff;
+      --accent: #58CC02;
+      /* Duolingo green — readable in dark mode */
+      --accent-hover: #70d900;
       --accent-text: #ffffff;
       /* White text on blue button */
-      --code-text: #4DA6FF;
+      --code-text: #58CC02;
       /* KoreoMail blue for code in dark mode */
 
-      --text-main: #e8f2ff;
-      --text-dim: #7aa0c4;
-      --text-muted: #3a5878;
+      --text-main: #FFFDE6;
+      --text-dim: #7B91A7;
+      --text-muted: #4A6070;
 
       --shadow-card: 0 4px 20px -4px rgba(0, 0, 0, 0.5);
-      --radius-btn: 10px;
-      --radius-card: 14px;
-      --radius-input: 10px;
+      --radius-btn: 12px;
+      --radius-card: 16px;
+      --radius-input: 12px;
+      --accent-dark: #46A302;
+      --accent2: #FF9600;
+      --accent2-dark: #CC7000;
     }
 
     [data-theme="dark"] .logo-wrap img {
@@ -101,45 +107,45 @@
     /* ─── Light mode: override hardcoded glows with KoreoMail blue equivalents ─── */
     :root .btn-primary:hover,
     [data-theme="light"] .btn-primary:hover {
-      box-shadow: 0 4px 12px rgba(77, 166, 255, 0.32) !important;
+      filter: brightness(1.06);
     }
 
     [data-theme="light"] .alias-field.has-alias {
-      border-color: rgba(77, 166, 255, 0.40) !important;
-      box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.10) !important;
+      border-color: rgba(88, 204, 2, 0.40) !important;
+      box-shadow: 0 0 0 3px rgba(88, 204, 2, 0.10) !important;
     }
 
     [data-theme="light"] .owner-badge {
-      background: rgba(77, 166, 255, 0.12) !important;
-      border-color: rgba(77, 166, 255, 0.35) !important;
+      background: rgba(88, 204, 2, 0.12) !important;
+      border-color: rgba(88, 204, 2, 0.35) !important;
       color: #1B2A41 !important;
     }
 
     [data-theme="light"] #ownerAliasBadge {
-      background: rgba(77, 166, 255, 0.10) !important;
-      border-color: rgba(77, 166, 255, 0.30) !important;
+      background: rgba(88, 204, 2, 0.10) !important;
+      border-color: rgba(88, 204, 2, 0.30) !important;
       color: #1B2A41 !important;
     }
 
     [data-theme="light"] .owner-action-btn.ql-btn {
-      border-color: rgba(77, 166, 255, 0.30) !important;
-      background: rgba(77, 166, 255, 0.07) !important;
+      border-color: rgba(88, 204, 2, 0.30) !important;
+      background: rgba(88, 204, 2, 0.07) !important;
       color: #1B2A41 !important;
     }
 
     [data-theme="light"] .owner-action-btn.ql-btn .oab-icon {
-      background: rgba(77, 166, 255, 0.14) !important;
+      background: rgba(88, 204, 2, 0.14) !important;
     }
 
     [data-theme="light"] .owner-action-btn.ql-btn:hover {
-      background: rgba(77, 166, 255, 0.14) !important;
-      border-color: rgba(77, 166, 255, 0.55) !important;
-      box-shadow: 0 5px 16px rgba(77, 166, 255, 0.20) !important;
+      background: rgba(88, 204, 2, 0.14) !important;
+      border-color: rgba(88, 204, 2, 0.55) !important;
+      box-shadow: 0 5px 16px rgba(88, 204, 2, 0.20) !important;
     }
 
     [data-theme="light"] #viewerBanner {
-      background: rgba(77, 166, 255, 0.07) !important;
-      border-color: rgba(77, 166, 255, 0.25) !important;
+      background: rgba(88, 204, 2, 0.07) !important;
+      border-color: rgba(88, 204, 2, 0.25) !important;
     }
 
     [data-theme="light"] .viewer-label {
@@ -147,18 +153,18 @@
     }
 
     [data-theme="light"] .sync-dot {
-      background: #4DA6FF !important;
+      background: #58CC02 !important;
     }
 
     [data-theme="light"] .ql-mode-btn.active {
-      border-color: #4DA6FF !important;
-      background: rgba(77, 166, 255, 0.08) !important;
+      border-color: #58CC02 !important;
+      background: rgba(88, 204, 2, 0.08) !important;
       color: #1B2A41 !important;
     }
 
     [data-theme="light"] .ql-loader-icon {
-      background: rgba(77, 166, 255, 0.10) !important;
-      border-color: rgba(77, 166, 255, 0.28) !important;
+      background: rgba(88, 204, 2, 0.10) !important;
+      border-color: rgba(88, 204, 2, 0.28) !important;
       animation: qlPulseLM 1.6s ease-in-out infinite !important;
     }
 
@@ -166,24 +172,24 @@
 
       0%,
       100% {
-        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.35);
+        box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.35);
       }
 
       50% {
-        box-shadow: 0 0 0 14px rgba(77, 166, 255, 0);
+        box-shadow: 0 0 0 14px rgba(88, 204, 2, 0);
       }
     }
 
     [data-theme="light"] .ql-loader-dots span {
-      background: #4DA6FF !important;
+      background: #58CC02 !important;
     }
 
     [data-theme="light"] .adm-logo-dot {
-      background: #4DA6FF !important;
+      background: #58CC02 !important;
     }
 
     [data-theme="light"] .adm-stat .adm-val.accent {
-      color: #4DA6FF !important;
+      color: #58CC02 !important;
     }
 
     *,
@@ -203,7 +209,7 @@
     body {
       background-color: var(--bg-app);
       color: var(--text-main);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Nunito', sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -247,7 +253,8 @@
 
     .logo {
       font-size: 1.15rem;
-      font-weight: 700;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
       color: var(--text-main);
       letter-spacing: -0.02em;
     }
@@ -286,7 +293,7 @@
       color: var(--text-dim);
       text-decoration: none;
       font-size: 0.85rem;
-      font-weight: 500;
+      font-weight: 700;
       transition: color 0.2s;
     }
 
@@ -405,10 +412,10 @@
     /* -- MAIN CONTROL CARD -- */
     .control-card {
       background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
       padding: 18px;
-      box-shadow: var(--shadow-card);
+      box-shadow: 0 1px 4px -1px rgba(88, 204, 2, 0.08);
       margin-bottom: 28px;
     }
 
@@ -421,7 +428,8 @@
 
     .card-title {
       font-size: 0.75rem;
-      font-weight: 600;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.07em;
@@ -450,29 +458,29 @@
 
     @keyframes pulse-green {
       0% {
-        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.45);
+        box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.45);
       }
 
       70% {
-        box-shadow: 0 0 0 4px rgba(77, 166, 255, 0);
+        box-shadow: 0 0 0 4px rgba(88, 204, 2, 0);
       }
 
       100% {
-        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
+        box-shadow: 0 0 0 0 rgba(88, 204, 2, 0);
       }
     }
 
     @keyframes pulse-green-light {
       0% {
-        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.50);
+        box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.50);
       }
 
       70% {
-        box-shadow: 0 0 0 4px rgba(77, 166, 255, 0);
+        box-shadow: 0 0 0 4px rgba(88, 204, 2, 0);
       }
 
       100% {
-        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0);
+        box-shadow: 0 0 0 0 rgba(88, 204, 2, 0);
       }
     }
 
@@ -524,17 +532,17 @@
     }
 
     .btn-pill {
-      border-radius: var(--radius-btn);
+      border-radius: 12px;
       padding: 10px 18px;
       font-size: 0.88rem;
-      font-weight: 600;
-      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: all 0.18s ease;
+      transition: transform .1s, border-bottom-width .1s, filter .15s;
       border: none;
       outline: none;
       white-space: nowrap;
@@ -543,30 +551,54 @@
     .btn-primary {
       background: var(--accent);
       color: var(--accent-text);
+      border-bottom: 4px solid var(--accent-dark, #46A302);
     }
 
     .btn-primary:hover {
-      background: var(--accent-hover);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(77, 166, 255, 0.30);
+      filter: brightness(1.06);
+    }
+
+    .btn-primary:active {
+      border-bottom-width: 2px;
+      transform: translateY(2px);
     }
 
     .btn-outline {
-      background: transparent;
-      border: 1px solid var(--border-strong);
+      background: var(--bg-card);
+      border: 2px solid var(--border-strong);
+      border-bottom: 4px solid var(--border-strong);
       color: var(--text-main);
+      font-weight: 700;
     }
 
     .btn-outline:hover {
-      background: var(--bg-hover);
-      border-color: var(--border-strong);
+      filter: brightness(.96);
     }
+
+    .btn-outline:active {
+      border-bottom-width: 2px;
+      transform: translateY(2px);
+    }
+
+    /* Duolingo orange button — used for primary CTAs (Load Inbox, Login) */
+    .btn-orange {
+      background: #FF9600 !important;
+      color: #fff !important;
+      border-color: transparent !important;
+      border-bottom: 4px solid #CC7000 !important;
+      font-weight: 800;
+      transition: transform .1s, border-bottom-width .1s, filter .15s;
+    }
+    .btn-orange:hover { filter: brightness(1.06) !important; transform: none !important; box-shadow: none !important; }
+    .btn-orange:active { border-bottom-width: 2px !important; transform: translateY(2px) !important; }
 
     .btn-icon-only {
       padding: 9px;
-      border-radius: 8px;
+      border-radius: 10px;
       width: 36px;
       height: 36px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
     }
 
     /* Recover Input (Hidden by default) */
@@ -599,7 +631,7 @@
 
     .input-minimal:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.12);
+      box-shadow: 0 0 0 3px rgba(88, 204, 2, 0.12);
     }
 
     @keyframes fadeIn {
@@ -684,7 +716,7 @@
     .btn-refresh:hover {
       color: var(--accent);
       border-color: var(--accent);
-      background: rgba(77, 166, 255, 0.07);
+      background: rgba(88, 204, 2, 0.07);
     }
 
     .btn-refresh:active {
@@ -830,7 +862,7 @@
 
     .email-item.unread .email-dot {
       background: var(--accent);
-      box-shadow: 0 0 6px rgba(77, 166, 255, 0.45);
+      box-shadow: 0 0 6px rgba(88, 204, 2, 0.45);
     }
 
     .email-content {
@@ -872,8 +904,8 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      background: rgba(77, 166, 255, 0.12);
-      border: 1px solid rgba(77, 166, 255, 0.30);
+      background: rgba(88, 204, 2, 0.12);
+      border: 1px solid rgba(88, 204, 2, 0.30);
       color: var(--code-text);
       border-radius: 6px;
       padding: 2px 8px;
@@ -887,8 +919,8 @@
     }
 
     [data-theme="light"] .otp-chip {
-      background: rgba(77, 166, 255, 0.12);
-      border-color: rgba(77, 166, 255, 0.30);
+      background: rgba(88, 204, 2, 0.12);
+      border-color: rgba(88, 204, 2, 0.30);
       color: #1B2A41;
     }
 
@@ -912,9 +944,9 @@
       min-width: 280px;
       max-width: min(380px, calc(100vw - 32px));
       background: var(--bg-card);
-      border: 1px solid rgba(77, 166, 255, 0.35);
+      border: 1px solid rgba(88, 204, 2, 0.35);
       border-radius: 12px;
-      box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(77, 166, 255, 0.08);
+      box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(88, 204, 2, 0.08);
       padding: 12px 14px 10px;
       opacity: 0;
       transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
@@ -1069,12 +1101,12 @@
 
     @keyframes newEmailGlow {
       0% {
-        box-shadow: 0 0 0 0 rgba(77, 166, 255, 0.55);
+        box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.55);
         border-color: var(--accent);
       }
 
       60% {
-        box-shadow: 0 0 16px 4px rgba(77, 166, 255, 0.22);
+        box-shadow: 0 0 16px 4px rgba(88, 204, 2, 0.22);
       }
 
       100% {
@@ -1088,8 +1120,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(77, 166, 255, 0.07);
-      border: 1px solid rgba(77, 166, 255, 0.25);
+      background: rgba(88, 204, 2, 0.07);
+      border: 1px solid rgba(88, 204, 2, 0.25);
       border-radius: 10px;
       padding: 12px 16px;
       margin-bottom: 16px;
@@ -1508,12 +1540,12 @@
       justify-content: space-between;
       align-items: center;
       gap: 6px;
-      background: linear-gradient(135deg, rgba(77, 166, 255, 0.12), rgba(77, 166, 255, 0.02));
-      border: 1px solid rgba(77, 166, 255, 0.3);
+      background: linear-gradient(135deg, rgba(88, 204, 2, 0.12), rgba(88, 204, 2, 0.02));
+      border: 1px solid rgba(88, 204, 2, 0.3);
       border-radius: 10px;
       padding: 8px 12px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(77, 166, 255, 0.05);
+      box-shadow: 0 4px 15px rgba(88, 204, 2, 0.05);
       position: relative;
       overflow: hidden;
     }
@@ -1585,13 +1617,13 @@
       border: none;
       cursor: pointer;
       transition: all 0.2s;
-      box-shadow: 0 3px 8px rgba(77, 166, 255, 0.25);
+      box-shadow: 0 3px 8px rgba(88, 204, 2, 0.25);
       white-space: nowrap;
     }
 
     .ib-btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 10px rgba(77, 166, 255, 0.35);
+      box-shadow: 0 4px 10px rgba(88, 204, 2, 0.35);
     }
 
     .ib-dismiss {
@@ -2491,7 +2523,7 @@
       position: fixed;
       inset: 0;
       z-index: 10000;
-      background: linear-gradient(180deg, #EEF6FF 0%, #D8ECFF 100%);
+      background: var(--bg-app);
       overflow-y: auto;
       flex-direction: column;
       align-items: center;
@@ -2504,18 +2536,18 @@
     .adm-wrap {
       width: 100%;
       max-width: 720px;
-      padding: 0 16px 60px;
+      padding: 0 16px 48px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 12px;
     }
 
     .adm-topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 0 8px;
-      border-bottom: none;
+      padding: 16px 0 6px;
+      border-bottom: 1.5px solid var(--border);
     }
 
     .adm-logo {
@@ -2528,7 +2560,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #4DA6FF;
+      background: #58CC02;
       animation: pulse-green 2s infinite;
     }
 
@@ -2536,14 +2568,15 @@
       font-size: 1rem;
       font-weight: 700;
       letter-spacing: -0.01em;
-      color: #1B2A41;
+      color: var(--text-main);
+      font-family: 'Nunito', sans-serif;
     }
 
     .adm-logo span {
       font-size: 0.72rem;
       font-family: 'JetBrains Mono', monospace;
       color: #ffffff;
-      background: #4DA6FF;
+      background: #58CC02;
       font-weight: 800;
       padding: 2px 8px;
       border-radius: 5px;
@@ -2551,11 +2584,11 @@
     }
 
     .adm-card {
-      background: #ffffff;
-      border: none;
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(77, 166, 255, 0.10);
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: none;
     }
 
     .adm-card-head {
@@ -2566,9 +2599,9 @@
     }
 
     .adm-card-title {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #1B2A41;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       display: flex;
@@ -2577,7 +2610,7 @@
     }
 
     .adm-card-title .adm-count {
-      background: #E6F2FF;
+      background: #f0ffe8;
       border: none;
       color: #1B2A41;
       border-radius: 5px;
@@ -2593,61 +2626,66 @@
     }
 
     .adm-stat {
-      background: #ffffff;
-      border: none;
-      border-radius: 16px;
-      padding: 13px;
-      box-shadow: 0 4px 15px rgba(77, 166, 255, 0.07);
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      box-shadow: none;
     }
 
     .adm-stat .adm-val {
-      font-size: 1.5rem;
-      font-weight: 700;
+      font-size: 1.25rem;
+      font-weight: 900;
       letter-spacing: -0.03em;
-      color: #1B2A41;
-      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-main);
+      font-family: 'Nunito', monospace;
       line-height: 1;
     }
 
     .adm-stat .adm-val.accent {
-      color: #4DA6FF;
+      color: #58CC02;
     }
 
     .adm-stat .adm-lbl {
-      font-size: 0.72rem;
-      color: #1B2A41;
-      font-weight: 600;
-      margin-top: 5px;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      margin-top: 4px;
     }
 
     .adm-tabs {
-      display: flex;
-      gap: 4px;
-      background: rgba(255, 255, 255, 0.6);
-      border-radius: 10px;
-      padding: 4px;
-      margin-bottom: 14px;
-      border: none;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 0;
     }
 
     .adm-tab {
-      flex: 1;
-      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 6px;
       text-align: center;
-      font-size: 0.82rem;
-      font-weight: 700;
+      font-size: 0.72rem;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
       cursor: pointer;
-      border-radius: 8px;
-      color: #1B2A41;
-      transition: all 0.2s;
-      border: none;
-      background: transparent;
+      border-radius: 10px;
+      color: var(--text-dim);
+      transition: all .15s;
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
     }
+    .adm-tab:hover { border-color: #58CC02; color: #58CC02; }
 
     .adm-tab.active {
-      background: #4DA6FF;
+      background: #58CC02;
       color: #ffffff;
-      box-shadow: 0 2px 8px rgba(77, 166, 255, 0.32);
+      border-color: #46A302;
+      border-bottom: 3px solid #46A302;
+      box-shadow: none;
     }
 
     .adm-tab-panel {
@@ -2661,7 +2699,7 @@
     .adm-textarea {
       width: 100%;
       background: #ffffff;
-      border: 1px solid rgba(77, 166, 255, 0.25);
+      border: 1px solid rgba(88, 204, 2, 0.25);
       border-radius: 10px;
       color: #1B2A41;
       font-family: 'JetBrains Mono', monospace;
@@ -2675,13 +2713,13 @@
     }
 
     .adm-textarea:focus {
-      border-color: #4DA6FF;
+      border-color: #58CC02;
     }
 
     .adm-input {
       width: 100%;
       background: #ffffff;
-      border: 1px solid rgba(77, 166, 255, 0.25);
+      border: 1px solid rgba(88, 204, 2, 0.25);
       border-radius: 10px;
       color: #1B2A41;
       font-family: 'JetBrains Mono', monospace;
@@ -2692,7 +2730,7 @@
     }
 
     .adm-input:focus {
-      border-color: #4DA6FF;
+      border-color: #58CC02;
     }
 
     .adm-row {
@@ -2712,7 +2750,7 @@
     }
 
     .adm-upload-zone {
-      border: 2px dashed rgba(77, 166, 255, 0.28);
+      border: 2px dashed rgba(88, 204, 2, 0.28);
       border-radius: 10px;
       padding: 24px;
       text-align: center;
@@ -2723,8 +2761,8 @@
 
     .adm-upload-zone:hover,
     .adm-upload-zone.drag-over {
-      border-color: #4DA6FF;
-      background: rgba(77, 166, 255, 0.05);
+      border-color: #58CC02;
+      background: rgba(88, 204, 2, 0.05);
     }
 
     .adm-upload-zone input[type=file] {
@@ -2750,7 +2788,7 @@
 
     .adm-file-label {
       display: none;
-      color: #4DA6FF;
+      color: #58CC02;
       font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
       margin-top: 7px;
@@ -2765,7 +2803,7 @@
       padding: 11px 13px;
       border-radius: 10px;
       background: #ffffff;
-      border: 1px solid rgba(77, 166, 255, 0.18);
+      border: 1px solid rgba(88, 204, 2, 0.18);
       transition: border-color 0.2s;
       margin-bottom: 7px;
     }
@@ -2775,7 +2813,7 @@
     }
 
     .gmail-account-card:hover {
-      border-color: #4DA6FF;
+      border-color: #58CC02;
     }
 
     .gmail-account-info {
@@ -2810,9 +2848,9 @@
     }
 
     .gmail-watch-badge.active {
-      background: rgba(77, 166, 255, 0.12);
-      color: #4DA6FF;
-      border: 1px solid rgba(77, 166, 255, 0.30);
+      background: rgba(88, 204, 2, 0.12);
+      color: #58CC02;
+      border: 1px solid rgba(88, 204, 2, 0.30);
     }
 
     .gmail-watch-badge.expired {
@@ -3250,9 +3288,9 @@
     }
 
     .fraud-unban-btn {
-      background: rgba(77, 166, 255, 0.10);
-      border: 1px solid rgba(77, 166, 255, 0.30);
-      color: #4DA6FF;
+      background: rgba(88, 204, 2, 0.10);
+      border: 1px solid rgba(88, 204, 2, 0.30);
+      color: #58CC02;
       border-radius: 5px;
       padding: 3px 8px;
       font-size: 0.7rem;
@@ -3261,7 +3299,7 @@
     }
 
     .fraud-unban-btn:hover {
-      background: rgba(77, 166, 255, 0.20);
+      background: rgba(88, 204, 2, 0.20);
     }
 
     .fraud-empty {
@@ -3903,6 +3941,13 @@
       position: relative;
       overflow: hidden;
     }
+    /* Ensure green 3D shadow on Load Inbox (overrides any gray) */
+    .btn-recover.btn-primary {
+      border-bottom: 4px solid #46A302 !important;
+    }
+    .btn-recover.btn-primary:active {
+      border-bottom-width: 2px !important;
+    }
 
     .btn-recover .btn-recover-spinner {
       width: 14px;
@@ -4059,7 +4104,7 @@
             </svg></i> Privacy</a>
         </nav>
         <div class="header-divider"></div>
-        <button class="btn-pill btn-outline btn-sm" onclick="openLoginModal()">
+        <button class="btn-pill btn-primary btn-sm" onclick="openLoginModal()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
@@ -4206,7 +4251,7 @@
             cursor: pointer;
             user-select: none;
             -webkit-user-drag: none;
-            filter: drop-shadow(0 8px 16px rgba(77, 166, 255, 0.25));
+            filter: drop-shadow(0 8px 16px rgba(88, 204, 2, 0.25));
             animation: koreoFloat 3.2s ease-in-out infinite;
             transition: filter 0.2s;
             position: relative;
@@ -4214,7 +4259,7 @@
           }
 
           .koreo-img:hover {
-            filter: drop-shadow(0 10px 28px rgba(77, 166, 255, 0.50));
+            filter: drop-shadow(0 10px 28px rgba(88, 204, 2, 0.50));
           }
 
           /* Floating bob */
@@ -4284,7 +4329,7 @@
             top: -20px;
             left: 55px;
             background: #ffffff;
-            border: 2px solid #4DA6FF;
+            border: 2px solid #58CC02;
             border-radius: 16px;
             padding: 6px 13px;
             font-family: 'Nunito', sans-serif;
@@ -4292,7 +4337,7 @@
             font-size: 0.85rem;
             color: #1B2A41;
             white-space: nowrap;
-            box-shadow: 0 4px 14px rgba(77, 166, 255, 0.20);
+            box-shadow: 0 4px 14px rgba(88, 204, 2, 0.20);
             opacity: 0;
             transform: scale(0.7) translateY(6px);
             transform-origin: bottom left;
@@ -4314,17 +4359,17 @@
             height: 10px;
             background: #ffffff;
             clip-path: polygon(0 0, 100% 0, 50% 100%);
-            border-bottom: 2px solid #4DA6FF;
+            border-bottom: 2px solid #58CC02;
           }
 
           [data-theme="dark"] .koreo-bubble {
-            background: #152030;
+            background: #0f1e0a;
             color: #e8f2ff;
-            border-color: #4DA6FF;
+            border-color: #58CC02;
           }
 
           [data-theme="dark"] .koreo-bubble-tail {
-            background: #152030;
+            background: #0f1e0a;
           }
 
           /* Sparkles */
@@ -4407,7 +4452,7 @@
           }
 
           .koreo-name {
-            color: #4DA6FF;
+            color: #58CC02;
             font-weight: 900;
           }
 
@@ -4516,7 +4561,7 @@
 
       <!-- Subscription Offer Banner -->
       <div id="subOfferBanner"
-        style="display:none; justify-content:space-between; align-items:center; gap: 6px; background: linear-gradient(135deg, rgba(77, 166, 255, 0.12), rgba(77, 166, 255, 0.02)); border: 1px solid rgba(77, 166, 255, 0.3); border-radius: 10px; padding: 8px 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(77, 166, 255, 0.05); position: relative; overflow: hidden;">
+        style="display:none; justify-content:space-between; align-items:center; gap: 6px; background: linear-gradient(135deg, rgba(88, 204, 2, 0.12), rgba(88, 204, 2, 0.02)); border: 1px solid rgba(88, 204, 2, 0.3); border-radius: 10px; padding: 8px 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(88, 204, 2, 0.05); position: relative; overflow: hidden;">
 
         <!-- Subtle background glow -->
         <div
@@ -4525,7 +4570,7 @@
 
         <div style="display:flex; align-items:center; gap:8px; z-index:1; flex: 1; min-width: 0;">
           <div
-            style="width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #4DA6FF, #2B8BE6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #ffffff; box-shadow: 0 3px 8px rgba(77, 166, 255, 0.3);">
+            style="width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #58CC02, #2B8BE6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #ffffff; box-shadow: 0 3px 8px rgba(88, 204, 2, 0.3);">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round">
               <path
@@ -4548,7 +4593,7 @@
 
         <div style="display:flex; align-items:center; gap:6px; z-index:1; flex-shrink: 0;">
           <button onclick="openSubscriptionModal(); return false;"
-            style="background: var(--accent); color: #ffffff; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.65rem; padding: 5px 8px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 8px rgba(77,166,255,0.25); white-space: nowrap;">
+            style="background: var(--accent); color: #ffffff; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.65rem; padding: 5px 8px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 8px rgba(88,204,2,0.25); white-space: nowrap;">
             View Plans
           </button>
           <button onclick="dismissSubOffer()"
@@ -4682,7 +4727,7 @@
         </div>
 
         <div class="actions-grid">
-          <button class="btn-pill btn-primary" onclick="copyAlias()">
+          <button class="btn-pill btn-primary btn-orange" onclick="copyAlias()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -4787,7 +4832,7 @@
                 be reported.</span>
             </div>
           </div>
-          <button class="btn-pill btn-outline btn-recover" id="recoverBtn"
+          <button class="btn-pill btn-primary btn-recover" id="recoverBtn"
             style="margin-top:10px;padding:10px 20px;width:100%;border-color:var(--border-strong);"
             onclick="recoverAlias()">
             <svg class="btn-recover-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -4980,7 +5025,7 @@
           <button id="pillBasic" onclick="selectPlan('basic')"
             style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:var(--text-main); transition:all 0.2s;">Basic</button>
           <button id="pillPro" onclick="selectPlan('pro')"
-            style="border:none; background:var(--accent); padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:#fff; box-shadow: 0 2px 8px rgba(77,166,255,0.3); transition:all 0.2s;">Pro</button>
+            style="border:none; background:var(--accent); padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:#fff; box-shadow: 0 2px 8px rgba(88,204,2,0.3); transition:all 0.2s;">Pro</button>
           <button id="pillTeam" onclick="selectPlan('team')"
             style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:var(--text-main); transition:all 0.2s;">Team</button>
         </div>
@@ -5003,7 +5048,7 @@
 
         <!-- Icon & Title -->
         <div
-          style="display:inline-flex; align-items:center; gap:8px; background: rgba(77,166,255,0.15); padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; color:var(--accent);">
+          style="display:inline-flex; align-items:center; gap:8px; background: rgba(88,204,2,0.15); padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; color:var(--accent);">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -5035,7 +5080,7 @@
 
           <!-- Yearly Card -->
           <div id="cardAnnual" onclick="selectCycle('annual')"
-            style="flex:1; max-width: 150px; background: var(--bg-card); border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(77,166,255,0.2); position:relative; overflow:hidden; transform: scale(1.05);">
+            style="flex:1; max-width: 150px; background: var(--bg-card); border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(88,204,2,0.2); position:relative; overflow:hidden; transform: scale(1.05);">
             <div
               style="position:absolute; top:-2px; left:50%; transform:translateX(-50%); background:#FFD166; color:#1B2A41; font-size:0.7rem; font-weight:900; padding:4px 12px; border-radius:0 0 6px 6px; white-space:nowrap;">
               Save 20%</div>
@@ -5063,7 +5108,7 @@
         </div>
 
         <button id="btnPurchase" onclick="purchaseSubscriptionKey()"
-          style="width:100%; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:16px; font-size:1.05rem; font-weight:800; cursor:not-allowed; box-shadow:0 6px 20px rgba(77,166,255,0.3); transition:transform 0.15s, opacity 0.2s; margin-bottom:16px; opacity:0.5;"
+          style="width:100%; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:16px; font-size:1.05rem; font-weight:800; cursor:not-allowed; box-shadow:0 6px 20px rgba(88,204,2,0.3); transition:transform 0.15s, opacity 0.2s; margin-bottom:16px; opacity:0.5;"
           onactive="if(document.getElementById('chkTerms').checked) this.style.transform='scale(0.98)'">
           Continue with Pro Plan
         </button>
@@ -7225,7 +7270,7 @@
         if (p === plan) {
           pill.style.background = 'var(--accent)';
           pill.style.color = '#fff';
-          pill.style.boxShadow = '0 2px 8px rgba(77,166,255,0.3)';
+          pill.style.boxShadow = '0 2px 8px rgba(88,204,2,0.3)';
         } else {
           pill.style.background = 'transparent';
           pill.style.color = 'var(--text-main)';
@@ -7256,7 +7301,7 @@
       if (cycle === 'annual') {
         cardYr.style.border = '2px solid var(--accent)';
         cardYr.style.transform = 'scale(1.05)';
-        cardYr.style.boxShadow = '0 10px 30px rgba(77,166,255,0.2)';
+        cardYr.style.boxShadow = '0 10px 30px rgba(88,204,2,0.2)';
         cardYrBot.style.background = 'var(--accent)';
         cardYrBot.style.color = '#fff';
 
@@ -7268,7 +7313,7 @@
       } else {
         cardMo.style.border = '2px solid var(--accent)';
         cardMo.style.transform = 'scale(1.05)';
-        cardMo.style.boxShadow = '0 10px 30px rgba(77,166,255,0.2)';
+        cardMo.style.boxShadow = '0 10px 30px rgba(88,204,2,0.2)';
         cardMoBot.style.background = 'var(--accent)';
         cardMoBot.style.color = '#fff';
 
@@ -9148,18 +9193,29 @@
       </div>
 
       <!-- Section nav -->
-      <div class="adm-tabs" style="margin-bottom:0;flex-wrap:wrap;">
-        <div class="adm-tab adm-nav-btn active" data-section="emails" onclick="admSwitchSection('emails')">📧 Valid
-          Emails</div>
-        <div class="adm-tab adm-nav-btn" data-section="fraud" onclick="admSwitchSection('fraud')">🚨 Fraud Detector
+      <div class="adm-tabs">
+        <div class="adm-tab adm-nav-btn active" data-section="emails" onclick="admSwitchSection('emails')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          Valid Emails
         </div>
-        <div class="adm-tab adm-nav-btn" data-section="sessions" onclick="admSwitchSection('sessions')">🔐 Sessions
+        <div class="adm-tab adm-nav-btn" data-section="fraud" onclick="admSwitchSection('fraud')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Fraud Detector
         </div>
-        <div class="adm-tab adm-nav-btn" data-section="ownership" onclick="admSwitchSection('ownership')">🏷️ Ownership
+        <div class="adm-tab adm-nav-btn" data-section="sessions" onclick="admSwitchSection('sessions')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Sessions
         </div>
-        <div class="adm-tab adm-nav-btn" data-section="gmail" onclick="admSwitchSection('gmail')">📬 Gmail Accounts
+        <div class="adm-tab adm-nav-btn" data-section="ownership" onclick="admSwitchSection('ownership')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Ownership
         </div>
-        <div class="adm-tab adm-nav-btn" data-section="subscriptions" onclick="admSwitchSection('subscriptions')">🔑
+        <div class="adm-tab adm-nav-btn" data-section="gmail" onclick="admSwitchSection('gmail')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="M7 11h5"/></svg>
+          Gmail
+        </div>
+        <div class="adm-tab adm-nav-btn" data-section="subscriptions" onclick="admSwitchSection('subscriptions')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
           Subscriptions
         </div>
       </div>
