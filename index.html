@@ -14,7 +14,8 @@
   <title>KoreoMail — Temporary Gmail Aliases</title>
 
   <!-- Preload critical images for instant display -->
-  <link rel="preload" href="photos/header.png" as="image" type="image/png" />
+  <link rel="preload" href="photos/km-light.png" as="image" type="image/png" />
+  <link rel="preload" href="photos/km-dark.png" as="image" type="image/png" />
   <link rel="preload" href="photos/koreo-hi.png" as="image" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +31,11 @@
   <script>
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
+    // Preload both logo variants silently
+    (function(){
+      var imgs=['photos/km-light.png','photos/km-dark.png'];
+      imgs.forEach(function(s){var i=new Image();i.src=s;});
+    })();
   </script>
 
 
@@ -100,9 +106,6 @@
       --accent2-dark: #CC7000;
     }
 
-    [data-theme="dark"] .logo-wrap img {
-      filter: invert(1) hue-rotate(180deg);
-    }
 
     /* ─── Light mode: override hardcoded glows with KoreoMail blue equivalents ─── */
     :root .btn-primary:hover,
@@ -4064,7 +4067,17 @@
         transform: scale(1.1);
       }
     }
-  </style>
+  
+    /* Prevent long-press context menu on all images */
+    img {
+      -webkit-user-drag: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+      pointer-events: none;
+    }
+    /* Re-enable pointer events on clickable images only */
+    a img, button img { pointer-events: auto; }
+</style>
 </head>
 
 <body>
@@ -4072,8 +4085,10 @@
   <div class="wrap">
     <header>
       <div class="logo-wrap" style="display: flex; align-items: center; gap: 10px;">
-        <img src="photos/header.png" alt="KoreoMail Logo" style="height: 54px; width: auto; object-fit: contain;"
-          fetchpriority="high" decoding="sync">
+        <img src="photos/km-light.png" alt="KoreoMail Logo" id="km-logo-img"
+          style="height: 54px; width: auto; object-fit: contain; pointer-events: none; -webkit-user-drag: none; user-select: none;"
+          fetchpriority="high" decoding="sync"
+          oncontextmenu="return false" draggable="false">
         <div class="badge">Beta</div>
       </div>
       <div class="header-actions">
@@ -5315,7 +5330,18 @@
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
+      // Swap header logo
+      var logo = document.getElementById('km-logo-img');
+      if (logo) logo.src = next === 'dark' ? 'photos/km-dark.png' : 'photos/km-light.png';
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var logo = document.getElementById('km-logo-img');
+      if (logo) {
+        var t = document.documentElement.getAttribute('data-theme') || 'light';
+        logo.src = t === 'dark' ? 'photos/km-dark.png' : 'photos/km-light.png';
+      }
+    });
 
     /* ── UI THEME SWITCHER ── */
     function setUiTheme(theme) {
