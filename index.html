@@ -4592,14 +4592,18 @@
           </button>
           <!-- Recent aliases — shown when history exists -->
           <div id="recentAliasesWrap" style="display:none;margin-top:14px;">
-            <div
-              style="font-size:0.68rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:7px;display:flex;align-items:center;gap:5px;">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              Recent aliases on this device
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+              <div style="font-size:0.68rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;display:flex;align-items:center;gap:5px;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Recent aliases on this device
+              </div>
+              <button onclick="deleteAllRecentAliases()"
+                style="font-family:'Nunito',sans-serif;font-size:0.65rem;font-weight:700;color:#FF4B4B;background:none;border:none;cursor:pointer;padding:2px 4px;display:flex;align-items:center;gap:3px;opacity:.75;transition:opacity .15s;"
+                onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.75"
+                title="Remove all recent aliases">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                Clear all
+              </button>
             </div>
             <div id="recentAliasesList" style="display:flex;flex-direction:column;gap:5px;"></div>
           </div>
@@ -5218,9 +5222,20 @@
       renderRecentAliases();
     }
 
+    function deleteRecentAlias(alias, e) {
+      if (e) { e.stopPropagation(); e.preventDefault(); }
+      var h = getHistory().filter(function (a) { return a !== alias; });
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+      renderRecentAliases();
+    }
+
+    function deleteAllRecentAliases() {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify([]));
+      renderRecentAliases();
+    }
+
     function renderRecentAliases() {
       var h = getHistory();
-      // Only show aliases OTHER than the currently active one
       var others = h.filter(function (a) { return a !== currentAlias; });
       var wrap = document.getElementById('recentAliasesWrap');
       var list = document.getElementById('recentAliasesList');
@@ -5228,17 +5243,23 @@
       if (!others.length) { wrap.style.display = 'none'; return; }
       wrap.style.display = '';
       list.innerHTML = others.map(function (alias) {
-        return '<button onclick="quickSwitchAlias(\'' + alias.replace(/'/g, "\\'") + '\')" ' +
-          'style="display:flex;align-items:center;justify-content:space-between;gap:8px;' +
-          'padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);' +
-          'width:100%;cursor:pointer;transition:border-color 0.15s,background 0.15s;text-align:left;"' +
-          'onmouseover="this.style.borderColor=\'var(--accent)\';this.style.background=\'rgba(217,249,80,0.05)\'"' +
-          'onmouseout="this.style.borderColor=\'var(--border)\';this.style.background=\'var(--bg-input)\'">' +
-          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.78rem;color:var(--code-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">' +
-          alias +
-          '</span>' +
-          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>' +
-          '</button>';
+        var safeAlias = alias.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        return '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<button onclick="quickSwitchAlias(\'' + safeAlias + '\')" ' +
+          'style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:8px;' +
+          'padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-input);' +
+          'cursor:pointer;transition:border-color 0.15s;text-align:left;min-width:0;"' +
+          'onmouseover="this.style.borderColor=\'var(--accent)\'"' +
+          'onmouseout="this.style.borderColor=\'var(--border)\'">' +
+          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:0.75rem;color:var(--code-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">' + alias + '</span>' +
+          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>' +
+          '</button>' +
+          '<button onclick="deleteRecentAlias(\'' + safeAlias + '\',event)" title="Remove" ' +
+          'style="flex-shrink:0;width:26px;height:26px;border-radius:7px;border:1.5px solid rgba(255,75,75,.25);' +
+          'background:rgba(255,75,75,.06);color:#FF4B4B;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;"' +
+          'onmouseover="this.style.background=\'rgba(255,75,75,.15)\'" onmouseout="this.style.background=\'rgba(255,75,75,.06)\'">' +
+          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          '</button></div>';
       }).join('');
     }
 
