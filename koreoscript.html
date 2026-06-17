@@ -5652,7 +5652,7 @@ if __name__ == "__main__":
             Email Binder
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--mut)">No OTP needed</span>
+            <span style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--mut)">No old-email OTP</span>
             <span class="chev" id="eb-arrow">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
@@ -5660,25 +5660,39 @@ if __name__ == "__main__":
         </div>
 
         <div class="collapse-body" id="eb-body">
-          <div style="padding:0 14px 16px">
+          <div style="padding:0 14px 16px;display:flex;flex-direction:column;gap:12px">
 
-            <p style="font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;color:var(--mut);margin-bottom:12px;line-height:1.6">
-              Change your SHEIN account email without OTP from the old email. Paste the RAW browser request captured from <b style="color:var(--txt)">m.shein.com</b> (must be a fresh, logged-in session).
-            </p>
+            <!-- Server URL (own field, not relying on hidden Cloud Runner) -->
+            <div>
+              <div class="eb-label">Server URL</div>
+              <input class="eb-input" id="eb-server-url" type="url" placeholder="https://your-app.railway.app">
+            </div>
 
-            <!-- Step 1: RAW paste + new email + send code -->
-            <div class="eb-step active" id="eb-step-1">
-              <div>
-                <div class="eb-label">Browser RAW Request</div>
-                <textarea class="eb-textarea" id="eb-raw" placeholder="Paste your captured browser RAW request here (POST or any m.shein.com request with valid cookies)..." rows="4"></textarea>
-              </div>
+            <!-- RAW paste + Parse button -->
+            <div>
+              <div class="eb-label">Browser RAW Request (from m.shein.com)</div>
+              <textarea class="eb-textarea" id="eb-raw" rows="4"
+                placeholder="Paste your captured m.shein.com RAW request here — must be a fresh, logged-in browser session with valid cookies (AT, cf_clearance, x-csrf-token, etc.)"></textarea>
+            </div>
+
+            <button class="eb-btn" id="eb-parse-btn" onclick="ebParseTokens()"
+              style="background:var(--card);color:var(--acc);border:2px solid var(--acc);border-bottom:4px solid #46A302;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              Parse Tokens
+            </button>
+
+            <!-- Token preview (shown after parse) -->
+            <div id="eb-token-preview" style="display:none;background:var(--bg);border:1.5px solid var(--bdr);border-radius:10px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txt);line-height:1.8"></div>
+
+            <!-- Step 1: new email + send code -->
+            <div class="eb-step" id="eb-step-1">
               <div>
                 <div class="eb-label">New Email Address</div>
-                <input class="eb-input" id="eb-new-email" type="email" placeholder="newaddress@gmail.com">
+                <input class="eb-input" id="eb-new-email" type="email" placeholder="newaddress@gmail.com" autocomplete="off">
               </div>
               <div>
-                <div class="eb-label">Current Email (masked, optional)</div>
-                <input class="eb-input" id="eb-orig-email" type="text" placeholder="a*****z@gmail.com — leave blank if unknown">
+                <div class="eb-label">Current Email — masked (optional)</div>
+                <input class="eb-input" id="eb-orig-email" type="text" placeholder="a*****z@gmail.com">
               </div>
               <button class="eb-btn" id="eb-send-btn" onclick="ebSendCode()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -5686,20 +5700,26 @@ if __name__ == "__main__":
               </button>
             </div>
 
-            <!-- Step 2: OTP entry + confirm -->
+            <!-- Step 2: OTP + confirm (shown after code sent) -->
             <div class="eb-step" id="eb-step-2">
-              <div class="eb-otp-row">
-                <input class="eb-input eb-otp-input" id="eb-otp" type="text" maxlength="6" placeholder="000000" onkeydown="if(event.key==='Enter')ebConfirm()">
+              <div>
+                <div class="eb-label">Verification Code (check your new email)</div>
+                <input class="eb-input" id="eb-otp" type="text" maxlength="8"
+                  placeholder="Enter 6-digit code"
+                  style="letter-spacing:.2em;text-align:center;font-size:18px;font-weight:900"
+                  onkeydown="if(event.key==='Enter')ebConfirm()">
               </div>
               <button class="eb-btn" id="eb-confirm-btn" onclick="ebConfirm()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 Confirm &amp; Bind Email
               </button>
-              <button onclick="ebReset()" style="background:none;border:none;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer;text-align:center;padding:4px">
-                ← Enter a different email
+              <button onclick="ebGoBack()"
+                style="background:none;border:none;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer;padding:4px;text-align:center">
+                ← Use a different email
               </button>
             </div>
 
+            <!-- Status message -->
             <div class="eb-status" id="eb-status"></div>
           </div>
         </div>
@@ -7597,102 +7617,171 @@ if __name__ == "__main__":
   // BACKGROUND MUSIC — loops AM.mp3 → Travel.mp3 → repeat
   // ════════════════════════════════════════════════════════════
   
+
+
   // ════════════════════════════════════════════════════════════
-  // EMAIL BINDER — Change SHEIN account email (no old-email OTP)
+  // EMAIL BINDER
   // ════════════════════════════════════════════════════════════
-  var _ebRaw = '';
+  var _ebParsed = null; // { headers:{}, cookies:{} }
+
+  function _ebGetUrl() {
+    var u = ($('eb-server-url') || {}).value || '';
+    return u.trim().replace(/\/+$/, '');
+  }
 
   function ebStatus(msg, type) {
     var el = $('eb-status');
     if (!el) return;
     el.textContent = msg;
-    el.className = 'eb-status ' + (type || '');
+    el.className = 'eb-status' + (type ? ' ' + type : '');
   }
 
-  function ebReset() {
+  function ebGoBack() {
     $('eb-step-1').classList.add('active');
     $('eb-step-2').classList.remove('active');
     ebStatus('', '');
   }
 
+  // Attempt to pre-fill server URL from the hidden Cloud Runner field
+  (function() {
+    var ruEl = $('run-url'), ebEl = $('eb-server-url');
+    if (ruEl && ebEl && ruEl.value.trim() && !ebEl.value.trim()) {
+      ebEl.value = ruEl.value.trim();
+    }
+  })();
+
+  function ebParseTokens() {
+    var raw = ($('eb-raw') || {}).value || '';
+    if (!raw.trim()) { ebStatus('Paste a RAW request first.', 'err'); return; }
+
+    var headers = {}, cookies = {};
+    raw.replace(/\r\n/g, '\n').split('\n').forEach(function(line) {
+      line = line.trim();
+      if (!line || line.indexOf(':') < 1) return;
+      var idx = line.indexOf(':');
+      var k = line.slice(0, idx).trim().toLowerCase();
+      var v = line.slice(idx + 1).trim();
+      if (['host','content-length','accept-encoding',':method',':path',':scheme',':authority'].indexOf(k) >= 0) return;
+      if (k === 'cookie') {
+        v.split(';').forEach(function(p) {
+          p = p.trim();
+          var ci = p.indexOf('=');
+          if (ci > 0) cookies[p.slice(0,ci).trim()] = p.slice(ci+1).trim();
+        });
+      } else {
+        headers[k] = v;
+      }
+    });
+
+    _ebParsed = { headers: headers, cookies: cookies };
+
+    // Show preview of key extracted values
+    var preview = '';
+    var show = ['x-csrf-token','armortoken','x-gw-auth','smdeviceid'];
+    show.forEach(function(k) {
+      if (headers[k]) preview += k + ': ' + headers[k].slice(0,40) + '...\n';
+    });
+    var cookieKeys = ['AT','cf_clearance','memberId','sessionID_shein_m_pwa'];
+    cookieKeys.forEach(function(k) {
+      if (cookies[k]) preview += 'cookie:' + k + ': ' + cookies[k].slice(0,30) + '...\n';
+    });
+
+    if (!preview) {
+      ebStatus('No recognizable headers/cookies found. Check the RAW format.', 'err');
+      return;
+    }
+
+    var prev = $('eb-token-preview');
+    if (prev) { prev.style.display = ''; prev.textContent = preview.trim(); }
+
+    $('eb-step-1').classList.add('active');
+    ebStatus('Tokens parsed. Enter the new email and send code.', 'ok');
+  }
+
   function ebSendCode() {
-    var url = $('run-url').value.trim().replace(/\/+$/, '');
-    var key = $('run-key').value.trim();
-    if (!url) { toast('e', 'Enter server URL first'); return; }
-    if (!key)  { toast('e', 'Enter access key first'); return; }
+    var url = _ebGetUrl();
+    if (!url) { ebStatus('Enter your server URL at the top.', 'err'); return; }
+    if (!_ebParsed) { ebStatus('Parse the RAW request first.', 'err'); return; }
 
-    var raw      = ($('eb-raw') || {}).value || '';
     var newEmail = (($('eb-new-email') || {}).value || '').trim();
+    if (!newEmail || newEmail.indexOf('@') < 1) {
+      ebStatus('Enter a valid new email address.', 'err'); return;
+    }
 
-    if (!raw.trim())            { toast('w', 'Paste a RAW request first'); return; }
-    if (!newEmail || !newEmail.includes('@')) { toast('w', 'Enter a valid new email'); return; }
-
-    _ebRaw = raw;
     var btn = $('eb-send-btn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
-    ebStatus('Sending verification code to ' + newEmail + '…', 'info');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+    ebStatus('Sending code to ' + newEmail + '…', 'info');
 
     fetch(url + '/email/send_code', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Access-Key': key },
-      body: JSON.stringify({ raw_headers: raw, new_email: newEmail })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        raw_headers: ($('eb-raw') || {}).value || '',
+        new_email: newEmail
+      })
     }).then(function(r) { return r.json(); }).then(function(d) {
-      if (btn) { btn.disabled = false; btn.textContent = 'Send Verification Code'; }
-      if (!d.ok) { ebStatus('Error: ' + (d.error || 'Unknown'), 'err'); return; }
-      var info = (d.data || {}).info || {};
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      if (!d.ok) { ebStatus('Server error: ' + (d.error || 'Unknown'), 'err'); return; }
       var code = String((d.data || {}).code || '');
+      var info = (d.data || {}).info || {};
       if (code === '0' && info.is_send) {
-        ebStatus('Code sent! Check ' + newEmail + ' — valid for ' + (info.ttl || 60) + 's.', 'ok');
+        ebStatus('Code sent to ' + newEmail + '! Valid for ' + (info.ttl || 60) + 's.', 'ok');
         $('eb-step-1').classList.remove('active');
         $('eb-step-2').classList.add('active');
-        setTimeout(function() { var o = $('eb-otp'); if (o) o.focus(); }, 100);
+        setTimeout(function() { var o = $('eb-otp'); if (o) o.focus(); }, 150);
       } else {
         var msg = (d.data || {}).msg || JSON.stringify(d.data || d);
         ebStatus('Failed: ' + msg, 'err');
       }
     }).catch(function(err) {
-      if (btn) { btn.disabled = false; btn.textContent = 'Send Verification Code'; }
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
       ebStatus('Network error: ' + err.message, 'err');
     });
   }
 
   function ebConfirm() {
-    var url = $('run-url').value.trim().replace(/\/+$/, '');
-    var key = $('run-key').value.trim();
-    if (!url || !key) { toast('e', 'Server URL / access key missing'); return; }
+    var url = _ebGetUrl();
+    if (!url) { ebStatus('Enter your server URL at the top.', 'err'); return; }
 
-    var newEmail = (($('eb-new-email') || {}).value || '').trim();
+    var newEmail  = (($('eb-new-email') || {}).value || '').trim();
     var origEmail = (($('eb-orig-email') || {}).value || '').trim();
-    var otp = (($('eb-otp') || {}).value || '').trim();
+    var otp       = (($('eb-otp') || {}).value || '').trim();
 
-    if (!otp || otp.length < 4) { toast('w', 'Enter the verification code'); return; }
+    if (!otp || otp.length < 4) { ebStatus('Enter the verification code.', 'err'); return; }
 
     var btn = $('eb-confirm-btn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Confirming…'; }
-    ebStatus('Binding new email address…', 'info');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+    ebStatus('Binding new email…', 'info');
 
     fetch(url + '/email/bind', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Access-Key': key },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        raw_headers: _ebRaw,
+        raw_headers: ($('eb-raw') || {}).value || '',
         new_email: newEmail,
         original_alias: origEmail,
         otp: otp
       })
     }).then(function(r) { return r.json(); }).then(function(d) {
-      if (btn) { btn.disabled = false; btn.textContent = 'Confirm & Bind Email'; }
-      if (!d.ok) { ebStatus('Error: ' + (d.error || 'Unknown'), 'err'); return; }
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      if (!d.ok) { ebStatus('Server error: ' + (d.error || 'Unknown'), 'err'); return; }
       var code = String((d.data || {}).code || '');
       if (code === '0') {
         ebStatus('✓ Email successfully changed to ' + newEmail + '!', 'ok');
-        setTimeout(ebReset, 5000);
+        $('eb-step-2').classList.remove('active');
+        _ebParsed = null;
+        setTimeout(function() {
+          $('eb-raw').value = '';
+          var prev = $('eb-token-preview');
+          if (prev) prev.style.display = 'none';
+          ebStatus('', '');
+        }, 6000);
       } else {
         var msg = (d.data || {}).msg || JSON.stringify(d.data || d);
         ebStatus('Failed: ' + msg, 'err');
       }
     }).catch(function(err) {
-      if (btn) { btn.disabled = false; btn.textContent = 'Confirm & Bind Email'; }
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
       ebStatus('Network error: ' + err.message, 'err');
     });
   }
