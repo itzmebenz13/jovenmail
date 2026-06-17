@@ -5675,7 +5675,7 @@ if __name__ == "__main__":
                 placeholder="Paste your captured m.shein.com RAW request here — must be a fresh, logged-in browser session with valid cookies (AT, cf_clearance, x-csrf-token, etc.)"></textarea>
             </div>
 
-            <button class="eb-btn" id="eb-parse-btn" onclick="ebParseTokens()"
+            <button class="eb-btn" id="eb-parse-btn"
               style="background:var(--card);color:var(--acc);border:2px solid var(--acc);border-bottom:4px solid #46A302;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
               Parse Tokens
@@ -5694,7 +5694,7 @@ if __name__ == "__main__":
                 <div class="eb-label">Current Email — masked (optional)</div>
                 <input class="eb-input" id="eb-orig-email" type="text" placeholder="a*****z@gmail.com">
               </div>
-              <button class="eb-btn" id="eb-send-btn" onclick="ebSendCode()">
+              <button class="eb-btn" id="eb-send-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 Send Verification Code
               </button>
@@ -5709,11 +5709,11 @@ if __name__ == "__main__":
                   style="letter-spacing:.2em;text-align:center;font-size:18px;font-weight:900"
                   onkeydown="if(event.key==='Enter')ebConfirm()">
               </div>
-              <button class="eb-btn" id="eb-confirm-btn" onclick="ebConfirm()">
+              <button class="eb-btn" id="eb-confirm-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 Confirm &amp; Bind Email
               </button>
-              <button onclick="ebGoBack()"
+              <button
                 style="background:none;border:none;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer;padding:4px;text-align:center">
                 ← Use a different email
               </button>
@@ -7800,6 +7800,17 @@ if __name__ == "__main__":
       ebStatus('Network error: ' + err.message, 'err');
     });
   }
+
+  // Wire up Email Binder buttons (must be inside IIFE — onclick attrs won't work)
+  (function() {
+    function _eb(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
+    _eb('eb-parse-btn',   function() { ebParseTokens(); });
+    _eb('eb-send-btn',    function() { ebSendCode(); });
+    _eb('eb-confirm-btn', function() { ebConfirm(); });
+    var goBack = document.getElementById('eb-goback-btn');
+    if (goBack) goBack.addEventListener('click', function() { ebGoBack(); });
+  })();
+
 
   $('run-btn').addEventListener('click', doRun);
 
