@@ -7650,52 +7650,67 @@ if __name__ == "__main__":
     }
   })();
 
-  function ebParseTokens() {
+    function ebParseTokens() {
     var raw = ($('eb-raw') || {}).value || '';
     if (!raw.trim()) { ebStatus('Paste a RAW request first.', 'err'); return; }
 
     var headers = {}, cookies = {};
-    raw.replace(/\r\n/g, '\n').split('\n').forEach(function(line) {
+    var skip = ['host','content-length','accept-encoding',':method',':path',':scheme',':authority'];
+    raw.split(/\r?\n/).forEach(function(line) {
       line = line.trim();
       if (!line || line.indexOf(':') < 1) return;
       var idx = line.indexOf(':');
       var k = line.slice(0, idx).trim().toLowerCase();
       var v = line.slice(idx + 1).trim();
-      if (['host','content-length','accept-encoding',':method',':path',':scheme',':authority'].indexOf(k) >= 0) return;
+      if (skip.indexOf(k) >= 0) return;
       if (k === 'cookie') {
         v.split(';').forEach(function(p) {
           p = p.trim();
           var ci = p.indexOf('=');
           if (ci > 0) cookies[p.slice(0,ci).trim()] = p.slice(ci+1).trim();
         });
-      } else {
+      } else if (k && v) {
         headers[k] = v;
       }
     });
 
-    _ebParsed = { headers: headers, cookies: cookies };
+    var totalHeaders = Object.keys(headers).length;
+    var totalCookies = Object.keys(cookies).length;
 
-    // Show preview of key extracted values
-    var preview = '';
-    var show = ['x-csrf-token','armortoken','x-gw-auth','smdeviceid'];
-    show.forEach(function(k) {
-      if (headers[k]) preview += k + ': ' + headers[k].slice(0,40) + '...\n';
-    });
-    var cookieKeys = ['AT','cf_clearance','memberId','sessionID_shein_m_pwa'];
-    cookieKeys.forEach(function(k) {
-      if (cookies[k]) preview += 'cookie:' + k + ': ' + cookies[k].slice(0,30) + '...\n';
-    });
-
-    if (!preview) {
-      ebStatus('No recognizable headers/cookies found. Check the RAW format.', 'err');
+    if (totalHeaders === 0 && totalCookies === 0) {
+      ebStatus('Could not extract anything. Make sure you pasted a full HTTP request.', 'err');
       return;
     }
 
-    var prev = $('eb-token-preview');
-    if (prev) { prev.style.display = ''; prev.textContent = preview.trim(); }
+    _ebParsed = { headers: headers, cookies: cookies };
 
-    $('eb-step-1').classList.add('active');
-    ebStatus('Tokens parsed. Enter the new email and send code.', 'ok');
+    // Build preview — show what was found
+    var lines = [];
+    ['x-csrf-token','armortoken','x-gw-auth','smdeviceid','anti-in'].forEach(function(k) {
+      if (headers[k]) lines.push(k + ': ' + headers[k].slice(0,42) + '…');
+    });
+    ['AT','cf_clearance','memberId','sessionID_shein_m_pwa'].forEach(function(k) {
+      if (cookies[k]) lines.push('🍪 ' + k + ': ' + cookies[k].slice(0,32) + '…');
+    });
+    // If none of those, show first 4 cookies/headers found
+    if (lines.length === 0) {
+      Object.keys(cookies).slice(0,4).forEach(function(k) {
+        lines.push('🍪 ' + k + ': ' + cookies[k].slice(0,32) + '…');
+      });
+      Object.keys(headers).slice(0,3).forEach(function(k) {
+        lines.push(k + ': ' + headers[k].slice(0,42) + '…');
+      });
+    }
+
+    var prev = $('eb-token-preview');
+    if (prev) {
+      prev.style.display = '';
+      prev.textContent = lines.join('\n') || (totalHeaders + ' headers, ' + totalCookies + ' cookies found.');
+    }
+
+    var step1 = $('eb-step-1');
+    if (step1) step1.classList.add('active');
+    ebStatus('Parsed ' + totalHeaders + ' headers + ' + totalCookies + ' cookies. Enter new email below.', 'ok');
   }
 
   function ebSendCode() {
