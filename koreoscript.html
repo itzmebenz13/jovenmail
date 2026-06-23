@@ -3799,59 +3799,168 @@
     /* Re-enable pointer events for images inside clickable elements */
     a img, button img { pointer-events: auto; }
 
-    /* ── Email Binder ──────────────────────────────────────────── */
-    .eb-step {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .eb-step.active { display: flex; }
-    .eb-label {
+    /* ── Voucher Code Checker ─────────────────────────────────── */
+    .vc-label {
       font-family: 'Nunito', sans-serif;
       font-size: 10px; font-weight: 800;
       letter-spacing: .08em; text-transform: uppercase;
-      color: var(--mut); margin-bottom: 2px;
+      color: var(--mut); margin-bottom: 4px;
     }
-    .eb-input {
-      width: 100%; box-sizing: border-box;
-      height: 44px; border-radius: 10px;
+    .vc-input-row { display: flex; gap: 8px; align-items: center; }
+    .vc-input {
+      flex: 1; height: 44px; border-radius: 10px;
       border: 1.5px solid var(--bdr); background: var(--bg);
-      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+      font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;
+      color: var(--txt); padding: 0 14px; outline: none;
+      transition: border-color .15s; letter-spacing: .04em;
+    }
+    .vc-input:focus { border-color: #FF9600; box-shadow: 0 0 0 3px rgba(255,150,0,.12); }
+    .vc-btn {
+      height: 44px; padding: 0 18px;
+      background: #FF9600; color: #fff;
+      border: none; border-bottom: 4px solid #d97e00;
+      border-radius: 10px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; white-space: nowrap;
+      transition: transform .1s, border-bottom-width .1s;
+    }
+    .vc-btn:active { border-bottom-width: 2px; transform: translateY(2px); }
+    .vc-btn:hover { filter: brightness(1.05); }
+    .vc-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .vc-result {
+      margin-top: 2px; padding: 11px 14px; border-radius: 10px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center;
+    }
+    .vc-result.ok   { background: rgba(88,204,2,.1); color: #46A302; border: 1.5px solid rgba(88,204,2,.25); }
+    .vc-result.err  { background: rgba(255,75,75,.08); color: #FF4B4B; border: 1.5px solid rgba(255,75,75,.25); }
+    .vc-result.info { background: rgba(255,150,0,.08); color: #c47200; border: 1.5px solid rgba(255,150,0,.3); }
+    .vc-session-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 10px; margin-bottom: 6px;
+      font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase; color: var(--mut);
+    }
+    .vc-session-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 8px;
+      background: rgba(88,204,2,.06); border: 1px solid rgba(88,204,2,.2);
+      margin-bottom: 5px; font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--txt);
+    }
+    /* ─────────────────────────────────────────────────────────── */
+
+    /* ── Product Checker ──────────────────────────────────────── */
+    .pcx-label {
+      font-family: 'Nunito', sans-serif;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--mut); margin-bottom: 4px;
+    }
+    .pcx-search-row { display: flex; gap: 8px; align-items: center; }
+    .pcx-input {
+      flex: 1; height: 44px; border-radius: 10px;
+      border: 1.5px solid var(--bdr); background: var(--bg);
+      font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;
       color: var(--txt); padding: 0 14px; outline: none;
       transition: border-color .15s;
     }
-    .eb-input:focus { border-color: #58CC02; box-shadow: 0 0 0 3px rgba(88,204,2,.1); }
-    .eb-textarea {
-      width: 100%; box-sizing: border-box; border-radius: 10px;
-      border: 1.5px solid var(--bdr); background: var(--bg);
-      font-family: 'JetBrains Mono', monospace; font-size: 11px;
-      color: var(--txt); padding: 10px 12px; outline: none;
-      resize: vertical; min-height: 80px; transition: border-color .15s;
-    }
-    .eb-textarea:focus { border-color: #58CC02; }
-    .eb-btn {
-      width: 100%; height: 44px;
-      background: #58CC02; color: #fff;
-      border: none; border-bottom: 4px solid #46A302;
+    .pcx-input:focus { border-color: #1CB0F6; box-shadow: 0 0 0 3px rgba(28,176,246,.12); }
+    .pcx-btn {
+      height: 44px; padding: 0 16px; white-space: nowrap;
+      background: #1CB0F6; color: #fff;
+      border: none; border-bottom: 4px solid #0e8bb8;
       border-radius: 10px; font-family: 'Nunito', sans-serif;
-      font-weight: 800; font-size: 14px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 7px;
+      font-weight: 800; font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
       transition: transform .1s, border-bottom-width .1s;
     }
-    .eb-btn:active { border-bottom-width: 2px; transform: translateY(2px); }
-    .eb-btn:hover { filter: brightness(1.05); }
-    .eb-btn:disabled { opacity: .6; cursor: not-allowed; }
-    .eb-status {
-      font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
-      padding: 10px 12px; border-radius: 8px; text-align: center;
-      display: none;
+    .pcx-btn:active { border-bottom-width: 2px; transform: translateY(2px); }
+    .pcx-btn:hover { filter: brightness(1.05); }
+    .pcx-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .pcx-btn-green {
+      height: 44px; padding: 0 16px;
+      background: #46A302; color: #fff;
+      border: none; border-bottom: 4px solid #2f7002;
+      border-radius: 10px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: transform .1s, border-bottom-width .1s;
     }
-    .eb-status.ok   { background: rgba(88,204,2,.1); color: #46A302; border: 1.5px solid rgba(88,204,2,.25); display: block; }
-    .eb-status.err  { background: rgba(255,75,75,.08); color: #FF4B4B; border: 1.5px solid rgba(255,75,75,.25); display: block; }
-    .eb-status.info { background: rgba(88,204,2,.06); color: var(--mut); border: 1.5px solid var(--bdr); display: block; }
-    .eb-otp-row { display: flex; gap: 8px; }
-    .eb-otp-input { flex: 1; letter-spacing: .2em; text-align: center; font-size: 18px; font-weight: 900; }
+    .pcx-btn-green:active { border-bottom-width: 2px; transform: translateY(2px); }
+    .pcx-btn-green:disabled { opacity: .6; cursor: not-allowed; }
+    .pcx-status {
+      padding: 10px 12px; border-radius: 10px;
+      font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .pcx-status.ok   { background: rgba(88,204,2,.1); color: #46A302; border: 1.5px solid rgba(88,204,2,.25); }
+    .pcx-status.err  { background: rgba(255,75,75,.08); color: #FF4B4B; border: 1.5px solid rgba(255,75,75,.25); }
+    .pcx-status.info { background: rgba(28,176,246,.08); color: #0e8bb8; border: 1.5px solid rgba(28,176,246,.25); }
+    .pcx-product-card {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px; border-radius: 12px;
+      background: var(--bg); border: 1.5px solid var(--bdr);
+    }
+    .pcx-product-img {
+      width: 72px; height: 96px; object-fit: cover;
+      border-radius: 8px; flex-shrink: 0; background: var(--b1);
+      display: block;
+    }
+    .pcx-product-info { flex: 1; min-width: 0; }
+    .pcx-product-name {
+      font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
+      color: var(--txt); line-height: 1.45;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .pcx-product-price {
+      font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900;
+      color: #1CB0F6; margin-top: 6px;
+    }
+    .pcx-sku-badge {
+      display: inline-block; margin-top: 5px;
+      font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 800;
+      background: rgba(28,176,246,.1); color: #0e8bb8;
+      border: 1px solid rgba(28,176,246,.3);
+      border-radius: 6px; padding: 2px 8px;
+    }
+    .pcx-action-row { display: flex; gap: 8px; }
+    .pcx-section-label {
+      font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--mut); margin-bottom: 8px;
+    }
+    .pcx-price-table { width: 100%; border-collapse: collapse; }
+    .pcx-price-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--bdr); }
+    .pcx-price-row:last-child { border-bottom: none; }
+    .pcx-price-label { font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: var(--mut); }
+    .pcx-price-value { font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: var(--txt); }
+    .pcx-price-value.neg { color: #46A302; }
+    .pcx-grand-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0 0; border-top: 2px solid var(--bdr); margin-top: 4px;
+    }
+    .pcx-grand-label { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 900; color: var(--txt); }
+    .pcx-grand-value { font-family: 'Nunito', sans-serif; font-size: 19px; font-weight: 900; color: #1CB0F6; }
+    .pcx-saved-line { font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #46A302; text-align: right; margin-top: 3px; }
+    .pcx-coupon-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 10px;
+      border: 1.5px solid var(--bdr); background: var(--bg);
+      cursor: pointer; margin-bottom: 6px;
+      transition: border-color .12s, background .12s;
+    }
+    .pcx-coupon-item.selected { border-color: #1CB0F6; background: rgba(28,176,246,.06); }
+    .pcx-coupon-dot {
+      width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid var(--b2);
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .12s, background .12s;
+    }
+    .pcx-coupon-item.selected .pcx-coupon-dot { border-color: #1CB0F6; background: #1CB0F6; }
+    .pcx-coupon-code { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--txt); }
+    .pcx-coupon-save { font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 800; color: #46A302; }
     /* ─────────────────────────────────────────────────────────── */
 </style>
 </head>
@@ -4633,6 +4742,145 @@ if __name__ == "__main__":
       </div>
     </div>
 
+    <!-- ═══ HOME — VOUCHER CODE CHECKER ═══ -->
+    <div class="view view-home" style="margin-top:0">
+      <div class="card" style="padding:0;overflow:hidden">
+        <!-- Collapse head -->
+        <div class="collapse-head" id="vc-toggle" style="padding:12px 16px">
+          <div class="card-title" style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,150,0,.12);border:1.5px solid rgba(255,150,0,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF9600" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+            </div>
+            Voucher Checker
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--mut)">Manual check</span>
+            <span class="chev" id="vc-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+        </div>
+        <!-- Collapse body (closed by default) -->
+        <div class="collapse-body" id="vc-body">
+          <div style="padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px">
+
+            <!-- Code input + check button -->
+            <div class="vc-input-row">
+              <input class="vc-input" id="vc-code" type="text"
+                placeholder="Enter voucher code (e.g. ph0313n1)"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                onkeydown="if(event.key==='Enter')vcCheck()">
+              <button class="vc-btn" id="vc-check-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Check
+              </button>
+            </div>
+
+            <!-- Result display -->
+            <div class="vc-result" id="vc-result" style="display:none"></div>
+
+            <!-- Session valid-codes list -->
+            <div id="vc-session" style="display:none">
+              <div class="vc-session-head">
+                <span>Session</span>
+                <span id="vc-session-cnt">0 valid</span>
+              </div>
+              <div id="vc-session-list"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ HOME — PRODUCT CHECKER ═══ -->
+    <div class="view view-home" style="margin-top:0">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="collapse-head" id="pcx-toggle" style="padding:12px 16px">
+          <div class="card-title" style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <div style="width:28px;height:28px;border-radius:8px;background:rgba(28,176,246,.12);border:1.5px solid rgba(28,176,246,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1CB0F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            </div>
+            Product Checker
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--mut)">Simulate checkout</span>
+            <span class="chev" id="pcx-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+        </div>
+        <div class="collapse-body" id="pcx-body">
+          <div style="padding:10px 14px 14px;display:flex;flex-direction:column;gap:12px">
+
+            <!-- Goods ID search -->
+            <div>
+              <div class="pcx-label">Goods ID</div>
+              <div class="pcx-search-row">
+                <input class="pcx-input" id="pcx-goods-id" type="text"
+                  placeholder="e.g. 118340567"
+                  autocomplete="off" spellcheck="false"
+                  onkeydown="if(event.key==='Enter')pcxLookup()">
+                <button class="pcx-btn" id="pcx-lookup-btn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  Look Up
+                </button>
+              </div>
+            </div>
+
+            <!-- Status line -->
+            <div class="pcx-status" id="pcx-status" style="display:none"></div>
+
+            <!-- Product card -->
+            <div id="pcx-product-wrap" style="display:none">
+              <div class="pcx-product-card">
+                <img class="pcx-product-img" id="pcx-img" src="" alt="">
+                <div class="pcx-product-info">
+                  <div class="pcx-product-name" id="pcx-name"></div>
+                  <div class="pcx-product-price" id="pcx-price"></div>
+                  <div class="pcx-sku-badge" id="pcx-sku"></div>
+                </div>
+              </div>
+              <div class="pcx-action-row" style="margin-top:10px">
+                <button class="pcx-btn" id="pcx-add-btn" style="flex:1">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                  Add to Cart
+                </button>
+                <button class="pcx-btn-green" id="pcx-checkout-btn" style="flex:1;display:none">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="1.5"/><circle cx="18.5" cy="18.5" r="1.5"/></svg>
+                  Simulate Checkout
+                </button>
+              </div>
+            </div>
+
+            <!-- Checkout result -->
+            <div id="pcx-checkout-wrap" style="display:none">
+
+              <!-- Price breakdown -->
+              <div class="pcx-section-label">Price Breakdown</div>
+              <div id="pcx-price-rows"></div>
+              <div class="pcx-grand-row">
+                <span class="pcx-grand-label">Grand Total</span>
+                <span class="pcx-grand-value" id="pcx-grand"></span>
+              </div>
+              <div class="pcx-saved-line" id="pcx-saved-tip"></div>
+
+              <!-- Coupon selector -->
+              <div id="pcx-coupon-section" style="display:none;margin-top:14px">
+                <div class="pcx-section-label" style="display:flex;justify-content:space-between">
+                  <span>Available Coupons</span>
+                  <span id="pcx-applied-tip" style="color:#46A302;font-size:10px;font-weight:700;text-transform:none;letter-spacing:0"></span>
+                </div>
+                <div id="pcx-coupon-list"></div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="view view-home" style="padding:20px 16px 0;text-align:center">
       <h2 style="font-family:'Nunito',sans-serif;font-size:28px;font-weight:900;color:#58CC02;line-height:1.15;margin-bottom:10px">
@@ -5641,91 +5889,6 @@ if __name__ == "__main__":
     </div>
   </div>
 
-    <!-- ═══ HOME — EMAIL BINDER ═══ -->
-    <div class="view view-home" style="margin-top:0">
-      <div class="card" style="padding:0;overflow:hidden">
-        <div class="collapse-head" id="eb-toggle" style="padding:12px 16px">
-          <div class="card-title" style="display:flex;align-items:center;gap:8px;font-size:13px">
-            <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,150,0,.12);border:1.5px solid rgba(255,150,0,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF9600" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            </div>
-            Email Binder
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--mut)">No old-email OTP</span>
-            <span class="chev" id="eb-arrow">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </span>
-          </div>
-        </div>
-
-        <div class="collapse-body" id="eb-body">
-          <div style="padding:0 14px 16px;display:flex;flex-direction:column;gap:12px">
-
-            <!-- Server URL (own field, not relying on hidden Cloud Runner) -->
-            <div>
-              <div class="eb-label">Server URL</div>
-              <input class="eb-input" id="eb-server-url" type="url" placeholder="https://your-app.railway.app">
-            </div>
-
-            <!-- RAW paste + Parse button -->
-            <div>
-              <div class="eb-label">Browser RAW Request (from m.shein.com)</div>
-              <textarea class="eb-textarea" id="eb-raw" rows="4"
-                placeholder="Paste your captured m.shein.com RAW request here — must be a fresh, logged-in browser session with valid cookies (AT, cf_clearance, x-csrf-token, etc.)"></textarea>
-            </div>
-
-            <button class="eb-btn" id="eb-parse-btn"
-              style="background:var(--card);color:var(--acc);border:2px solid var(--acc);border-bottom:4px solid #46A302;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-              Parse Tokens
-            </button>
-
-            <!-- Token preview (shown after parse) -->
-            <div id="eb-token-preview" style="display:none;background:var(--bg);border:1.5px solid var(--bdr);border-radius:10px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txt);line-height:1.8"></div>
-
-            <!-- Step 1: new email + send code -->
-            <div class="eb-step" id="eb-step-1">
-              <div>
-                <div class="eb-label">New Email Address</div>
-                <input class="eb-input" id="eb-new-email" type="email" placeholder="newaddress@gmail.com" autocomplete="off">
-              </div>
-              <div>
-                <div class="eb-label">Current Email — masked (optional)</div>
-                <input class="eb-input" id="eb-orig-email" type="text" placeholder="a*****z@gmail.com">
-              </div>
-              <button class="eb-btn" id="eb-send-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                Send Verification Code
-              </button>
-            </div>
-
-            <!-- Step 2: OTP + confirm (shown after code sent) -->
-            <div class="eb-step" id="eb-step-2">
-              <div>
-                <div class="eb-label">Verification Code (check your new email)</div>
-                <input class="eb-input" id="eb-otp" type="text" maxlength="8"
-                  placeholder="Enter 6-digit code"
-                  style="letter-spacing:.2em;text-align:center;font-size:18px;font-weight:900"
-                  onkeydown="if(event.key==='Enter')ebConfirm()">
-              </div>
-              <button class="eb-btn" id="eb-confirm-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Confirm &amp; Bind Email
-              </button>
-              <button
-                style="background:none;border:none;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer;padding:4px;text-align:center">
-                ← Use a different email
-              </button>
-            </div>
-
-            <!-- Status message -->
-            <div class="eb-status" id="eb-status"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
 
     <!-- ═══ SITE FOOTER ═══ -->
     <footer class="site-footer">
@@ -6047,7 +6210,8 @@ if __name__ == "__main__":
   initCollapse('logs-toggle', 'logs-body', 'logs-arrow');
   initCollapse('topup-history-toggle', 'topup-history-body', 'topup-history-arrow');
   initCollapse('eg-toggle', 'eg-body', 'eg-arrow');
-  initCollapse('eb-toggle', 'eb-body', 'eb-arrow');
+  initCollapse('vc-toggle', 'vc-body', 'vc-arrow');
+  initCollapse('pcx-toggle', 'pcx-body', 'pcx-arrow');
 
   // ════════════════════════════════════════════════════════════
   // THEME TOGGLE
@@ -7620,195 +7784,262 @@ if __name__ == "__main__":
 
 
   // ════════════════════════════════════════════════════════════
-  // EMAIL BINDER
+  // PRODUCT CHECKER
   // ════════════════════════════════════════════════════════════
-  var _ebParsed = null; // { headers:{}, cookies:{} }
+  var _pcx = { goods_id: '', sku_code: '', coupon: '' };
 
-  function _ebGetUrl() {
-    var u = ($('eb-server-url') || {}).value || '';
-    return u.trim().replace(/\/+$/, '');
+  // Grab fresh tokens from the already-parsed Cloud Runner RAW
+  function pcxAuth() {
+    if (typeof _lastParsed === 'undefined' || !_lastParsed) return {};
+    return {
+      token:       _lastParsed.TOKEN       || '',
+      armor:       _lastParsed.ARMOR_TOKEN || '',
+      gw_auth:     _lastParsed.GW_AUTH     || '',
+      smdevice:    _lastParsed.SMDEVICE_ID || '',
+      ugid:        _lastParsed.UGID        || '',
+      sortuid:     _lastParsed.SORTUID     || '',
+      device_id:   _lastParsed.DEVICE_ID   || '',
+      appcountry:  _lastParsed.APPCOUNTRY  || '',
+      app_version: _lastParsed.APP_VERSION || '',
+      device_info: _lastParsed.DEVICE_INFO || '',
+    };
   }
 
-  function ebStatus(msg, type) {
-    var el = $('eb-status');
+  var _pcxSVG = {
+    info: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    err:  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    ok:   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#46A302" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    search: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+    cart: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>'
+  };
+
+  function pcxStatus(msg, type) {
+    var el = $('pcx-status');
     if (!el) return;
-    el.textContent = msg;
-    el.className = 'eb-status' + (type ? ' ' + type : '');
+    el.innerHTML = msg;
+    el.className = 'pcx-status ' + (type || '');
+    el.style.display = msg ? '' : 'none';
   }
 
-  function ebGoBack() {
-    $('eb-step-1').classList.add('active');
-    $('eb-step-2').classList.remove('active');
-    ebStatus('', '');
+  function pcxGetUrl() {
+    var url = ($('run-url') || {}).value || '';
+    return url.trim().replace(/\/+$/, '');
   }
 
-  // Attempt to pre-fill server URL from the hidden Cloud Runner field
+  function pcxLookup() {
+    var url = pcxGetUrl();
+    if (!url) { pcxStatus(_pcxSVG.err + ' Enter your server URL in the Cloud Runner section first.', 'err'); return; }
+    var gid = (($('pcx-goods-id') || {}).value || '').trim();
+    if (!gid) { pcxStatus(_pcxSVG.err + ' Enter a Goods ID.', 'err'); return; }
+
+    var btn = $('pcx-lookup-btn');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+    $('pcx-product-wrap').style.display = 'none';
+    $('pcx-checkout-wrap').style.display = 'none';
+    pcxStatus(_pcxSVG.search + ' Looking up ' + esc(gid) + '\u2026', 'info');
+
+    fetch(url + '/pc/lookup', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goods_id: gid, auth: pcxAuth() })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      if (!d.ok) { pcxStatus(_pcxSVG.err + ' ' + esc(d.error || 'Lookup failed'), 'err'); return; }
+
+      _pcx.goods_id = d.goods_id;
+      _pcx.sku_code = d.sku_code || '';
+      _pcx.coupon   = '';
+
+      var img = $('pcx-img');
+      if (img) img.src = d.image_url || '';
+      var nm = $('pcx-name');
+      if (nm) nm.textContent = d.goods_name || '—';
+      var pr = $('pcx-price');
+      if (pr) pr.textContent = d.sale_price || '';
+      var sk = $('pcx-sku');
+      if (sk) sk.textContent = d.sku_label || 'Default';
+
+      $('pcx-checkout-btn').style.display = 'none';
+      $('pcx-product-wrap').style.display = '';
+      pcxStatus('', '');
+    }).catch(function(err) {
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      pcxStatus(_pcxSVG.err + ' Network error: ' + esc(err.message), 'err');
+    });
+  }
+
+  function pcxAddToCart() {
+    var url = pcxGetUrl();
+    var btn = $('pcx-add-btn');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+    pcxStatus(_pcxSVG.cart + ' Adding to cart\u2026', 'info');
+
+    fetch(url + '/pc/add_to_cart', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goods_id: _pcx.goods_id, sku_code: _pcx.sku_code, auth: pcxAuth() })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      if (!d.ok) { pcxStatus(_pcxSVG.err + ' ' + esc(d.error || 'Add to cart failed'), 'err'); return; }
+      var msg = _pcxSVG.ok + ' Added! Cart qty: ' + esc(String(d.quantity || 1));
+      if (d.unit_price) msg += ' \u00b7 ' + esc(d.unit_price) + ' each';
+      if (d.saved) msg += ' \u00b7 Saved ' + esc(d.saved);
+      pcxStatus(msg, 'ok');
+      $('pcx-checkout-btn').style.display = '';
+    }).catch(function(err) {
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      pcxStatus(_pcxSVG.err + ' Network error: ' + esc(err.message), 'err');
+    });
+  }
+
+  function pcxCheckout(couponCode) {
+    var url = pcxGetUrl();
+    var btn = $('pcx-checkout-btn');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+    pcxStatus(_pcxSVG.info + ' Simulating checkout\u2026', 'info');
+
+    fetch(url + '/pc/checkout', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coupon_code: couponCode || '', auth: pcxAuth() })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      if (!d.ok) { pcxStatus(_pcxSVG.err + ' ' + esc(d.error || 'Checkout failed'), 'err'); return; }
+
+      pcxStatus('', '');
+      _pcx.coupon = couponCode || '';
+
+      // Price breakdown
+      var rows = d.price_rows || [];
+      var rHtml = '';
+      rows.forEach(function(row) {
+        rHtml += '<div class="pcx-price-row">'
+          + '<span class="pcx-price-label">' + esc(row.label) + '</span>'
+          + '<span class="pcx-price-value' + (row.negative ? ' neg' : '') + '">'
+          + (row.negative ? '-' : '') + esc(row.value) + '</span></div>';
+      });
+      $('pcx-price-rows').innerHTML = rHtml;
+      $('pcx-grand').textContent = d.grand_total || '';
+      var st = $('pcx-saved-tip');
+      if (st) st.textContent = d.saved_tip || '';
+
+      // Coupons
+      var coupons = d.coupons || [];
+      var couponSec = $('pcx-coupon-section');
+      var couponList = $('pcx-coupon-list');
+      var appliedTip = $('pcx-applied-tip');
+      if (coupons.length > 0) {
+        couponSec.style.display = '';
+        if (appliedTip) appliedTip.textContent = d.applied_tip || '';
+        var cHtml = '';
+        coupons.forEach(function(c) {
+          var sel = c.couponCode === (_pcx.coupon || (coupons[0] ? coupons[0].couponCode : ''));
+          cHtml += '<div class="pcx-coupon-item' + (sel ? ' selected' : '') + '" onclick="pcxSelectCoupon(\'' + esc(c.couponCode) + '\')">'
+            + '<div class="pcx-coupon-dot">'
+            + (sel ? '<svg width="7" height="7" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#fff"/></svg>' : '')
+            + '</div>'
+            + '<div style="flex:1;min-width:0">'
+            + '<div class="pcx-coupon-code">' + esc(c.couponCode) + '</div>'
+            + (c.discount_price ? '<div class="pcx-coupon-save">Saves ' + esc(c.discount_price) + '</div>' : '')
+            + '</div></div>';
+        });
+        couponList.innerHTML = cHtml;
+      } else {
+        couponSec.style.display = 'none';
+      }
+
+      $('pcx-checkout-wrap').style.display = '';
+    }).catch(function(err) {
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      pcxStatus(_pcxSVG.err + ' Network error: ' + esc(err.message), 'err');
+    });
+  }
+
+  function pcxSelectCoupon(code) {
+    var next = (_pcx.coupon === code) ? '' : code;
+    pcxCheckout(next);
+  }
+
+  // Wire up Product Checker
   (function() {
-    var ruEl = $('run-url'), ebEl = $('eb-server-url');
-    if (ruEl && ebEl && ruEl.value.trim() && !ebEl.value.trim()) {
-      ebEl.value = ruEl.value.trim();
-    }
+    var b;
+    b = $('pcx-lookup-btn');   if (b) b.addEventListener('click', function() { pcxLookup(); });
+    b = $('pcx-add-btn');      if (b) b.addEventListener('click', function() { pcxAddToCart(); });
+    b = $('pcx-checkout-btn'); if (b) b.addEventListener('click', function() { pcxCheckout(_pcx.coupon); });
   })();
 
-    function ebParseTokens() {
-    var raw = ($('eb-raw') || {}).value || '';
-    if (!raw.trim()) { ebStatus('Paste a RAW request first.', 'err'); return; }
 
-    var headers = {}, cookies = {};
-    var skip = ['host','content-length','accept-encoding',':method',':path',':scheme',':authority'];
-    raw.split(/\r?\n/).forEach(function(line) {
-      line = line.trim();
-      if (!line || line.indexOf(':') < 1) return;
-      var idx = line.indexOf(':');
-      var k = line.slice(0, idx).trim().toLowerCase();
-      var v = line.slice(idx + 1).trim();
-      if (skip.indexOf(k) >= 0) return;
-      if (k === 'cookie') {
-        v.split(';').forEach(function(p) {
-          p = p.trim();
-          var ci = p.indexOf('=');
-          if (ci > 0) cookies[p.slice(0,ci).trim()] = p.slice(ci+1).trim();
-        });
-      } else if (k && v) {
-        headers[k] = v;
-      }
-    });
+  // ════════════════════════════════════════════════════════════
+  // VOUCHER CODE CHECKER
+  // ════════════════════════════════════════════════════════════
+  var _vcSessionFound = [];
 
-    var totalHeaders = Object.keys(headers).length;
-    var totalCookies = Object.keys(cookies).length;
-
-    if (totalHeaders === 0 && totalCookies === 0) {
-      ebStatus('Could not extract anything. Make sure you pasted a full HTTP request.', 'err');
-      return;
-    }
-
-    _ebParsed = { headers: headers, cookies: cookies };
-
-    // Build preview — show what was found
-    var lines = [];
-    ['x-csrf-token','armortoken','x-gw-auth','smdeviceid','anti-in'].forEach(function(k) {
-      if (headers[k]) lines.push(k + ': ' + headers[k].slice(0,42) + '…');
-    });
-    ['AT','cf_clearance','memberId','sessionID_shein_m_pwa'].forEach(function(k) {
-      if (cookies[k]) lines.push('🍪 ' + k + ': ' + cookies[k].slice(0,32) + '…');
-    });
-    // If none of those, show first 4 cookies/headers found
-    if (lines.length === 0) {
-      Object.keys(cookies).slice(0,4).forEach(function(k) {
-        lines.push('🍪 ' + k + ': ' + cookies[k].slice(0,32) + '…');
-      });
-      Object.keys(headers).slice(0,3).forEach(function(k) {
-        lines.push(k + ': ' + headers[k].slice(0,42) + '…');
-      });
-    }
-
-    var prev = $('eb-token-preview');
-    if (prev) {
-      prev.style.display = '';
-      prev.textContent = lines.join('\n') || (totalHeaders + ' headers, ' + totalCookies + ' cookies found.');
-    }
-
-    var step1 = $('eb-step-1');
-    if (step1) step1.classList.add('active');
-    ebStatus('Parsed ' + totalHeaders + ' headers + ' + totalCookies + ' cookies. Enter new email below.', 'ok');
+  function vcResult(html, type) {
+    var el = $('vc-result');
+    if (!el) return;
+    el.innerHTML = html;
+    el.className = 'vc-result ' + (type || '');
+    el.style.display = html ? '' : 'none';
   }
 
-  function ebSendCode() {
-    var url = _ebGetUrl();
-    if (!url) { ebStatus('Enter your server URL at the top.', 'err'); return; }
-    if (!_ebParsed) { ebStatus('Parse the RAW request first.', 'err'); return; }
+  function vcRenderSession() {
+    var sess = $('vc-session');
+    var list = $('vc-session-list');
+    var cnt  = $('vc-session-cnt');
+    if (!sess) return;
+    if (_vcSessionFound.length === 0) { sess.style.display = 'none'; return; }
+    sess.style.display = '';
+    cnt.textContent = _vcSessionFound.length + ' valid';
+    var html = '';
+    _vcSessionFound.forEach(function(item) {
+      html += '<div class="vc-session-item">'
+        + '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#46A302" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+        + '<span style="flex:1">' + esc(item.code) + '</span>'
+        + '<span style="color:var(--mut);font-size:10px">' + esc(item.discount) + ' off &middot; min ' + esc(item.min_spend) + '</span>'
+        + '</div>';
+    });
+    list.innerHTML = html;
+  }
 
-    var newEmail = (($('eb-new-email') || {}).value || '').trim();
-    if (!newEmail || newEmail.indexOf('@') < 1) {
-      ebStatus('Enter a valid new email address.', 'err'); return;
-    }
+  function vcCheck() {
+    var url = ($('run-url') || {}).value || '';
+    url = url.trim().replace(/\/+$/, '');
+    if (!url) { vcResult('<span style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Enter your server URL in the Cloud Runner section first.</span>', 'err'); return; }
 
-    var btn = $('eb-send-btn');
+    var code = ($('vc-code') || {}).value || '';
+    code = code.trim();
+    if (!code) { vcResult('<span style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Enter a voucher code to check.</span>', 'err'); return; }
+
+    var btn = $('vc-check-btn');
     if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
-    ebStatus('Sending code to ' + newEmail + '…', 'info');
+    vcResult('<span style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Checking ' + esc(code) + '\u2026</span>', 'info');
 
-    fetch(url + '/email/send_code', {
+    fetch(url + '/check_coupon', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        raw_headers: ($('eb-raw') || {}).value || '',
-        new_email: newEmail
-      })
+      body: JSON.stringify({ code: code })
     }).then(function(r) { return r.json(); }).then(function(d) {
       if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-      if (!d.ok) { ebStatus('Server error: ' + (d.error || 'Unknown'), 'err'); return; }
-      var code = String((d.data || {}).code || '');
-      var info = (d.data || {}).info || {};
-      if (code === '0' && info.is_send) {
-        ebStatus('Code sent to ' + newEmail + '! Valid for ' + (info.ttl || 60) + 's.', 'ok');
-        $('eb-step-1').classList.remove('active');
-        $('eb-step-2').classList.add('active');
-        setTimeout(function() { var o = $('eb-otp'); if (o) o.focus(); }, 150);
+      if (!d.ok) {
+        vcResult('<span style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Server error: ' + esc(d.error || 'Unknown') + '</span>', 'err');
+        return;
+      }
+      if (d.valid) {
+        vcResult('<span style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#46A302" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>VALID! &nbsp; Discount: ' + esc(d.discount) + ' &nbsp;&middot;&nbsp; Min Spend: ' + esc(d.min_spend) + '</span></span>', 'ok');
+        _vcSessionFound.push({ code: d.code, discount: d.discount, min_spend: d.min_spend });
+        vcRenderSession();
+        var inp = $('vc-code');
+        if (inp) { inp.value = ''; setTimeout(function(){ inp.focus(); }, 80); }
       } else {
-        var msg = (d.data || {}).msg || JSON.stringify(d.data || d);
-        ebStatus('Failed: ' + msg, 'err');
+        vcResult('<span style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Invalid or expired \u2014 ' + esc(code) + '</span>', 'err');
       }
     }).catch(function(err) {
       if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-      ebStatus('Network error: ' + err.message, 'err');
+      vcResult('<span style="display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Network error: ' + esc(err.message) + '</span>', 'err');
     });
   }
 
-  function ebConfirm() {
-    var url = _ebGetUrl();
-    if (!url) { ebStatus('Enter your server URL at the top.', 'err'); return; }
-
-    var newEmail  = (($('eb-new-email') || {}).value || '').trim();
-    var origEmail = (($('eb-orig-email') || {}).value || '').trim();
-    var otp       = (($('eb-otp') || {}).value || '').trim();
-
-    if (!otp || otp.length < 4) { ebStatus('Enter the verification code.', 'err'); return; }
-
-    var btn = $('eb-confirm-btn');
-    if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
-    ebStatus('Binding new email…', 'info');
-
-    fetch(url + '/email/bind', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        raw_headers: ($('eb-raw') || {}).value || '',
-        new_email: newEmail,
-        original_alias: origEmail,
-        otp: otp
-      })
-    }).then(function(r) { return r.json(); }).then(function(d) {
-      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-      if (!d.ok) { ebStatus('Server error: ' + (d.error || 'Unknown'), 'err'); return; }
-      var code = String((d.data || {}).code || '');
-      if (code === '0') {
-        ebStatus('✓ Email successfully changed to ' + newEmail + '!', 'ok');
-        $('eb-step-2').classList.remove('active');
-        _ebParsed = null;
-        setTimeout(function() {
-          $('eb-raw').value = '';
-          var prev = $('eb-token-preview');
-          if (prev) prev.style.display = 'none';
-          ebStatus('', '');
-        }, 6000);
-      } else {
-        var msg = (d.data || {}).msg || JSON.stringify(d.data || d);
-        ebStatus('Failed: ' + msg, 'err');
-      }
-    }).catch(function(err) {
-      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-      ebStatus('Network error: ' + err.message, 'err');
-    });
-  }
-
-  // Wire up Email Binder buttons (must be inside IIFE — onclick attrs won't work)
+  // Wire up Voucher Checker button
   (function() {
-    function _eb(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
-    _eb('eb-parse-btn',   function() { ebParseTokens(); });
-    _eb('eb-send-btn',    function() { ebSendCode(); });
-    _eb('eb-confirm-btn', function() { ebConfirm(); });
-    var goBack = document.getElementById('eb-goback-btn');
-    if (goBack) goBack.addEventListener('click', function() { ebGoBack(); });
+    var btn = $('vc-check-btn');
+    if (btn) btn.addEventListener('click', function() { vcCheck(); });
   })();
 
 
