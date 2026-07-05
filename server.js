@@ -32,7 +32,7 @@ const supabase = createClient(
 );
 
 // ════════════════════════════════════════════════════════════
-// ── RATE LIMITING CONFIG ──
+// ── RATE LIMITING CONFIG ──-
 //
 // Block escalation per fingerprint/IP (tracked separately):
 //   1st invalid attempt  → blocked_until = now + 1h,  block_level = 1
