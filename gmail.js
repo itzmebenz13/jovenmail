@@ -534,7 +534,7 @@ async function removeAccount(accountEmail) {
 }
 
 // ────────────────────────────────────────────────────────────
-// BACKWARD COMPATIBILITY — legacy last_fetch_time in system_state
+// BACKWARD COMPATIBILITY — legacy last_fetch_time in system_state.
 // ────────────────────────────────────────────────────────────
 // The old single-account system stored a global last_fetch_time.
 // We no longer need it; per-account times are kept in _lastFetchTimes.
