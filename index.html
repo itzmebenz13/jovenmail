@@ -4077,8 +4077,169 @@
     }
     /* Re-enable pointer events on clickable images only */
     a img, button img { pointer-events: auto; }
+
+    /* ────────────────────────────────────────────────────
+       GENERATE EMAIL ALIAS FEATURE
+    ──────────────────────────────────────────────────── */
+
+    /* Gradient "Generate" button */
+    .btn-generate {
+      background: linear-gradient(135deg, #58CC02 0%, #2B8BE6 100%);
+      color: #fff !important;
+      border: none;
+      border-bottom: 4px solid #1a7cbf;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      transition: filter 0.18s, transform 0.12s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-generate::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .btn-generate:hover { filter: brightness(1.1); }
+    .btn-generate:active {
+      border-bottom-width: 2px !important;
+      transform: translateY(2px) !important;
+    }
+
+    /* "or" divider row */
+    .gen-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0 8px;
+    }
+    .gen-divider-line { flex: 1; height: 1px; background: var(--border); }
+    .gen-divider-text {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Generate modal — Gmail selector */
+    .gen-select-wrap { position: relative; margin-bottom: 14px; }
+    .gen-gmail-select {
+      width: 100%;
+      box-sizing: border-box;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-strong);
+      border-radius: var(--radius-input);
+      padding: 11px 38px 11px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.84rem;
+      color: var(--text-main);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .gen-gmail-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(88, 204, 2, 0.12);
+    }
+    .gen-select-arrow {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-muted);
+    }
+
+    /* Result box */
+    @keyframes genReveal {
+      from { opacity: 0; transform: translateY(6px) scale(0.98); }
+      to   { opacity: 1; transform: none; }
+    }
+    .gen-result-box {
+      display: none;
+      background: rgba(88, 204, 2, 0.06);
+      border: 1.5px solid rgba(88, 204, 2, 0.3);
+      border-radius: 12px;
+      padding: 13px 14px;
+      margin-bottom: 14px;
+      animation: genReveal 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .gen-result-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.63rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 7px;
+    }
+    .gen-result-alias {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--code-text);
+      word-break: break-all;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .gen-result-actions { display: flex; gap: 8px; }
+
+    /* Gmail visibility badges (admin panel) */
+    .gmail-vis-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.63rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .gmail-vis-badge.vis-on {
+      background: rgba(88, 204, 2, 0.12);
+      color: #46A302;
+      border: 1px solid rgba(88, 204, 2, 0.28);
+    }
+    .gmail-vis-badge.vis-off {
+      background: rgba(248, 113, 113, 0.1);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.25);
+    }
+    .gmail-vis-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: 1px solid var(--border-strong);
+      border-radius: 7px;
+      padding: 4px 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text-dim);
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .gmail-vis-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(88, 204, 2, 0.06);
+    }
+    .gmail-vis-toggle.toggle-hide:hover {
+      border-color: #f87171;
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.06);
+    }
 </style>
 </head>
+
 
 <body>
 
@@ -4589,6 +4750,20 @@
             </svg>
             <div class="btn-recover-spinner"></div>
             <span id="recoverBtnLabel">Load Inbox (Recover)</span>
+          </button>
+          <!-- Generate Email Alias — alternative to manual entry -->
+          <div class="gen-divider">
+            <div class="gen-divider-line"></div>
+            <span class="gen-divider-text">or</span>
+            <div class="gen-divider-line"></div>
+          </div>
+          <button class="btn-pill btn-generate" id="openGenerateBtn"
+            style="width:100%;padding:10px 18px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:0.86rem;"
+            onclick="openGenerateModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            Generate Email Alias
           </button>
           <!-- Recent aliases — shown when history exists -->
           <div id="recentAliasesWrap" style="display:none;margin-top:14px;">
@@ -5119,8 +5294,9 @@
     var BASE = 'rizamartinez875';
     var DOMAIN = 'gmail.com';
     var STORAGE_KEY = 'dotmail_alias';
-    var SUPABASE_URL = 'https://rjecgkfrwitvcrpodriw.supabase.co';
-    var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqZWNna2Zyd2l0dmNycG9kcml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzg3OTgsImV4cCI6MjA4ODcxNDc5OH0.a26LLka39iM_9cFf2vdXY3ljd4rkw0PS2C2ERm74OyE';
+    var SUPABASE_URL = 'https://pqxqsvkliumopyotloke.supabase.co';
+    var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxeHFzdmtsaXVtb3B5b3Rsb2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTc3ODMsImV4cCI6MjA5ODg5Mzc4M30._oekMnDNvFBOtEez0R4JSB_fLCCWfrNCkOvuLL8yJjs';
+
 
     var currentAlias = '';
     var emails = [];
@@ -8407,6 +8583,15 @@
         var aliasCount = acc.alias_count || 0;
         var email = escHtml(acc.email);
         var emailJs = acc.email.replace(/'/g, "\\'");
+        // Visibility (default true if server didn't return the field yet)
+        var isVisible = acc.visible !== false;
+        var visBadge = isVisible
+          ? '<span class="gmail-vis-badge vis-on">\u2022 Visible to users</span>'
+          : '<span class="gmail-vis-badge vis-off">\u2022 Hidden from users</span>';
+        var visToggleLabel = isVisible
+          ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Hide'
+          : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Show';
+        var visToggleClass = isVisible ? 'gmail-vis-toggle toggle-hide' : 'gmail-vis-toggle';
         return '<div class="gmail-account-card">' +
           '<div class="gmail-account-info">' +
           '<div class="gmail-account-email">' + email + '</div>' +
@@ -8416,8 +8601,12 @@
           '<span class="gmail-meta-text">' + aliasCount + ' alias' + (aliasCount !== 1 ? 'es' : '') + '</span>' +
           (added ? '<span class="gmail-meta-sep">\u00b7</span><span class="gmail-meta-text">Added ' + added + '</span>' : '') +
           '</div>' +
+          '<div style="margin-top:6px;">' + visBadge + '</div>' +
           '</div>' +
-          '<div class="gmail-account-actions">' +
+          '<div class="gmail-account-actions" style="flex-wrap:wrap;gap:6px;">' +
+          '<button class="' + visToggleClass + '" onclick="admToggleGmailVisibility(\'' + emailJs + '\',' + isVisible + ')" title="' + (isVisible ? 'Hide from user generator' : 'Show in user generator') + '">' +
+          visToggleLabel +
+          '</button>' +
           '<button class="btn-pill btn-outline btn-sm" onclick="admRefreshWatch(\'' + emailJs + '\')" style="padding:4px 10px;font-size:0.7rem;display:flex;align-items:center;gap:4px;">' +
           '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>' +
           'Renew' +
@@ -8429,6 +8618,7 @@
           '</div>';
       }).join('');
     }
+
 
     // ── ADMIN SETTINGS ──
     async function admLoadSettings() {
@@ -8627,7 +8817,189 @@
       } catch (e) {
         showToast('Delete failed: ' + e.message);
       }
-    }  </script>
+    }
+
+    // ══════════════════════════════════════════════════════
+    // ── GENERATE EMAIL ALIAS ──
+    // ══════════════════════════════════════════════════════
+
+    var _genAlias = '';
+    var _genBusy  = false;
+
+    async function openGenerateModal() {
+      // Reset state
+      _genAlias = '';
+      _genBusy  = false;
+      var resultBox = document.getElementById('genResultBox');
+      var errEl     = document.getElementById('genError');
+      var label     = document.getElementById('genBtnLabel');
+      var spinner   = document.getElementById('genBtnSpinner');
+      var btn       = document.getElementById('genBtn');
+      var icon      = document.getElementById('genBtnIcon');
+      if (resultBox) resultBox.style.display = 'none';
+      if (errEl)     { errEl.style.display = 'none'; errEl.textContent = ''; }
+      if (label)     label.textContent = 'Generate Alias';
+      if (spinner)   spinner.style.display = 'none';
+      if (icon)      icon.style.display = '';
+      if (btn)       btn.disabled = false;
+
+      // Show modal
+      var overlay = document.getElementById('generateEmailOverlay');
+      if (overlay) overlay.classList.add('open');
+
+      // Fetch visible Gmail accounts
+      var select = document.getElementById('genGmailSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">Loading accounts\u2026</option>';
+      select.disabled = true;
+
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/public/gmail-accounts');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Server error');
+        var accounts = data.accounts || [];
+        if (!accounts.length) {
+          select.innerHTML = '<option value="">No Gmail accounts available</option>';
+          select.disabled = true;
+          if (btn) btn.disabled = true;
+          return;
+        }
+        select.innerHTML =
+          '<option value="">\u2014 Select a Gmail account \u2014</option>' +
+          accounts.map(function (a) {
+            return '<option value="' + escHtml(a.email) + '">' + escHtml(a.email) + '</option>';
+          }).join('');
+        select.disabled = false;
+      } catch (e) {
+        select.innerHTML = '<option value="">Failed to load \u2014 ' + escHtml(e.message) + '</option>';
+        select.disabled = true;
+        showGenError('Could not load Gmail accounts: ' + e.message);
+      }
+    }
+
+    function closeGenerateModal() {
+      var overlay = document.getElementById('generateEmailOverlay');
+      if (overlay) overlay.classList.remove('open');
+    }
+
+    async function doGenerateAlias() {
+      if (_genBusy) return;
+      var select  = document.getElementById('genGmailSelect');
+      var account = select ? select.value : '';
+      if (!account) {
+        showGenError('Please select a Gmail account first.');
+        return;
+      }
+
+      // Hide old error / result
+      var errEl     = document.getElementById('genError');
+      var resultBox = document.getElementById('genResultBox');
+      if (errEl)     { errEl.style.display = 'none'; errEl.textContent = ''; }
+      if (resultBox) resultBox.style.display = 'none';
+
+      // Loading state
+      var btn     = document.getElementById('genBtn');
+      var label   = document.getElementById('genBtnLabel');
+      var spinner = document.getElementById('genBtnSpinner');
+      var icon    = document.getElementById('genBtnIcon');
+      if (label)   label.textContent = 'Generating\u2026';
+      if (spinner) spinner.style.display = 'block';
+      if (icon)    icon.style.display = 'none';
+      if (btn)     btn.disabled = true;
+      _genBusy = true;
+
+      try {
+        var r    = await fetch(RAILWAY_URL + '/api/generate-alias', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ gmail_account: account })
+        });
+        var data = await r.json();
+        if (!data.ok) {
+          showGenError(data.error || 'Generation failed. Please try again.');
+          return;
+        }
+
+        // Show result
+        _genAlias = data.alias;
+        var aliasEl = document.getElementById('genResultAlias');
+        if (aliasEl)   aliasEl.textContent = data.alias;
+        if (resultBox) resultBox.style.display = 'block';
+        if (label)     label.textContent = 'Generate Another';
+        showToast('\u2713 Alias ready: ' + data.alias);
+
+      } catch (e) {
+        showGenError('Connection error. Please try again.');
+      } finally {
+        if (spinner) spinner.style.display = 'none';
+        if (icon)    icon.style.display = '';
+        if (btn)     btn.disabled = false;
+        _genBusy = false;
+      }
+    }
+
+    function showGenError(msg) {
+      var el = document.getElementById('genError');
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = 'flex';
+    }
+
+    function genCopyAlias() {
+      if (!_genAlias) return;
+      navigator.clipboard.writeText(_genAlias).then(function () {
+        var btn  = document.getElementById('genCopyBtn');
+        var orig = btn ? btn.innerHTML : '';
+        if (btn) {
+          btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+          btn.style.color = '#22c55e';
+          btn.style.borderColor = '#22c55e';
+          setTimeout(function () {
+            btn.innerHTML = orig;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+          }, 2000);
+        }
+        showToast('Alias copied to clipboard');
+      }).catch(function () {
+        window.prompt('Copy your alias:', _genAlias);
+      });
+    }
+
+    async function genLoadInbox() {
+      if (!_genAlias) return;
+      closeGenerateModal();
+      var input = document.getElementById('recoverInput');
+      if (input) input.value = _genAlias;
+      await recoverAlias();
+    }
+
+    // ══════════════════════════════════════════════════════
+    // ── ADMIN \u2014 GMAIL VISIBILITY TOGGLE ──
+    // ══════════════════════════════════════════════════════
+
+    async function admToggleGmailVisibility(email, currentlyVisible) {
+      var newVisible = !currentlyVisible;
+      try {
+        var r = await fetch(RAILWAY_URL + '/api/admin/gmail-accounts/set-visibility', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body:    JSON.stringify({ account: email, visible: newVisible })
+        });
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Failed to update visibility');
+        showToast(newVisible
+          ? '\u2022 ' + email + ' is now visible to users'
+          : '\u2022 ' + email + ' is now hidden from users'
+        );
+        await admLoadGmailAccounts();
+      } catch (e) {
+        showToast('Visibility update failed: ' + e.message);
+      }
+    }
+
+  </script>
 
 
   <!-- ═══════════════════════════════════════════
@@ -8932,6 +9304,105 @@
       </button>
     </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════
+     GENERATE EMAIL ALIAS MODAL
+════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="generateEmailOverlay" onclick="if(event.target===this)closeGenerateModal()">
+    <div class="modal modal-sm" id="generateEmailModal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <button class="modal-close" onclick="closeGenerateModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          Generate Email Alias
+        </div>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.55;margin-bottom:16px;">
+          Pick one of the available Gmail accounts below. We'll generate a unique dot-variant alias routed to that inbox — no typing required.
+        </p>
+
+        <!-- Gmail account selector -->
+        <div class="form-group">
+          <label>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+            Gmail Account
+          </label>
+          <div class="gen-select-wrap">
+            <select class="gen-gmail-select" id="genGmailSelect">
+              <option value="">Loading accounts…</option>
+            </select>
+            <svg class="gen-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Error message -->
+        <div id="genError"
+          style="display:none;margin-bottom:12px;font-size:0.75rem;color:#f87171;align-items:center;gap:5px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:8px 10px;">
+        </div>
+
+        <!-- Result box (hidden until alias is generated) -->
+        <div class="gen-result-box" id="genResultBox">
+          <div class="gen-result-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Alias Ready
+          </div>
+          <div class="gen-result-alias" id="genResultAlias"></div>
+          <div class="gen-result-actions">
+            <button class="btn-pill btn-primary" id="genLoadBtn" onclick="genLoadInbox()"
+              style="flex:1;padding:8px 12px;font-size:0.82rem;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                <polyline points="10 17 15 12 10 7"/>
+                <line x1="15" y1="12" x2="3" y2="12"/>
+              </svg>
+              Load Inbox
+            </button>
+            <button class="btn-pill btn-outline" id="genCopyBtn" onclick="genCopyAlias()"
+              style="padding:8px 14px;font-size:0.82rem;display:flex;align-items:center;gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <!-- Generate / Regenerate button -->
+        <button class="btn-pill btn-generate w-full" id="genBtn" onclick="doGenerateAlias()"
+          style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;font-size:0.9rem;">
+          <svg id="genBtnIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          <div id="genBtnSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.65s linear infinite;flex-shrink:0;"></div>
+          <span id="genBtnLabel">Generate Alias</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="adminOverlay">
     <div class="adm-wrap">
 
