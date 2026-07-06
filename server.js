@@ -11,7 +11,7 @@ const {
 require('dotenv').config();
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 // ── CORS ──
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
