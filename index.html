@@ -8265,14 +8265,16 @@
         var newEmails = valid.filter(function (e) { return !existing.has(e); });
         if (!newEmails.length) { showToast('All emails already in list'); return; }
 
-        var rows = newEmails.map(function (email) { return { email: email }; });
-        var CHUNK = 500, added = 0;
-        for (var i = 0; i < rows.length; i += CHUNK) {
-          var r = await _admSb.from('allowed_emails').insert(rows.slice(i, i + CHUNK));
-          if (r.error) throw r.error;
-          added += Math.min(CHUNK, rows.length - i);
-        }
+        var r = await fetch(RAILWAY_URL + '/api/admin/allowed-emails/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ emails: newEmails })
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Server error');
 
+        var added = data.added || 0;
         var msg = '✓ Added ' + added + ' email' + (added !== 1 ? 's' : '');
         if (skip > 0) msg += ' (' + skip + ' invalid skipped)';
         if (newEmails.length < valid.length) msg += ' (' + (valid.length - newEmails.length) + ' duplicates skipped)';
@@ -8320,11 +8322,14 @@
       if (!count) { showToast('No emails to delete.'); return; }
       if (!confirm('Delete ALL ' + count.toLocaleString() + ' emails? This cannot be undone.')) return;
       try {
-        var ids = _admAllEmails.map(function (r) { return r.id; });
-        for (var i = 0; i < ids.length; i += 100) {
-          var r = await _admSb.from('allowed_emails').delete().in('id', ids.slice(i, i + 100));
-          if (r.error) throw r.error;
-        }
+        var r = await fetch(RAILWAY_URL + '/api/admin/allowed-emails/remove-all', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() }
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Server error');
+
         showToast('Deleted all ' + count.toLocaleString() + ' emails.');
         await admLoadEmails(true);
       } catch (e) { showToast('Delete all failed: ' + e.message); }
@@ -8334,8 +8339,15 @@
     async function admDeleteEmail(id, email) {
       if (!confirm('Remove ' + email + ' from valid emails?')) return;
       try {
-        var r = await _admSb.from('allowed_emails').delete().eq('id', id);
-        if (r.error) throw r.error;
+        var r = await fetch(RAILWAY_URL + '/api/admin/allowed-emails/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+          body: JSON.stringify({ id: id })
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        var data = await r.json();
+        if (!data.ok) throw new Error(data.error || 'Server error');
+
         showToast('Removed ' + email);
         await admLoadEmails(false);
       } catch (e) { showToast('Delete failed: ' + e.message); }
@@ -8358,9 +8370,13 @@
       if (!confirm('Delete ' + _admSelIds.size + ' selected email(s)?')) return;
       try {
         var ids = Array.from(_admSelIds);
-        for (var i = 0; i < ids.length; i += 100) {
-          var r = await _admSb.from('allowed_emails').delete().in('id', ids.slice(i, i + 100));
-          if (r.error) throw r.error;
+        for (var i = 0; i < ids.length; i++) {
+          var r = await fetch(RAILWAY_URL + '/api/admin/allowed-emails/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-secret': getAdminSecret() },
+            body: JSON.stringify({ id: ids[i] })
+          });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
         }
         showToast('Deleted ' + ids.length + ' emails');
         _admSelIds.clear();
