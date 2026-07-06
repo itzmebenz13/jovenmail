@@ -4293,7 +4293,7 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-      <button class="btn-pill btn-primary" id="btnUserLogin" onclick="openUserAuthModal()" style="padding:7px 14px; font-size:0.8rem; font-weight:700;">Login / Sign Up</button><div id="userProfileBadge" style="display:none; align-items:center; gap:8px; font-size:0.85rem; font-weight:600;"><span id="userEmailDisplay"></span><button class="btn-pill btn-outline btn-sm" onclick="doUserLogout()">Logout</button></div></div>
+      </div>
 
       <!-- Mobile Menu Dropdown -->
       <div class="mobile-menu" id="mobileMenu">
@@ -4580,7 +4580,14 @@
                 </svg>
                 Gmail Account
               </label>
-              <div class="gen-select-wrap"><div id="genGmailList" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto; margin-bottom:12px;"><div class="adm-loading"><span class="adm-spinner"></span> Loading accounts...</div></div></div>
+              <div class="gen-select-wrap">
+                <select class="gen-gmail-select" id="genGmailSelect">
+                  <option value="">Loading accounts…</option>
+                </select>
+                <svg class="gen-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
             </div>
 
             <div id="genError" style="display:none;margin-bottom:12px;font-size:0.75rem;color:#f87171;align-items:center;gap:5px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:8px 10px;"></div>
@@ -4627,7 +4634,16 @@
         <div id="ownershipBar" style="display:none;">
           <!-- 3-button action grid -->
           <div class="owner-actions">
-            
+            <button class="owner-action-btn ql-btn" id="quickLinkBtn" onclick="openQuickLinkModal()" title="Share inbox access via QuickLink">
+              <div class="oab-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                  <polyline points="16 6 12 2 8 6"></polyline>
+                  <line x1="12" y1="2" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <span class="oab-label">QuickLink</span>
+            </button>
             <button class="owner-action-btn save-btn" id="sessionLinkBtn" onclick="copySessionLink()" title="Generate a restore link to open this session in any browser">
               <div class="oab-icon">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -4637,7 +4653,15 @@
               </div>
               <span class="oab-label">Save Link</span>
             </button>
-            
+            <button class="owner-action-btn transfer-btn" onclick="openTransferModal()" title="Transfer ownership to another user">
+              <div class="oab-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5l7 7-7 7"></path>
+                </svg>
+              </div>
+              <span class="oab-label">Transfer</span>
+            </button>
           </div>
         </div>
 
@@ -4863,45 +4887,6 @@
   </div>
 
   <!-- MY ACCOUNTS MODAL -->
-  
-  <div class="modal-overlay" id="userAuthOverlay" style="display:none;" onclick="if(event.target===this)closeUserAuthModal()">
-    <div class="modal modal-sm" id="userAuthModal" onclick="event.stopPropagation()">
-      <div class="modal-head">
-        <button class="modal-close" onclick="closeUserAuthModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-        <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          Account Access
-        </div>
-      </div>
-      <div class="modal-body">
-        <div class="adm-tabs" style="margin-bottom: 15px;">
-          <div class="adm-tab active" id="tabSignIn" onclick="switchAuthTab('signin')">Sign In</div>
-          <div class="adm-tab" id="tabSignUp" onclick="switchAuthTab('signup')">Sign Up</div>
-        </div>
-        
-        <div id="panelSignIn" style="display:block;">
-          <input type="email" id="authEmail" class="adm-input" placeholder="Email" style="margin-bottom:8px; width:100%;">
-          <input type="password" id="authPassword" class="adm-input" placeholder="Password" style="margin-bottom:12px; width:100%;">
-          <button class="btn-pill btn-primary w-full" onclick="doEmailSignIn()">Sign In</button>
-        </div>
-
-        <div id="panelSignUp" style="display:none;">
-          <input type="email" id="regEmail" class="adm-input" placeholder="Email" style="margin-bottom:8px; width:100%;">
-          <input type="password" id="regPassword" class="adm-input" placeholder="Password" style="margin-bottom:12px; width:100%;">
-          <button class="btn-pill btn-primary w-full" onclick="doEmailSignUp()">Create Account</button>
-        </div>
-
-        <div style="margin: 15px 0; text-align: center; color: var(--text-muted); font-size: 0.8rem;">OR</div>
-        
-        <button class="btn-pill btn-outline w-full" onclick="doGoogleLogin()" style="display:flex; align-items:center; justify-content:center; gap:8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path></svg>
-          Continue with Google
-        </button>
-      </div>
-    </div>
-  </div>
   <div class="modal-overlay" id="myAccountsModalOverlay" onclick="closeMyAccountsOutside(event)">
     <div class="modal" id="myAccountsModal" onclick="event.stopPropagation()">
       <div class="modal-head">
@@ -6221,214 +6206,7 @@
         });
 
         // Removed strict table sizing and padding so promotional emails can render natively
-        iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;color:#000;background:#fff;}img{max-width:100%;height:auto;}*{box-sizing:border-box}</style></head><body>' + body + '
-<script>
-// User Authentication Logic
-let currentUser = null;
-
-async function checkSession() {
-  const { data: { session } } = await supabase.auth.getSession();
-  currentUser = session ? session.user : null;
-  updateAuthUI();
-  if (currentUser) {
-    loadPrivateGmailAccounts();
-  } else {
-    loadGlobalGmailAccounts();
-  }
-}
-
-function updateAuthUI() {
-  const btnLogin = document.getElementById('btnUserLogin');
-  const badge = document.getElementById('userProfileBadge');
-  const emailDisp = document.getElementById('userEmailDisplay');
-  const promptArea = document.getElementById('genLoginPromptArea');
-  const addArea = document.getElementById('genAddGmailArea');
-  
-  if (currentUser) {
-    if (btnLogin) btnLogin.style.display = 'none';
-    if (badge) badge.style.display = 'flex';
-    if (emailDisp) emailDisp.textContent = currentUser.email;
-    if (promptArea) promptArea.style.display = 'none';
-    if (addArea) addArea.style.display = 'block';
-  } else {
-    if (btnLogin) btnLogin.style.display = 'inline-block';
-    if (badge) badge.style.display = 'none';
-    if (promptArea) promptArea.style.display = 'block';
-    if (addArea) addArea.style.display = 'none';
-  }
-}
-
-function openUserAuthModal() {
-  document.getElementById('userAuthOverlay').style.display = 'flex';
-}
-function closeUserAuthModal() {
-  document.getElementById('userAuthOverlay').style.display = 'none';
-}
-
-function switchAuthTab(tab) {
-  document.getElementById('tabSignIn').classList.remove('active');
-  document.getElementById('tabSignUp').classList.remove('active');
-  document.getElementById('panelSignIn').style.display = 'none';
-  document.getElementById('panelSignUp').style.display = 'none';
-  
-  if (tab === 'signin') {
-    document.getElementById('tabSignIn').classList.add('active');
-    document.getElementById('panelSignIn').style.display = 'block';
-  } else {
-    document.getElementById('tabSignUp').classList.add('active');
-    document.getElementById('panelSignUp').style.display = 'block';
-  }
-}
-
-async function doEmailSignIn() {
-  const email = document.getElementById('authEmail').value;
-  const password = document.getElementById('authPassword').value;
-  if (!email || !password) return alert('Enter email and password');
-  
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return alert(error.message);
-  
-  closeUserAuthModal();
-  checkSession();
-}
-
-async function doEmailSignUp() {
-  const email = document.getElementById('regEmail').value;
-  const password = document.getElementById('regPassword').value;
-  if (!email || !password) return alert('Enter email and password');
-  
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) return alert(error.message);
-  
-  alert('Account created successfully! You are now signed in.');
-  closeUserAuthModal();
-  checkSession();
-}
-
-async function doUserLogout() {
-  await supabase.auth.signOut();
-  currentUser = null;
-  updateAuthUI();
-  document.getElementById('genGmailList').innerHTML = ''; // clear accounts
-  loadGlobalGmailAccounts();
-}
-
-async function doGoogleLogin() {
-  alert('Google login will be configured by the admin later.');
-}
-
-async function loadPrivateGmailAccounts() {
-  const list = document.getElementById('genGmailList');
-  if(!list) return;
-  list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading accounts...</div>';
-  
-  // Load from Supabase. RLS policy ensures we only get global + our own.
-  const { data, error } = await supabase.from('gmail_accounts').select('email, user_id, visible').eq('visible', true);
-  if (error) {
-    list.innerHTML = '<div style="color:red">Failed to load accounts</div>';
-    return;
-  }
-  
-  if (!data || data.length === 0) {
-    list.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">No Gmail accounts available.</div>';
-    return;
-  }
-  
-  renderGmailList(list, data);
-}
-
-async function loadGlobalGmailAccounts() {
-  const list = document.getElementById('genGmailList');
-  if(!list) return;
-  list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading accounts...</div>';
-  
-  // Non-authenticated users can only read global accounts (RLS handles this)
-  const { data, error } = await supabase.from('gmail_accounts').select('email, user_id, visible').eq('visible', true);
-  if (error || !data) {
-    list.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">No Global Gmail accounts available. Log in to add your own.</div>';
-    return;
-  }
-  renderGmailList(list, data);
-}
-
-function renderGmailList(list, data) {
-  list.innerHTML = '';
-  data.forEach(acc => {
-    const isPrivate = currentUser && acc.user_id === currentUser.id;
-    const badge = isPrivate 
-      ? '<span style="background:#3b82f6;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.6rem;font-weight:700;">PRIVATE</span>' 
-      : '<span style="background:#10b981;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.6rem;font-weight:700;">GLOBAL</span>';
-    
-    const div = document.createElement('div');
-    div.style.cssText = 'padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-input); display:flex; align-items:center; justify-content:space-between; cursor:pointer; margin-bottom: 6px;';
-    div.innerHTML = `
-      <div style="display:flex; align-items:center; gap:8px;">
-        <input type="radio" name="gmail_choice" value="${acc.email}" style="cursor:pointer;">
-        <span style="font-size:0.85rem; font-weight:600;">${acc.email}</span>
-      </div>
-      ${badge}
-    `;
-    div.onclick = () => { div.querySelector('input').checked = true; };
-    list.appendChild(div);
-  });
-  
-  // Select first by default
-  const firstRadio = list.querySelector('input[type="radio"]');
-  if (firstRadio) firstRadio.checked = true;
-}
-
-async function initiateAddPrivateGmail() {
-  if (!currentUser) return;
-  const email = prompt('Enter the exact Gmail address you want to connect:');
-  if (!email) return;
-  
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session.access_token;
-  
-  const url = RAILWAY_URL + '/auth/login?account=' + encodeURIComponent(email) + '&token=' + encodeURIComponent(token);
-  // Open popup
-  const popup = window.open(url, 'ConnectGmail', 'width=500,height=600');
-  
-  // Poll until it closes to refresh accounts
-  const timer = setInterval(() => {
-    if(popup.closed) {
-      clearInterval(timer);
-      loadPrivateGmailAccounts();
-    }
-  }, 1000);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(checkSession, 500);
-  
-  // Fix the old generate() function to read from radio buttons instead of select
-  const oldGen = window.generate;
-  if(oldGen) {
-    window.generate = async function() {
-      const selected = document.querySelector('input[name="gmail_choice"]:checked');
-      if(!selected) {
-         showToast('Please select a Gmail account', 'error');
-         return;
-      }
-      
-      // Override the actual form value in the DOM if any logic relies on it
-      const oldSelect = document.getElementById('genGmailSelect');
-      if(oldSelect) oldSelect.value = selected.value;
-      else {
-        // Mock it for the generate function which expects document.getElementById('genGmailSelect').value
-        const mockInput = document.createElement('input');
-        mockInput.type = 'hidden';
-        mockInput.id = 'genGmailSelect';
-        mockInput.value = selected.value;
-        document.body.appendChild(mockInput);
-      }
-      
-      return oldGen.apply(this, arguments);
-    }
-  }
-});
-</script>
-</body></html>';
+        iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;color:#000;background:#fff;}img{max-width:100%;height:auto;}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
       } else {
         bodyEl.classList.remove('is-iframe'); // Remove zero padding
         bodyEl.classList.add('is-plain');     // Add monospace styling
