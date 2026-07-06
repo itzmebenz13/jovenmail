@@ -13,7 +13,7 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
-// ── CORS ──-
+// ── CORS ──
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
 app.use(function (req, res, next) {
   const origin = req.headers['origin'] || '';
@@ -893,7 +893,7 @@ app.post('/api/set-transfer-pin', async function (req, res) {
   }
 });
 
-// ── CLAIM WITH PIN ───────────────────────────────────────────-
+// ── CLAIM WITH PIN ───────────────────────────────────────────
 const pinAttempts = {};
 const PIN_ATTEMPT_LIMIT = 5;
 const PIN_ATTEMPT_WINDOW = 60 * 60 * 1000;
@@ -1272,6 +1272,70 @@ app.get('/api/admin/gmail-connect-url', requireAdminSecret, async function (req,
   } catch (e) {
     console.error('admin/gmail-connect-url error:', e.message);
     return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/**
+ * POST /api/admin/allowed-emails/import
+ * Body: { emails: ["alias1@...", "alias2@..."] }
+ */
+app.post('/api/admin/allowed-emails/import', requireAdminSecret, async function (req, res) {
+  try {
+    const { emails } = req.body;
+    if (!Array.isArray(emails) || !emails.length) return res.status(400).json({ ok: false, error: 'No emails provided' });
+
+    // Deduplicate array
+    const uniqueEmails = [...new Set(emails.map(e => e.trim().toLowerCase()))];
+    const rows = uniqueEmails.map(email => ({ email }));
+
+    const CHUNK = 500;
+    let added = 0;
+    for (let i = 0; i < rows.length; i += CHUNK) {
+      const { error } = await supabase.from('allowed_emails').insert(rows.slice(i, i + CHUNK));
+      if (error) {
+        // Ignore duplicate key errors if some already exist, just continue or throw if fatal
+        if (error.code !== '23505') throw error;
+      } else {
+        added += Math.min(CHUNK, rows.length - i);
+      }
+    }
+    res.json({ ok: true, added });
+  } catch (e) {
+    console.error('admin/allowed-emails/import error:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/**
+ * POST /api/admin/allowed-emails/remove
+ * Body: { id: "uuid" }
+ */
+app.post('/api/admin/allowed-emails/remove', requireAdminSecret, async function (req, res) {
+  try {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ ok: false, error: 'Missing id' });
+
+    const { error } = await supabase.from('allowed_emails').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('admin/allowed-emails/remove error:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/**
+ * POST /api/admin/allowed-emails/remove-all
+ */
+app.post('/api/admin/allowed-emails/remove-all', requireAdminSecret, async function (req, res) {
+  try {
+    // Delete all by matching id not null
+    const { error } = await supabase.from('allowed_emails').delete().not('id', 'is', null);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('admin/allowed-emails/remove-all error:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
   }
 });
 
