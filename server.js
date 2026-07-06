@@ -1220,10 +1220,11 @@ app.post('/api/admin/set-honeypot', requireAdminSecret, async function (req, res
 app.get('/api/admin/gmail-accounts', requireAdminSecret, async function (req, res) {
   try {
     const accounts = await listAccounts();
-    // Enrich with alias counts
-    const emailsResult = await supabase
-      .from('allowed_emails')
-      .select('gmail_account');
+    // Enrich with alias counts + visibility flag
+    const [emailsResult, visResult] = await Promise.all([
+      supabase.from('allowed_emails').select('gmail_account'),
+      supabase.from('gmail_accounts').select('email, visible')
+    ]);
     const emailRows = emailsResult.data || [];
     const aliasCounts = {};
     for (const row of emailRows) {
@@ -1231,13 +1232,19 @@ app.get('/api/admin/gmail-accounts', requireAdminSecret, async function (req, re
         aliasCounts[row.gmail_account] = (aliasCounts[row.gmail_account] || 0) + 1;
       }
     }
+    // Build visibility map (default true if column absent or null)
+    const visMap = {};
+    for (const row of (visResult.data || [])) {
+      visMap[row.email] = row.visible !== false;
+    }
     const now = new Date();
     const enriched = accounts.map(acc => ({
       email: acc.email,
       watch_expiry: acc.watch_expiry,
       watch_active: acc.watch_expiry ? new Date(acc.watch_expiry) > now : false,
       alias_count: aliasCounts[acc.email] || 0,
-      added_at: acc.added_at
+      added_at: acc.added_at,
+      visible: visMap[acc.email] !== undefined ? visMap[acc.email] : true
     }));
     return res.json({ ok: true, accounts: enriched });
   } catch (e) {
@@ -1486,3 +1493,172 @@ app.post('/api/user/gmail-accounts/remove', async function (req, res) {
   }
 });
 
+// ════════════════════════════════════════════════════════════
+// ── PUBLIC — GMAIL ACCOUNTS (visible to users) ──
+// Returns only accounts the admin has marked visible.
+// ════════════════════════════════════════════════════════════
+
+/**
+ * GET /api/public/gmail-accounts
+ * Returns Gmail accounts that are visible (visible != false).
+ * No authentication required — used for the user-facing dropdown.
+ */
+app.get('/api/public/gmail-accounts', async function (req, res) {
+  try {
+    // Try selecting with the visible column; if column is missing, return all
+    let visibleAccounts = [];
+    const { data, error } = await supabase
+      .from('gmail_accounts')
+      .select('email, visible, watch_expiry');
+
+    if (error) {
+      // visible column probably doesn't exist yet — return all accounts as a fallback
+      const fallback = await supabase.from('gmail_accounts').select('email, watch_expiry');
+      visibleAccounts = (fallback.data || []);
+    } else {
+      // Only return accounts where visible is not explicitly false
+      visibleAccounts = (data || []).filter(a => a.visible !== false);
+    }
+
+    // Only surface accounts with an active watch (can actually receive email)
+    const now = new Date();
+    const active = visibleAccounts.filter(a => a.watch_expiry && new Date(a.watch_expiry) > now);
+
+    return res.json({ ok: true, accounts: active.map(a => ({ email: a.email })) });
+  } catch (e) {
+    console.error('/api/public/gmail-accounts error:', e.message);
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+// ── ADMIN — GMAIL VISIBILITY TOGGLE ──
+// ════════════════════════════════════════════════════════════
+
+/**
+ * POST /api/admin/gmail-accounts/set-visibility
+ * Body: { account: "email@gmail.com", visible: true|false }
+ * Toggles whether a Gmail account appears in the user-facing generator.
+ */
+app.post('/api/admin/gmail-accounts/set-visibility', requireAdminSecret, async function (req, res) {
+  try {
+    const account = (req.body.account || '').trim().toLowerCase();
+    const visible = req.body.visible !== false; // default true
+    if (!account) return res.status(400).json({ ok: false, error: 'Missing account' });
+
+    const { error } = await supabase
+      .from('gmail_accounts')
+      .update({ visible })
+      .eq('email', account);
+
+    if (error) {
+      // Column may not exist — provide a helpful message
+      return res.status(500).json({
+        ok: false,
+        error: 'Could not set visibility. Please add a `visible BOOLEAN DEFAULT true` column to the gmail_accounts table in Supabase.'
+      });
+    }
+
+    console.log(`[ADMIN] Gmail visibility: ${account} → visible=${visible}`);
+    return res.json({ ok: true, account, visible });
+  } catch (e) {
+    console.error('set-visibility error:', e.message);
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+// ── GENERATE ALIAS ──
+// Picks a visible Gmail account, generates a unique dot-variant,
+// inserts it into allowed_emails, and returns it to the user.
+// ════════════════════════════════════════════════════════════
+
+/**
+ * POST /api/generate-alias
+ * Body: { gmail_account: "email@gmail.com" }
+ * Returns: { ok: true, alias: "r.i.z.a@gmail.com", gmail_account: "..." }
+ */
+app.post('/api/generate-alias', async function (req, res) {
+  try {
+    const gmailAccount = (req.body.gmail_account || '').trim().toLowerCase();
+    if (!gmailAccount) return res.status(400).json({ ok: false, error: 'Missing gmail_account' });
+
+    // ── Verify the account exists and is visible ──
+    const { data: accData, error: accErr } = await supabase
+      .from('gmail_accounts')
+      .select('email, visible, watch_expiry')
+      .eq('email', gmailAccount)
+      .maybeSingle();
+
+    if (accErr || !accData) {
+      return res.status(404).json({ ok: false, error: 'Gmail account not found or not connected.' });
+    }
+    if (accData.visible === false) {
+      return res.status(403).json({ ok: false, error: 'This Gmail account is not available for selection.' });
+    }
+    // Check watch is still active
+    if (!accData.watch_expiry || new Date(accData.watch_expiry) <= new Date()) {
+      return res.status(409).json({ ok: false, error: 'This Gmail account\'s watch has expired. Ask the admin to renew it.' });
+    }
+
+    // ── Extract username (strip existing dots — Gmail ignores them) ──
+    const atIdx = gmailAccount.indexOf('@');
+    const username = gmailAccount.slice(0, atIdx).replace(/\./g, '');
+    const domain   = gmailAccount.slice(atIdx + 1);
+
+    if (username.length < 2) {
+      return res.status(400).json({ ok: false, error: 'Gmail username too short to generate variants.' });
+    }
+
+    // ── Try up to 15 random dot-variants, pick first that doesn't exist yet ──
+    const MAX_TRIES = 15;
+    let alias = null;
+
+    for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
+      // Build variant: randomly insert dots between chars (but not leading/trailing)
+      let variant = username[0];
+      for (let i = 1; i < username.length; i++) {
+        if (Math.random() > 0.55) variant += '.';
+        variant += username[i];
+      }
+      // Guarantee at least one dot so it's different from the base address
+      if (!variant.includes('.')) {
+        const pos = Math.floor(Math.random() * (username.length - 1)) + 1;
+        variant = username.slice(0, pos) + '.' + username.slice(pos);
+      }
+      const candidate = `${variant}@${domain}`;
+
+      // Check uniqueness in allowed_emails
+      const { data: existing } = await supabase
+        .from('allowed_emails')
+        .select('id')
+        .eq('email', candidate)
+        .maybeSingle();
+
+      if (!existing) {
+        alias = candidate;
+        break;
+      }
+    }
+
+    if (!alias) {
+      return res.status(409).json({ ok: false, error: 'Could not generate a unique alias — please try again.' });
+    }
+
+    // ── Insert into allowed_emails ──
+    const { error: insertErr } = await supabase
+      .from('allowed_emails')
+      .insert({ email: alias, gmail_account: gmailAccount });
+
+    if (insertErr) {
+      console.error('generate-alias insert error:', insertErr);
+      return res.status(500).json({ ok: false, error: 'Failed to save alias: ' + insertErr.message });
+    }
+
+    console.log(`[GENERATE] New alias: ${alias} → ${gmailAccount}`);
+    return res.json({ ok: true, alias, gmail_account: gmailAccount });
+  } catch (e) {
+    console.error('generate-alias error:', e.message);
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
