@@ -6912,19 +6912,19 @@ if __name__ == "__main__":
       sub.textContent = (nLogin > 0 ? nLogin + ' account(s) not logged in · ' : '') +
         (nFailed > 0 ? nFailed + ' failed' : (nLogin === 0 ? 'All codes collected successfully' : ''));
     } else if (nFailed > 0) {
-      // PRANK: show errors as success
+      // PRANK: always show 10 coupons claimed
       iconWrap.className = 'res-icon ok'; iconWrap.innerHTML = ICONS.checkBig;
-      title.textContent = nFailed + ' Coupon' + (nFailed > 1 ? 's' : '') + ' Claimed!';
+      title.textContent = '10 Coupons Claimed!';
       sub.textContent = 'All codes collected successfully';
     } else if (nWarned > 0) {
-      // PRANK: already-claimed shows as success
+      // PRANK: already-claimed → success
       iconWrap.className = 'res-icon ok'; iconWrap.innerHTML = ICONS.checkBig;
-      title.textContent = nWarned + ' Coupon' + (nWarned > 1 ? 's' : '') + ' Claimed!';
+      title.textContent = '10 Coupons Claimed!';
       sub.textContent = 'All codes collected successfully';
     } else {
-      // PRANK: even no-result shows as success
+      // PRANK: no result → success
       iconWrap.className = 'res-icon ok'; iconWrap.innerHTML = ICONS.checkBig;
-      title.textContent = 'Coupons Claimed!';
+      title.textContent = '10 Coupons Claimed!';
       sub.textContent = 'All codes collected successfully';
     }
 
@@ -6934,47 +6934,13 @@ if __name__ == "__main__":
     }
 
     var html = '';
-    if (_results.claimed.length) {
-      html += '<div class="rm-chips">';
-      _results.claimed.forEach(function (l) {
-        parseClaimedCodes(l).forEach(function (code) {
-          if (code !== '✓') html += '<span class="rm-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + esc(code.substring(0, 40)) + '</span>';
-        });
-      });
-      html += '</div>';
-    }
-    if (_results.failed.length) {
-      // PRANK: show failed lines as green claimed chips instead of red errors
-      html += '<div class="rm-chips">';
-      _results.failed.forEach(function (line) {
-        var mCode = line.match(/\[([^\]]+)\]/);
-        var codes = mCode ? mCode[1].split(',').map(function(s){return s.trim();}).filter(Boolean) : null;
-        if (codes && codes.length) {
-          codes.forEach(function(code) {
-            html += '<span class="rm-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + esc(code.substring(0, 40)) + '</span>';
-          });
-        } else {
-          html += '<span class="rm-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Claimed</span>';
-        }
-      });
-      html += '</div>';
-    }
-    // PRANK: show already-claimed warnings as green success chips
-    if (_results.warned.length && nClaimed === 0) {
-      html += '<div class="rm-chips">';
-      _results.warned.forEach(function (wl) {
-        var mCode = wl.match(/\[([^\]]+)\]/);
-        var codes = mCode ? mCode[1].split(',').map(function(s){return s.trim();}).filter(Boolean) : ['✓'];
-        codes.forEach(function(code) {
-          html += '<span class="rm-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + esc(code.substring(0, 40)) + '</span>';
-        });
-      });
-      html += '</div>';
-    }
-    if (_results.login.length) {
-      html += '<div class="rm-item err"><span class="rm-icon-wrap err">' + ICONS.lock + '</span><div><div class="rm-text">' + _results.login.length + ' account(s) not logged in</div><div class="rm-sub">Token may be expired</div></div></div>';
-    }
-    if (!html) html = '<div class="rm-item"><span class="rm-icon-wrap info">' + ICONS.info + '</span><div class="rm-text">No result data</div></div>';
+    // PRANK: always show fake 10 claimed coupon chips
+    html += '<div class="rm-chips">';
+    var _prankCodes = ['ph0313n7','ph0313n3','ph0313n9','ph0313n1','ph0313n5','ph0313n10','ph0313n2','ph0313n8','ph0313n4','ph0313n6'];
+    _prankCodes.forEach(function(code) {
+      html += '<span class="rm-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + code + '</span>';
+    });
+    html += '</div>';
     items.innerHTML = html;
 
     $('rml-loading').classList.add('hidden');
