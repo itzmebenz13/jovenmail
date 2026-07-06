@@ -7522,7 +7522,6 @@
       // Apply saved UI theme
       var savedUi = localStorage.getItem('ui-theme') || 'meiro';
       setUiTheme(savedUi);
-      initGenerateModal();
 
       // Check subscription status
       checkSubscriptionStatus();
@@ -8931,31 +8930,25 @@
       }
     }
 
-    async function openGenerateModal() {
+    async function initGenerateModal() {
       // Reset state
       _genAlias = '';
       _genBusy  = false;
-      var resultBox = document.getElementById('genResultBox');
       var errEl     = document.getElementById('genError');
       var label     = document.getElementById('genBtnLabel');
       var spinner   = document.getElementById('genBtnSpinner');
       var btn       = document.getElementById('genBtn');
       var icon      = document.getElementById('genBtnIcon');
-      if (resultBox) resultBox.style.display = 'none';
       if (errEl)     { errEl.style.display = 'none'; errEl.textContent = ''; }
       if (label)     label.textContent = 'Generate Alias';
       if (spinner)   spinner.style.display = 'none';
       if (icon)      icon.style.display = '';
       if (btn)       btn.disabled = false;
 
-      // Show modal
-      var overlay = document.getElementById('generateEmailOverlay');
-      if (overlay) overlay.classList.add('open');
-
       // Fetch visible Gmail accounts
       var select = document.getElementById('genGmailSelect');
       if (!select) return;
-      select.innerHTML = '<option value="">Loading accounts\u2026</option>';
+      select.innerHTML = '<option value="">Loading accounts…</option>';
       select.disabled = true;
 
       try {
@@ -8971,16 +8964,23 @@
           return;
         }
         select.innerHTML =
-          '<option value="">\u2014 Select a Gmail account \u2014</option>' +
+          '<option value="">— Select a Gmail account —</option>' +
           accounts.map(function (a) {
             return '<option value="' + escHtml(a.email) + '">' + escHtml(a.email) + '</option>';
           }).join('');
         select.disabled = false;
       } catch (e) {
-        select.innerHTML = '<option value="">Failed to load \u2014 ' + escHtml(e.message) + '</option>';
+        select.innerHTML = '<option value="">Failed to load — ' + escHtml(e.message) + '</option>';
         select.disabled = true;
         showGenError('Could not load Gmail accounts: ' + e.message);
       }
+    }
+
+    // Ensure it runs properly whether DOM is loading or already loaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGenerateModal);
+    } else {
+      initGenerateModal();
     }
 
     function closeGenerateModal() {
