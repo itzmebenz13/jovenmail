@@ -224,7 +224,9 @@ async function saveToken(code, stateStr) {
 /** Normalize a Gmail address by removing dots from the username part. */
 function normalizeGmail(address) {
   if (!address) return '';
-  const [user, domain] = address.toLowerCase().split('@');
+  const match = address.match(/<([^>]+)>/);
+  const rawEmail = match ? match[1] : address;
+  const [user, domain] = rawEmail.toLowerCase().split('@');
   return (user || '').replace(/\./g, '') + '@' + (domain || '');
 }
 
