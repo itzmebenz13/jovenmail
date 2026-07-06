@@ -140,9 +140,9 @@ async function loadAllAccounts() {
  * Generate an OAuth URL for a specific Gmail account.
  * Uses login_hint so Google pre-selects that account.
  */
-function getAuthUrl(accountEmail, ownerFp) {
+function getAuthUrl(accountEmail, userId) {
   const tempClient = new google.auth.OAuth2(client_id, client_secret, redirectUri);
-  const statePayload = { a: accountEmail || '', f: ownerFp || '' };
+  const statePayload = { a: accountEmail || '', u: userId || '' };
   const params = {
     access_type: 'offline',
     prompt: 'consent',
@@ -162,11 +162,11 @@ async function saveToken(code, stateStr) {
   const { tokens } = await tempClient.getToken(code);
 
   let accountEmail = '';
-  let ownerFp = null;
+  let userId = null;
   try {
     const parsed = JSON.parse(Buffer.from(stateStr, 'base64').toString('utf8'));
     accountEmail = parsed.a;
-    ownerFp = parsed.f || null;
+    userId = parsed.u || null;
   } catch (e) {
     accountEmail = stateStr; // fallback for old format
   }
@@ -188,7 +188,7 @@ async function saveToken(code, stateStr) {
 
   // Upsert into Supabase
   const upsertData = { email, tokens };
-  if (ownerFp) upsertData.owner_fp = ownerFp;
+  if (userId) upsertData.user_id = userId;
 
   const { error } = await _sb.from('gmail_accounts').upsert(
     upsertData,

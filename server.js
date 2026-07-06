@@ -288,47 +288,34 @@ function isInboxExpired(alias) {
 // ── AUTH ──
 // ════════════════════════════════════════════════════════════
 // ── AUTH — multi-account: ?account=user@gmail.com ──
-app.get('/auth/login', (req, res) => {
-  const secret = req.query.secret || req.headers['x-admin-secret'] || '';
-  const fingerprint = req.query.fingerprint || '';
-  
-  // Require admin secret OR a user fingerprint
-  if (process.env.ADMIN_SECRET && secret !== process.env.ADMIN_SECRET) {
-    if (!fingerprint) {
-      return res.status(401).send('Unauthorized — missing admin secret or fingerprint');
-    }
-  }
+app.get('/auth/login', async (req, res) => {
+  const token = req.query.token;
   const accountEmail = (req.query.account || '').trim().toLowerCase() || undefined;
-  res.redirect(getAuthUrl(accountEmail, fingerprint));
+
+  // We require the user to be signed into Supabase
+  if (!token) {
+    return res.status(401).send('Unauthorized — missing user token');
+  }
+
+  // Verify the Supabase token
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) {
+    return res.status(401).send('Invalid token or unauthorized');
+  }
+
+  res.redirect(getAuthUrl(accountEmail, user.id));
 });
 
 app.get('/auth/callback', async (req, res) => {
   try {
     const stateStr = req.query.state || '';
     
-    // Check subscription limits if fingerprint is present
-    let fingerprint = null;
+    // Check if user is present in state
+    let userId = null;
     try {
       const parsed = JSON.parse(Buffer.from(stateStr, 'base64').toString('utf8'));
-      fingerprint = parsed.f || null;
+      userId = parsed.u || null;
     } catch (e) { }
-
-    if (fingerprint) {
-      // Check tier limit
-      const { data: keys } = await supabase.from('subscription_keys').select('tier').eq('fingerprint', fingerprint);
-      // We take the highest tier if multiple exist, but typically 1 key per fp
-      const activeTier = keys && keys.length > 0 ? keys[0].tier : 'none';
-      let limit = 0;
-      if (activeTier === 'basic') limit = 1;
-      else if (activeTier === 'pro') limit = 2;
-      else if (activeTier === 'team') limit = 3;
-
-      const { count } = await supabase.from('gmail_accounts').select('email', { count: 'exact', head: true }).eq('owner_fp', fingerprint);
-      
-      if (count !== null && count >= limit) {
-        return res.status(403).send(`<html><body style="font-family:sans-serif;text-align:center;padding:60px;background:#111113;color:#faf7f2"><h2 style="color:#ef4444">Limit Reached</h2><p>You have reached the limit of ${limit} Gmail accounts for your ${activeTier} subscription.</p><script>setTimeout(() => window.close(), 3000);</script></body></html>`);
-      }
-    }
 
     const savedEmail = await saveToken(req.query.code, stateStr);
     await registerWatch(savedEmail);
