@@ -1291,12 +1291,12 @@ app.post('/api/admin/allowed-emails/import', requireAdminSecret, async function 
     const CHUNK = 500;
     let added = 0;
     for (let i = 0; i < rows.length; i += CHUNK) {
-      const { error } = await supabase.from('allowed_emails').insert(rows.slice(i, i + CHUNK));
+      const chunk = rows.slice(i, i + CHUNK);
+      const { error } = await supabase.from('allowed_emails').upsert(chunk, { onConflict: 'email', ignoreDuplicates: true });
       if (error) {
-        // Ignore duplicate key errors if some already exist, just continue or throw if fatal
-        if (error.code !== '23505') throw error;
+        throw error;
       } else {
-        added += Math.min(CHUNK, rows.length - i);
+        added += chunk.length;
       }
     }
     res.json({ ok: true, added });
