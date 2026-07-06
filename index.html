@@ -4293,7 +4293,7 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-      <button class="btn-pill btn-primary" id="btnUserLogin" onclick="openUserAuthModal()" style="padding:7px 14px; font-size:0.8rem; font-weight:700;">Login / Sign Up</button><div id="userProfileBadge" style="display:none; align-items:center; gap:8px; font-size:0.85rem; font-weight:600;"><span id="userEmailDisplay"></span><button class="btn-pill btn-outline btn-sm" onclick="doUserLogout()">Logout</button></div></div>
+      </div>
 
       <!-- Mobile Menu Dropdown -->
       <div class="mobile-menu" id="mobileMenu">
@@ -6221,8 +6221,7 @@
         });
 
         // Removed strict table sizing and padding so promotional emails can render natively
-        iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;color:#000;background:#fff;}img{max-width:100%;height:auto;}*{box-sizing:border-box}</style></head><body>' + body + '
-</body></html>';
+        iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;color:#000;background:#fff;}img{max-width:100%;height:auto;}*{box-sizing:border-box}</style></head><body>' + body + '</body></html>';
       } else {
         bodyEl.classList.remove('is-iframe'); // Remove zero padding
         bodyEl.classList.add('is-plain');     // Add monospace styling
