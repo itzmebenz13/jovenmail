@@ -13,7 +13,7 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
-// ── CORS ──
+// ── CORS ──-
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
 app.use(function (req, res, next) {
   const origin = req.headers['origin'] || '';
