@@ -1,22 +1,27 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0a1208">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="KoreoMail">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0a1208" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KoreoMail" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>KoreoMail — Temporary Gmail Aliases</title>
 
   <!-- Preload critical images for instant display -->
-  <link rel="preload" href="photos/km-light.png" as="image" type="image/png">
-  <link rel="preload" href="photos/km-dark.png" as="image" type="image/png">
-  <link rel="preload" href="photos/koreo-hi.png" as="image" type="image/png">
+  <link rel="preload" href="photos/km-light.png" as="image" type="image/png" />
+  <link rel="preload" href="photos/km-dark.png" as="image" type="image/png" />
+  <link rel="preload" href="photos/koreo-hi.png" as="image" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Nunito:wght@700;800;900&amp;family=Space+Grotesk:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Nunito:wght@700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
 
   <!-- Supabase & Lucide Icons -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -4241,83 +4246,106 @@
   <div class="wrap">
     <header>
       <div class="logo-wrap" style="display: flex; align-items: center; gap: 10px;">
-        <img src="photos/km-light.png" alt="KoreoMail Logo" id="km-logo-img" style="height: 54px; width: auto; object-fit: contain; pointer-events: none; -webkit-user-drag: none; user-select: none;" fetchpriority="high" decoding="sync" oncontextmenu="return false" draggable="false">
+        <img src="photos/km-light.png" alt="KoreoMail Logo" id="km-logo-img"
+          style="height: 54px; width: auto; object-fit: contain; pointer-events: none; -webkit-user-drag: none; user-select: none;"
+          fetchpriority="high" decoding="sync"
+          oncontextmenu="return false" draggable="false">
         <div class="badge">Beta</div>
       </div>
       <div class="header-actions">
         <nav class="header-nav">
-          <a href="#" class="nav-link" id="navMyAccounts" style="display:none;" onclick="openMyAccountsModal(); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
+          <a href="#" class="nav-link" id="navMyAccounts" style="display:none;"
+            onclick="openMyAccountsModal(); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
             </svg> My Accounts</a>
-          <a href="#" class="nav-link" onclick="openSubscriptionModal(); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+          <a href="#" class="nav-link" onclick="openSubscriptionModal(); return false;"><svg width="14" height="14"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path
+                d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
             </svg> Subscriptions</a>
-          <a href="#" class="nav-link" onclick="showToast('API is not yet available'); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-            </svg> API</a>
-          <a href="#" class="nav-link" onclick="openPrivacyModal(); return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              <polyline points="9 12 11 14 15 10"></polyline>
-            </svg> Privacy</a>
+          <a href="#" class="nav-link" onclick="showToast('API is not yet available'); return false;"><svg width="14"
+              height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg></i> API</a>
+          <a href="#" class="nav-link" onclick="openPrivacyModal(); return false;"><svg width="14" height="14"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <polyline points="9 12 11 14 15 10" />
+            </svg></i> Privacy</a>
         </nav>
         <div class="header-divider"></div>
         <button class="btn-pill btn-primary btn-sm" onclick="openLoginModal()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-            <polyline points="10 17 15 12 10 7"></polyline>
-            <line x1="15" y1="12" x2="3" y2="12"></line>
-          </svg> Login
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
+          </svg></i> Login
         </button>
         <button class="theme-switch" onclick="toggleTheme()" aria-label="Toggle Theme">
-          <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4"></circle>
-            <line x1="12" y1="2" x2="12" y2="4"></line>
-            <line x1="12" y1="20" x2="12" y2="22"></line>
-            <line x1="4.93" y1="4.93" x2="6.34" y2="6.34"></line>
-            <line x1="17.66" y1="17.66" x2="19.07" y2="19.07"></line>
-            <line x1="2" y1="12" x2="4" y2="12"></line>
-            <line x1="20" y1="12" x2="22" y2="12"></line>
-            <line x1="4.93" y1="19.07" x2="6.34" y2="17.66"></line>
-            <line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line>
-          </svg>
-          <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
+          <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <line x1="12" y1="2" x2="12" y2="4" />
+            <line x1="12" y1="20" x2="12" y2="22" />
+            <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" />
+            <line x1="17.66" y1="17.66" x2="19.07" y2="19.07" />
+            <line x1="2" y1="12" x2="4" y2="12" />
+            <line x1="20" y1="12" x2="22" y2="12" />
+            <line x1="4.93" y1="19.07" x2="6.34" y2="17.66" />
+            <line x1="17.66" y1="6.34" x2="19.07" y2="4.93" />
+          </svg></i>
+          <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg></i>
         </button>
         <button class="menu-btn" onclick="toggleMobileMenu(event)" aria-label="Menu">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg></i>
         </button>
       </div>
 
       <!-- Mobile Menu Dropdown -->
       <div class="mobile-menu" id="mobileMenu">
-        <a href="#" class="mobile-link" id="mobileMyAccounts" style="display:none;" onclick="toggleMobileMenu(); openMyAccountsModal(); return false;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-            <polyline points="22,6 12,13 2,6"></polyline>
+        <a href="#" class="mobile-link" id="mobileMyAccounts" style="display:none;"
+          onclick="toggleMobileMenu(); openMyAccountsModal(); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
           </svg> My Accounts
         </a>
         <a href="#" class="mobile-link" onclick="toggleMobileMenu(); openSubscriptionModal(); return false;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
           </svg> Subscriptions
         </a>
-        <a href="#" class="mobile-link" onclick="toggleMobileMenu(); showToast('API is not yet available'); return false;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        <a href="#" class="mobile-link"
+          onclick="toggleMobileMenu(); showToast('API is not yet available'); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
           </svg> API
         </a>
         <a href="#" class="mobile-link" onclick="toggleMobileMenu(); openPrivacyModal(); return false;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            <polyline points="9 12 11 14 15 10"></polyline>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <polyline points="9 12 11 14 15 10" />
           </svg> Privacy
         </a>
         <div class="theme-panel-divider"></div>
@@ -4325,15 +4353,17 @@
         <button class="theme-option" id="mobileThemeMeiro" onclick="setUiTheme('meiro')">
           <span class="theme-swatch" style="background:#111113;border-color:#3a3a40;"></span>
           Meiro Dark
-          <svg class="theme-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
+          <svg class="theme-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
           </svg>
         </button>
         <button class="theme-option" id="mobileThemeNeubrutalism" onclick="setUiTheme('neubrutalism')">
           <span class="theme-swatch" style="background:#faf7f2;border-color:#0a0a0a;"></span>
           Neo-Brutalism
-          <svg class="theme-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
+          <svg class="theme-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
           </svg>
         </button>
       </div>
@@ -4353,16 +4383,16 @@
           <p class="km-hero-sub">Temporary Gmail dot aliases — real inbox delivery, zero signups.</p>
           <div class="km-chips-row">
             <span class="km-chip-sm">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               No signup
             </span>
             <span class="km-chip-sm">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               Real inbox
             </span>
 
             <span class="km-chip-sm">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               100% Free
             </span>
           </div>
@@ -4496,35 +4526,47 @@
       </section>
 
       <!-- Subscription Offer Banner -->
-      <div id="subOfferBanner" style="display:none; justify-content:space-between; align-items:center; gap: 6px; background: linear-gradient(135deg, rgba(88, 204, 2, 0.12), rgba(88, 204, 2, 0.02)); border: 1px solid rgba(88, 204, 2, 0.3); border-radius: 10px; padding: 8px 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(88, 204, 2, 0.05); position: relative; overflow: hidden;">
+      <div id="subOfferBanner"
+        style="display:none; justify-content:space-between; align-items:center; gap: 6px; background: linear-gradient(135deg, rgba(88, 204, 2, 0.12), rgba(88, 204, 2, 0.02)); border: 1px solid rgba(88, 204, 2, 0.3); border-radius: 10px; padding: 8px 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(88, 204, 2, 0.05); position: relative; overflow: hidden;">
 
         <!-- Subtle background glow -->
-        <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:radial-gradient(circle, rgba(255, 209, 102, 0.15) 0%, transparent 70%); pointer-events:none;">
+        <div
+          style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:radial-gradient(circle, rgba(255, 209, 102, 0.15) 0%, transparent 70%); pointer-events:none;">
         </div>
 
         <div style="display:flex; align-items:center; gap:8px; z-index:1; flex: 1; min-width: 0;">
-          <div style="width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #58CC02, #2B8BE6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #ffffff; box-shadow: 0 3px 8px rgba(88, 204, 2, 0.3);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+          <div
+            style="width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #58CC02, #2B8BE6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #ffffff; box-shadow: 0 3px 8px rgba(88, 204, 2, 0.3);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
             </svg>
           </div>
           <div style="flex: 1; min-width: 0;">
-            <div style="font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+            <div
+              style="font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
               Use Your Own Gmail
-              <span style="font-size: 0.45rem; background: #FFD166; color: #1B2A41; padding: 1px 4px; border-radius: 4px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; flex-shrink: 0;">PRO</span>
+              <span
+                style="font-size: 0.45rem; background: #FFD166; color: #1B2A41; padding: 1px 4px; border-radius: 4px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; flex-shrink: 0;">PRO</span>
             </div>
-            <div style="font-size: 0.6rem; color: var(--text-dim); margin-top: 1px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div
+              style="font-size: 0.6rem; color: var(--text-dim); margin-top: 1px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
               Connect up to 3 personal accounts.
             </div>
           </div>
         </div>
 
         <div style="display:flex; align-items:center; gap:6px; z-index:1; flex-shrink: 0;">
-          <button onclick="openSubscriptionModal(); return false;" style="background: var(--accent); color: #ffffff; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.65rem; padding: 5px 8px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 8px rgba(88,204,2,0.25); white-space: nowrap;">
+          <button onclick="openSubscriptionModal(); return false;"
+            style="background: var(--accent); color: #ffffff; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.65rem; padding: 5px 8px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 8px rgba(88,204,2,0.25); white-space: nowrap;">
             View Plans
           </button>
-          <button onclick="dismissSubOffer()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; transition: color 0.15s; flex-shrink: 0;" title="Dismiss">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <button onclick="dismissSubOffer()"
+            style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; transition: color 0.15s; flex-shrink: 0;"
+            title="Dismiss">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -4535,15 +4577,17 @@
       <!-- PWA Install Banner -->
       <div id="installBanner">
         <!-- Subtle background glow -->
-        <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:radial-gradient(circle, rgba(255, 209, 102, 0.15) 0%, transparent 70%); pointer-events:none;">
+        <div
+          style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:radial-gradient(circle, rgba(255, 209, 102, 0.15) 0%, transparent 70%); pointer-events:none;">
         </div>
 
         <div class="ib-left">
           <div class="ib-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 15V3"></path>
-              <path d="M6 9l6 6 6-6"></path>
-              <path d="M3 19h18"></path>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 15V3" />
+              <path d="M6 9l6 6 6-6" />
+              <path d="M3 19h18" />
             </svg>
           </div>
           <div style="flex: 1; min-width: 0;">
@@ -4556,9 +4600,10 @@
             Install App
           </button>
           <button class="ib-dismiss" onclick="dismissBanner()" title="Dismiss">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
@@ -4575,19 +4620,26 @@
             <div class="form-group" style="margin-bottom: 20px;">
               <label>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
                 </svg>
                 Gmail Account
               </label>
-              <div class="gen-select-wrap"><div id="genGmailList" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto; margin-bottom:12px;"><div class="adm-loading"><span class="adm-spinner"></span> Loading accounts...</div></div></div>
+              <div class="gen-select-wrap">
+                <select class="gen-gmail-select" id="genGmailSelect">
+                  <option value="">Loading accounts…</option>
+                </select>
+                <svg class="gen-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
             </div>
 
             <div id="genError" style="display:none;margin-bottom:12px;font-size:0.75rem;color:#f87171;align-items:center;gap:5px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:8px 10px;"></div>
 
             <button class="btn-pill btn-generate w-full" id="genBtn" onclick="doGenerateAlias()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;font-size:0.9rem;">
               <svg id="genBtnIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
               </svg>
               <div id="genBtnSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.65s linear infinite;flex-shrink:0;"></div>
               <span id="genBtnLabel">Generate Alias</span>
@@ -4600,24 +4652,26 @@
       <div class="control-card">
         <div class="card-header">
           <div class="card-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"></path>
-              <path d="M5 19.5C5.5 18 6 15 6 12c0-1.5.5-2.9 1.4-4"></path>
-              <path d="M21.8 16c-.2 1.4-.6 2.8-1.4 4"></path>
-              <path d="M12 12c0 3-1 5.5-2.5 7.5"></path>
-              <path d="M12 12c0-2 .7-3.9 2-5.3"></path>
-              <path d="M12 2a10 10 0 0 1 7 17.8"></path>
-              <path d="M7 4.9C8.5 3.7 10.2 3 12 3"></path>
-              <path d="M16.5 7.5c.5.7.9 1.5 1.1 2.3"></path>
-            </svg> Active Identity
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4" />
+              <path d="M5 19.5C5.5 18 6 15 6 12c0-1.5.5-2.9 1.4-4" />
+              <path d="M21.8 16c-.2 1.4-.6 2.8-1.4 4" />
+              <path d="M12 12c0 3-1 5.5-2.5 7.5" />
+              <path d="M12 12c0-2 .7-3.9 2-5.3" />
+              <path d="M12 2a10 10 0 0 1 7 17.8" />
+              <path d="M7 4.9C8.5 3.7 10.2 3 12 3" />
+              <path d="M16.5 7.5c.5.7.9 1.5 1.1 2.3" />
+            </svg></i> Active Identity
           </div>
         </div>
 
         <div class="alias-field" id="aliasField">
           <div class="alias-text" id="aliasDisplay">—</div>
           <span class="owner-badge" id="ownerAliasBadge" style="display:none;flex-shrink:0;margin-left:8px;">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
             Yours
           </span>
@@ -4627,26 +4681,50 @@
         <div id="ownershipBar" style="display:none;">
           <!-- 3-button action grid -->
           <div class="owner-actions">
-            
-            <button class="owner-action-btn save-btn" id="sessionLinkBtn" onclick="copySessionLink()" title="Generate a restore link to open this session in any browser">
+            <button class="owner-action-btn ql-btn" id="quickLinkBtn" onclick="openQuickLinkModal()"
+              title="Share inbox access via QuickLink">
               <div class="oab-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                  <polyline points="16 6 12 2 8 6" />
+                  <line x1="12" y1="2" x2="12" y2="15" />
+                </svg>
+              </div>
+              <span class="oab-label">QuickLink</span>
+            </button>
+            <button class="owner-action-btn save-btn" id="sessionLinkBtn" onclick="copySessionLink()"
+              title="Generate a restore link to open this session in any browser">
+              <div class="oab-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </div>
               <span class="oab-label">Save Link</span>
             </button>
-            
+            <button class="owner-action-btn transfer-btn" onclick="openTransferModal()"
+              title="Transfer ownership to another user">
+              <div class="oab-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14" />
+                  <path d="M12 5l7 7-7 7" />
+                </svg>
+              </div>
+              <span class="oab-label">Transfer</span>
+            </button>
           </div>
         </div>
 
         <!-- Viewer mode banner — shown when inbox is opened via QuickLink -->
         <div id="viewerBanner">
           <div class="viewer-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
             </svg>
             Viewing via QuickLink · Read-only
           </div>
@@ -4655,40 +4733,53 @@
 
         <div class="actions-grid">
           <button class="btn-pill btn-primary btn-orange" onclick="copyAlias()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg> Copy address
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg></i> Copy address
           </button>
         </div>
 
         <!-- Email already taken block -->
         <div class="email-taken-block" id="emailTakenBlock">
           <div class="email-taken-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
           </div>
           <div class="email-taken-title">This alias is already in use</div>
           <div class="email-taken-msg">This alias is claimed by another session. If you have a transfer PIN, enter it
             below to claim access.</div>
           <!-- PIN claim row -->
-          <div id="takenPinSection" style="margin-top:14px;border-top:1px solid rgba(248,113,113,0.2);padding-top:14px;">
+          <div id="takenPinSection"
+            style="margin-top:14px;border-top:1px solid rgba(248,113,113,0.2);padding-top:14px;">
             <p style="font-size:0.72rem;color:var(--text-dim);margin-bottom:8px;">Have a transfer PIN? Enter it to claim
               this alias:</p>
             <div class="pin-input-row" id="takenPinRow" style="margin:10px 0;">
-              <input class="pin-digit" id="takenPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'takenPin',0,4)" onkeydown="pinKeydown(event,'takenPin',0,4)">
-              <input class="pin-digit" id="takenPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'takenPin',1,4)" onkeydown="pinKeydown(event,'takenPin',1,4)">
-              <input class="pin-digit" id="takenPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'takenPin',2,4)" onkeydown="pinKeydown(event,'takenPin',2,4)">
-              <input class="pin-digit" id="takenPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'takenPin',3,4)" onkeydown="pinKeydown(event,'takenPin',3,4)">
+              <input class="pin-digit" id="takenPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+                autocomplete="off" oninput="pinInput(event,'takenPin',0,4)"
+                onkeydown="pinKeydown(event,'takenPin',0,4)" />
+              <input class="pin-digit" id="takenPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+                autocomplete="off" oninput="pinInput(event,'takenPin',1,4)"
+                onkeydown="pinKeydown(event,'takenPin',1,4)" />
+              <input class="pin-digit" id="takenPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+                autocomplete="off" oninput="pinInput(event,'takenPin',2,4)"
+                onkeydown="pinKeydown(event,'takenPin',2,4)" />
+              <input class="pin-digit" id="takenPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+                autocomplete="off" oninput="pinInput(event,'takenPin',3,4)"
+                onkeydown="pinKeydown(event,'takenPin',3,4)" />
             </div>
             <div class="pin-error-msg" id="takenPinError"></div>
-            <button class="btn-pill btn-outline w-full" id="takenPinBtn" onclick="claimWithPin()" style="margin-top:4px;padding:9px 18px;font-size:0.84rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            <button class="btn-pill btn-outline w-full" id="takenPinBtn" onclick="claimWithPin()"
+              style="margin-top:4px;padding:9px 18px;font-size:0.84rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
               Claim with PIN
             </button>
@@ -4696,64 +4787,81 @@
         </div>
 
         <div style="margin-top:14px;">
-          <p style="font-size:0.72rem;color:var(--text-muted);margin:0 0 8px 0;display:flex;align-items:center;gap:5px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          <p
+            style="font-size:0.72rem;color:var(--text-muted);margin:0 0 8px 0;display:flex;align-items:center;gap:5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
             </svg>
             Enter your assigned alias to access your inbox
           </p>
-          <input class="input-minimal" id="recoverInput" type="email" placeholder="mygmail123@gmail.com" onkeydown="if(event.key==='Enter')recoverAlias()" style="width:100%;box-sizing:border-box;">
-          <div id="recoverError" style="display:none;margin-top:8px;font-size:0.72rem;color:#f87171;align-items:center;gap:5px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          <input class="input-minimal" id="recoverInput" type="email" placeholder="mygmail123@gmail.com"
+            onkeydown="if(event.key==='Enter')recoverAlias()" style="width:100%;box-sizing:border-box;" />
+          <div id="recoverError"
+            style="display:none;margin-top:8px;font-size:0.72rem;color:#f87171;align-items:center;gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             <span id="recoverErrorMsg">Invalid alias.</span>
           </div>
-          <div id="securityNotice" style="margin-top:10px;border-radius:8px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);font-size:0.69rem;color:var(--text-dim);overflow:hidden;">
+          <div id="securityNotice"
+            style="margin-top:10px;border-radius:8px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);font-size:0.69rem;color:var(--text-dim);overflow:hidden;">
             <!-- Collapsible header -->
-            <button onclick="(function(btn){var body=document.getElementById('secNoticeBody');var icon=document.getElementById('secNoticeChevron');var open=body.style.display!=='none';body.style.display=open?'none':'block';icon.style.transform=open?'rotate(0deg)':'rotate(180deg)';})(this)" style="width:100%;display:flex;align-items:center;gap:5px;padding:8px 10px;background:none;border:none;cursor:pointer;color:#f87171;font-weight:600;font-size:0.7rem;font-family:inherit;text-align:left;">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <button
+              onclick="(function(btn){var body=document.getElementById('secNoticeBody');var icon=document.getElementById('secNoticeChevron');var open=body.style.display!=='none';body.style.display=open?'none':'block';icon.style.transform=open?'rotate(0deg)':'rotate(180deg)';})(this)"
+              style="width:100%;display:flex;align-items:center;gap:5px;padding:8px 10px;background:none;border:none;cursor:pointer;color:#f87171;font-weight:600;font-size:0.7rem;font-family:inherit;text-align:left;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
               Security Notice
-              <svg id="secNoticeChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;transition:transform 0.2s ease;transform:rotate(0deg);">
-                <polyline points="6 9 12 15 18 9"></polyline>
+              <svg id="secNoticeChevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f87171"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                style="margin-left:auto;transition:transform 0.2s ease;transform:rotate(0deg);">
+                <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
             <!-- Collapsible body (hidden by default) -->
             <div id="secNoticeBody" style="display:none;padding:0 10px 10px;line-height:1.6;">
-              <span style="color:var(--text-muted);">Your access attempt is being recorded:</span><br>
+              <span style="color:var(--text-muted);">Your access attempt is being recorded:</span><br />
               <span style="font-family:'JetBrains Mono',monospace;color:var(--text-main);font-size:0.68rem;">
-                IP: <span id="secIp" style="color:#f87171;">detecting…</span><br>
-                Device: <span id="secDevice" style="color:#f87171;">—</span><br>
+                IP: <span id="secIp" style="color:#f87171;">detecting…</span><br />
+                Device: <span id="secDevice" style="color:#f87171;">—</span><br />
                 Location: <span id="secLocation" style="color:#f87171;">detecting…</span>
-              </span><br>
+              </span><br />
               <span style="color:var(--text-muted);font-size:0.66rem;">Unauthorized access attempts are logged and may
                 be reported.</span>
             </div>
           </div>
-          <button class="btn-pill btn-primary btn-recover" id="recoverBtn" style="margin-top:10px;padding:10px 20px;width:100%;border-color:var(--border-strong);" onclick="recoverAlias()">
-            <svg class="btn-recover-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-              <polyline points="10 17 15 12 10 7"></polyline>
-              <line x1="15" y1="12" x2="3" y2="12"></line>
+          <button class="btn-pill btn-primary btn-recover" id="recoverBtn"
+            style="margin-top:10px;padding:10px 20px;width:100%;border-color:var(--border-strong);"
+            onclick="recoverAlias()">
+            <svg class="btn-recover-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
             </svg>
             <div class="btn-recover-spinner"></div>
             <span id="recoverBtnLabel">Load Inbox (Recover)</span>
           </button>
-          
+          </button>
           <!-- Recent aliases — shown when history exists -->
           <div id="recentAliasesWrap" style="display:none;margin-top:14px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
               <div style="font-size:0.68rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.07em;display:flex;align-items:center;gap:5px;">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 Recent aliases on this device
               </div>
-              <button onclick="deleteAllRecentAliases()" style="font-family:'Nunito',sans-serif;font-size:0.65rem;font-weight:700;color:#FF4B4B;background:none;border:none;cursor:pointer;padding:2px 4px;display:flex;align-items:center;gap:3px;opacity:.75;transition:opacity .15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.75" title="Remove all recent aliases">
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path></svg>
+              <button onclick="deleteAllRecentAliases()"
+                style="font-family:'Nunito',sans-serif;font-size:0.65rem;font-weight:700;color:#FF4B4B;background:none;border:none;cursor:pointer;padding:2px 4px;display:flex;align-items:center;gap:3px;opacity:.75;transition:opacity .15s;"
+                onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.75"
+                title="Remove all recent aliases">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
                 Clear all
               </button>
             </div>
@@ -4769,11 +4877,12 @@
         </div>
         <div class="inbox-actions">
           <button class="btn-refresh" id="refreshBtn" onclick="manualRefresh()" title="Refresh inbox">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <polyline points="1 20 1 14 7 14"></polyline>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg> Refresh
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg></i> Refresh
           </button>
           <button class="btn-text" onclick="clearInbox()">Clear</button>
         </div>
@@ -4782,24 +4891,30 @@
 
       <!-- Latest Code Bar -->
       <div id="latestCodeBar" style="display:none;margin-bottom:12px;border-radius:10px;overflow:hidden;">
-        <div style="display:flex;align-items:center;gap:10px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:8px 12px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
-            <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
-            <path d="M10 12h4"></path>
-            <path d="M10 16h4"></path>
+        <div
+          style="display:flex;align-items:center;gap:10px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:8px 12px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+            <path d="M10 12h4" />
+            <path d="M10 16h4" />
           </svg>
           <div style="flex:1;min-width:0;">
-            <span style="font-size:0.67rem;color:var(--text-muted);">Your latest code — tap to copy</span>
+            <span style="font-size:0.67rem;color:var(--text-muted);">Your latest code &mdash; tap to copy</span>
             <div style="display:flex;align-items:center;gap:6px;margin-top:1px;">
-              <span id="latestCodeValue" style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--code-text);letter-spacing:0.1em;"></span>
-              <span id="latestCodeSender" style="font-size:0.67rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;"></span>
+              <span id="latestCodeValue"
+                style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--code-text);letter-spacing:0.1em;"></span>
+              <span id="latestCodeSender"
+                style="font-size:0.67rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;"></span>
             </div>
           </div>
-          <button id="latestCodeCopyBtn" onclick="copyLatestCode()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:var(--accent);color:var(--accent-text);border:none;border-radius:7px;padding:5px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all 0.15s;font-family:'Inter',sans-serif;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="2" width="13" height="13" rx="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          <button id="latestCodeCopyBtn" onclick="copyLatestCode()"
+            style="flex-shrink:0;display:flex;align-items:center;gap:4px;background:var(--accent);color:var(--accent-text);border:none;border-radius:7px;padding:5px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all 0.15s;font-family:'Inter',sans-serif;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="2" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>
             Copy
           </button>
@@ -4807,7 +4922,8 @@
       </div>
 
       <!-- No Alias State (before recover) -->
-      <div id="noAliasState" style="display:flex;flex-direction:column;align-items:center;gap:0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-card);overflow:hidden;box-shadow:var(--shadow-card);">
+      <div id="noAliasState"
+        style="display:flex;flex-direction:column;align-items:center;gap:0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-card);overflow:hidden;box-shadow:var(--shadow-card);">
 
         <!-- Lottie + Tips row -->
         <div style="display:flex;flex-direction:column;align-items:center;width:100%;padding:20px 20px 0;">
@@ -4820,23 +4936,28 @@
             <h3 style="font-size:0.98rem;font-weight:700;color:var(--text-main);margin-bottom:4px;">Recover your alias
               first</h3>
             <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.5;">Enter your assigned alias above and
-              tap<br><strong>Load Inbox (Recover)</strong> to get started.</p>
+              tap<br /><strong>Load Inbox (Recover)</strong> to get started.</p>
           </div>
         </div>
 
         <!-- Security Tips Rotator -->
-        <div style="width:100%;margin-top:16px;border-top:1px solid var(--border);padding:14px 20px 18px;position:relative;min-height:72px;">
+        <div
+          style="width:100%;margin-top:16px;border-top:1px solid var(--border);padding:14px 20px 18px;position:relative;min-height:72px;">
           <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
-            <span style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">Security
+            <span
+              style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">Security
               Tip</span>
-            <span id="tipCounter" style="font-size:0.6rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-left:auto;">1
+            <span id="tipCounter"
+              style="font-size:0.6rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-left:auto;">1
               / 15</span>
           </div>
           <div id="securityTipsWrap" style="position:relative;overflow:hidden;">
-            <p id="secTipText" style="font-size:0.8rem;color:var(--text-dim);line-height:1.55;margin:0;transition:opacity 0.4s ease,transform 0.4s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            <p id="secTipText"
+              style="font-size:0.8rem;color:var(--text-dim);line-height:1.55;margin:0;transition:opacity 0.4s ease,transform 0.4s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
             </p>
           </div>
           <!-- Progress dots -->
@@ -4854,61 +4975,24 @@
 
       <!-- Email List -->
       <div class="email-list" id="emailList" style="display: none;"></div>
-    </div></main>
+    </main>
 
     <footer>
       <p>Powered by native Gmail routing architecture.</p>
-      <p><a href="#" onclick="openTermsModal(); return false;">Terms</a> &nbsp;·&nbsp; <a href="#" onclick="openPrivacyModal(); return false;">Privacy</a> &nbsp;·&nbsp; <a href="#">GitHub</a></p>
+      <p><a href="#" onclick="openTermsModal(); return false;">Terms</a> &nbsp;&middot;&nbsp; <a href="#"
+          onclick="openPrivacyModal(); return false;">Privacy</a> &nbsp;&middot;&nbsp; <a href="#">GitHub</a></p>
     </footer>
   </div>
 
   <!-- MY ACCOUNTS MODAL -->
-  
-  <div class="modal-overlay" id="userAuthOverlay" style="display:none;" onclick="if(event.target===this)closeUserAuthModal()">
-    <div class="modal modal-sm" id="userAuthModal" onclick="event.stopPropagation()">
-      <div class="modal-head">
-        <button class="modal-close" onclick="closeUserAuthModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-        <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          Account Access
-        </div>
-      </div>
-      <div class="modal-body">
-        <div class="adm-tabs" style="margin-bottom: 15px;">
-          <div class="adm-tab active" id="tabSignIn" onclick="switchAuthTab('signin')">Sign In</div>
-          <div class="adm-tab" id="tabSignUp" onclick="switchAuthTab('signup')">Sign Up</div>
-        </div>
-        
-        <div id="panelSignIn" style="display:block;">
-          <input type="email" id="authEmail" class="adm-input" placeholder="Email" style="margin-bottom:8px; width:100%;">
-          <input type="password" id="authPassword" class="adm-input" placeholder="Password" style="margin-bottom:12px; width:100%;">
-          <button class="btn-pill btn-primary w-full" onclick="doEmailSignIn()">Sign In</button>
-        </div>
-
-        <div id="panelSignUp" style="display:none;">
-          <input type="email" id="regEmail" class="adm-input" placeholder="Email" style="margin-bottom:8px; width:100%;">
-          <input type="password" id="regPassword" class="adm-input" placeholder="Password" style="margin-bottom:12px; width:100%;">
-          <button class="btn-pill btn-primary w-full" onclick="doEmailSignUp()">Create Account</button>
-        </div>
-
-        <div style="margin: 15px 0; text-align: center; color: var(--text-muted); font-size: 0.8rem;">OR</div>
-        
-        <button class="btn-pill btn-outline w-full" onclick="doGoogleLogin()" style="display:flex; align-items:center; justify-content:center; gap:8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path></svg>
-          Continue with Google
-        </button>
-      </div>
-    </div>
-  </div>
   <div class="modal-overlay" id="myAccountsModalOverlay" onclick="closeMyAccountsOutside(event)">
     <div class="modal" id="myAccountsModal" onclick="event.stopPropagation()">
       <div class="modal-head">
         <button class="modal-close" onclick="closeMyAccountsModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>
@@ -4918,14 +5002,18 @@
         <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:20px;line-height:1.5;">Manage your personal Gmail
           accounts connected to KoreoMail.</p>
 
-        <div id="myAccountsList" style="text-align:left; max-height:250px; overflow-y:auto; margin-bottom:20px; background:var(--bg-input); border-radius:10px; padding:10px; border:1px solid var(--border);">
+        <div id="myAccountsList"
+          style="text-align:left; max-height:250px; overflow-y:auto; margin-bottom:20px; background:var(--bg-input); border-radius:10px; padding:10px; border:1px solid var(--border);">
           <div class="adm-loading"><span class="adm-spinner"></span> Loading accounts...</div>
         </div>
 
-        <button class="btn-pill btn-primary" style="width:100%;padding:12px;font-size:0.95rem;justify-content:center;gap:8px;" onclick="addMyGmailAccount()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-            <polyline points="22,6 12,13 2,6"></polyline>
+        <button class="btn-pill btn-primary"
+          style="width:100%;padding:12px;font-size:0.95rem;justify-content:center;gap:8px;"
+          onclick="addMyGmailAccount()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
           </svg>
           Add Gmail Account
         </button>
@@ -4935,7 +5023,8 @@
 
   <!-- SUBSCRIPTION MODAL (Supernotes Style) -->
   <div class="modal-overlay" id="subscriptionModalOverlay" onclick="closeSubscriptionOutside(event)">
-    <div class="modal" id="subscriptionModal" onclick="event.stopPropagation()" style="max-width: 420px; border-radius: 12px; background: linear-gradient(180deg, var(--bg-input) 0%, var(--bg-app) 100%); padding: 0; overflow: hidden; border: 1px solid var(--border);">
+    <div class="modal" id="subscriptionModal" onclick="event.stopPropagation()"
+      style="max-width: 420px; border-radius: 12px; background: linear-gradient(180deg, var(--bg-input) 0%, var(--bg-app) 100%); padding: 0; overflow: hidden; border: 1px solid var(--border);">
 
       <!-- Top Nav -->
       <div style="display:flex; justify-content:space-between; align-items:center; padding: 24px 24px 16px;">
@@ -4943,16 +5032,23 @@
 
         <!-- Plan Segmented Control -->
         <div style="display:flex; background: var(--bg-hover); padding: 4px; border-radius: 6px; gap: 4px;">
-          <button id="pillBasic" onclick="selectPlan('basic')" style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:var(--text-main); transition:all 0.2s;">Basic</button>
-          <button id="pillPro" onclick="selectPlan('pro')" style="border:none; background:var(--accent); padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:#fff; box-shadow: 0 2px 8px rgba(88,204,2,0.3); transition:all 0.2s;">Pro</button>
-          <button id="pillTeam" onclick="selectPlan('team')" style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:var(--text-main); transition:all 0.2s;">Team</button>
+          <button id="pillBasic" onclick="selectPlan('basic')"
+            style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:var(--text-main); transition:all 0.2s;">Basic</button>
+          <button id="pillPro" onclick="selectPlan('pro')"
+            style="border:none; background:var(--accent); padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:#fff; box-shadow: 0 2px 8px rgba(88,204,2,0.3); transition:all 0.2s;">Pro</button>
+          <button id="pillTeam" onclick="selectPlan('team')"
+            style="border:none; background:transparent; padding: 6px 14px; border-radius: 4px; font-weight:700; font-size:0.8rem; cursor:pointer; color:var(--text-main); transition:all 0.2s;">Team</button>
         </div>
 
         <div style="flex:1; display:flex; justify-content:flex-end;">
-          <button onclick="closeSubscriptionModal()" style="background:var(--bg-hover); border:none; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-main); transition: background 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+          <button onclick="closeSubscriptionModal()"
+            style="background:var(--bg-hover); border:none; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-main); transition: background 0.2s;"
+            onmouseover="this.style.opacity='0.8'"
+            onmouseout="this.style.opacity='1'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
@@ -4961,8 +5057,10 @@
       <div class="modal-body" style="text-align:center; padding: 0 24px 24px;">
 
         <!-- Icon & Title -->
-        <div style="display:inline-flex; align-items:center; gap:8px; background: rgba(88,204,2,0.15); padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; color:var(--accent);">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <div
+          style="display:inline-flex; align-items:center; gap:8px; background: rgba(88,204,2,0.15); padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; color:var(--accent);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
           </svg>
@@ -4976,25 +5074,34 @@
         <div style="display:flex; gap:16px; margin-bottom:32px; justify-content:center; align-items:flex-end;">
 
           <!-- Monthly Card -->
-          <div id="cardMonthly" onclick="selectCycle('monthly')" style="flex:1; max-width: 150px; background: var(--bg-card); border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid transparent; overflow:hidden;">
+          <div id="cardMonthly" onclick="selectCycle('monthly')"
+            style="flex:1; max-width: 150px; background: var(--bg-card); border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid transparent; overflow:hidden;">
             <div style="padding: 24px 16px;">
               <div style="font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:8px;">1 month</div>
-              <div style="font-size:1.8rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;">₱<span id="priceMo">299</span></div>
+              <div style="font-size:1.8rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;">₱<span
+                  id="priceMo">299</span></div>
             </div>
-            <div style="background: var(--bg-input); padding: 12px; font-size:0.8rem; font-weight:700; color:var(--accent); transition: background 0.2s;" id="cardMonthlyBottom">
+            <div
+              style="background: var(--bg-input); padding: 12px; font-size:0.8rem; font-weight:700; color:var(--accent); transition: background 0.2s;"
+              id="cardMonthlyBottom">
               ₱<span id="priceMoSub">299</span> /mon
             </div>
           </div>
 
           <!-- Yearly Card -->
-          <div id="cardAnnual" onclick="selectCycle('annual')" style="flex:1; max-width: 150px; background: var(--bg-card); border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(88,204,2,0.2); position:relative; overflow:hidden; transform: scale(1.05);">
-            <div style="position:absolute; top:-2px; left:50%; transform:translateX(-50%); background:#FFD166; color:#1B2A41; font-size:0.7rem; font-weight:900; padding:4px 12px; border-radius:0 0 6px 6px; white-space:nowrap;">
+          <div id="cardAnnual" onclick="selectCycle('annual')"
+            style="flex:1; max-width: 150px; background: var(--bg-card); border-radius: 12px; cursor:pointer; transition:all 0.2s; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(88,204,2,0.2); position:relative; overflow:hidden; transform: scale(1.05);">
+            <div
+              style="position:absolute; top:-2px; left:50%; transform:translateX(-50%); background:#FFD166; color:#1B2A41; font-size:0.7rem; font-weight:900; padding:4px 12px; border-radius:0 0 6px 6px; white-space:nowrap;">
               Save 20%</div>
             <div style="padding: 32px 16px 24px;">
               <div style="font-size:0.8rem; font-weight:700; color:var(--text-dim); margin-bottom:8px;">1 year</div>
-              <div style="font-size:1.8rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;">₱<span id="priceYr">2990</span></div>
+              <div style="font-size:1.8rem; font-weight:900; color:var(--text-main); letter-spacing:-0.03em;">₱<span
+                  id="priceYr">2990</span></div>
             </div>
-            <div style="background: var(--accent); padding: 12px; font-size:0.8rem; font-weight:700; color:#fff; transition: background 0.2s;" id="cardAnnualBottom">
+            <div
+              style="background: var(--accent); padding: 12px; font-size:0.8rem; font-weight:700; color:#fff; transition: background 0.2s;"
+              id="cardAnnualBottom">
               ₱<span id="priceYrSub">249</span> /mon
             </div>
           </div>
@@ -5002,14 +5109,17 @@
         </div>
 
         <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:16px;">
-          <input type="checkbox" id="chkTerms" style="width:16px; height:16px; accent-color:var(--accent); cursor:pointer;" onchange="updatePurchaseBtn()">
+          <input type="checkbox" id="chkTerms" style="width:16px; height:16px; accent-color:var(--accent); cursor:pointer;"
+            onchange="updatePurchaseBtn()" />
           <label for="chkTerms" style="font-size:0.8rem; color:var(--text-main); cursor:pointer; font-weight:600;">
             I agree to the <a href="terms.html" target="_blank" style="text-decoration:underline; color:var(--accent);">Terms
-              &amp; Conditions</a>
+              & Conditions</a>
           </label>
         </div>
 
-        <button id="btnPurchase" onclick="purchaseSubscriptionKey()" style="width:100%; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:16px; font-size:1.05rem; font-weight:800; cursor:not-allowed; box-shadow:0 6px 20px rgba(88,204,2,0.3); transition:transform 0.15s, opacity 0.2s; margin-bottom:16px; opacity:0.5;" onactive="if(document.getElementById('chkTerms').checked) this.style.transform='scale(0.98)'">
+        <button id="btnPurchase" onclick="purchaseSubscriptionKey()"
+          style="width:100%; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:16px; font-size:1.05rem; font-weight:800; cursor:not-allowed; box-shadow:0 6px 20px rgba(88,204,2,0.3); transition:transform 0.15s, opacity 0.2s; margin-bottom:16px; opacity:0.5;"
+          onactive="if(document.getElementById('chkTerms').checked) this.style.transform='scale(0.98)'">
           Continue with Pro Plan
         </button>
 
@@ -5018,12 +5128,17 @@
         </p>
 
         <!-- Redeem area -->
-        <div style="margin-top:20px; text-align:left; background:var(--bg-hover); border:1px solid var(--border); border-radius: 8px; padding: 16px;">
+        <div
+          style="margin-top:20px; text-align:left; background:var(--bg-hover); border:1px solid var(--border); border-radius: 8px; padding: 16px;">
           <div style="font-size:0.85rem; font-weight:800; color:var(--text-main); margin-bottom:8px;">Got a Subscription Key?
           </div>
           <div style="display:flex; gap:8px;">
-            <input type="text" id="subKeyInput" placeholder="e.g. ABC123" style="flex:1; width:100%; box-sizing:border-box; border-radius: 6px; border: 1px solid var(--border-strong); padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; background: var(--bg-input); color: var(--text-main); outline: none; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-strong)'">
-            <button style="background:var(--accent); color:#fff; border:none; border-radius:6px; padding: 0 16px; font-weight:700; font-size:0.85rem; cursor:pointer; flex-shrink:0;" onclick="redeemSubscriptionKey()">Redeem</button>
+            <input type="text" id="subKeyInput" placeholder="e.g. ABC123"
+              style="flex:1; width:100%; box-sizing:border-box; border-radius: 6px; border: 1px solid var(--border-strong); padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; background: var(--bg-input); color: var(--text-main); outline: none; transition:border-color 0.2s;"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-strong)'" />
+            <button
+              style="background:var(--accent); color:#fff; border:none; border-radius:6px; padding: 0 16px; font-weight:700; font-size:0.85rem; cursor:pointer; flex-shrink:0;"
+              onclick="redeemSubscriptionKey()">Redeem</button>
           </div>
           <div id="subKeyMessage" style="margin-top: 8px; font-size: 0.75rem; font-weight:600; display:none;"></div>
         </div>
@@ -5037,10 +5152,11 @@
     <div class="modal" id="modal" onclick="event.stopPropagation()">
       <div class="modal-head">
         <button class="modal-close" onclick="closeModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg></i>
         </button>
         <div class="modal-subject" id="modalSubject"></div>
         <div class="modal-meta">
@@ -5065,28 +5181,32 @@
     <div class="modal modal-sm" id="loginModal" onclick="event.stopPropagation()">
       <div class="modal-head">
         <button class="modal-close" onclick="closeLoginModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg></i>
         </button>
         <div class="modal-subject" style="margin-bottom: 0;">Admin Login</div>
       </div>
       <div class="modal-body">
         <p class="login-subtitle">Access is restricted to authorized administrators only. Registration is disabled.</p>
         <div class="form-group">
-          <label><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="7.5" cy="15.5" r="5.5"></circle>
-              <path d="M21 2l-9.6 9.6"></path>
-              <path d="M15.5 7.5l3 3L22 7l-3-3"></path>
-            </svg> Password</label>
-          <input class="input-minimal w-full" id="loginPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()">
+          <label><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="7.5" cy="15.5" r="5.5" />
+              <path d="M21 2l-9.6 9.6" />
+              <path d="M15.5 7.5l3 3L22 7l-3-3" />
+            </svg></i> Password</label>
+          <input class="input-minimal w-full" id="loginPass" type="password" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter')handleLogin()" />
         </div>
         <button class="btn-pill btn-primary w-full mt-4" onclick="handleLogin()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-          </svg> Authenticate
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+          </svg></i> Authenticate
         </button>
       </div>
     </div>
@@ -5097,23 +5217,24 @@
     <div class="modal" id="privacyModal" onclick="event.stopPropagation()">
       <div class="modal-head">
         <button class="modal-close" onclick="closePrivacyModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg></i>
         </button>
         <div class="modal-subject" style="margin-bottom: 0;">Privacy Policy</div>
       </div>
       <div class="modal-body">
-        <p style="margin-bottom: 16px;"><strong>1. Absolute Anonymity</strong><br>We do not log, store, or analyze the
+        <p style="margin-bottom: 16px;"><strong>1. Absolute Anonymity</strong><br />We do not log, store, or analyze the
           contents of your emails. The system acts solely as a real-time routing layer.</p>
-        <p style="margin-bottom: 16px;"><strong>2. No Database Persistence</strong><br>Emails displayed in this
+        <p style="margin-bottom: 16px;"><strong>2. No Database Persistence</strong><br />Emails displayed in this
           dashboard are fetched directly through the secure realtime layer and are automatically cleared from the
           ephemeral cache. Once you close the session, the local view is permanently gone.</p>
-        <p style="margin-bottom: 16px;"><strong>3. Native Gmail Infrastructure</strong><br>By leveraging Gmail's
+        <p style="margin-bottom: 16px;"><strong>3. Native Gmail Infrastructure</strong><br />By leveraging Gmail's
           native dot-blindness feature, we ensure all routing relies entirely on Google's enterprise-grade
           infrastructure. Your actual Gmail address remains completely hidden from the sender.</p>
-        <p><strong>4. Third-Party Services</strong><br>We use Supabase for realtime state synchronization. No
+        <p><strong>4. Third-Party Services</strong><br />We use Supabase for realtime state synchronization. No
           personally identifiable information (PII) beyond the temporary dot-variant is transmitted.</p>
       </div>
     </div>
@@ -5124,22 +5245,23 @@
     <div class="modal" id="termsModal" onclick="event.stopPropagation()">
       <div class="modal-head">
         <button class="modal-close" onclick="closeTermsModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg></i>
         </button>
         <div class="modal-subject" style="margin-bottom: 0;">Terms of Service</div>
       </div>
       <div class="modal-body">
-        <p style="margin-bottom: 16px;"><strong>1. Acceptance of Terms</strong><br>By using KoreoMail, you agree to
+        <p style="margin-bottom: 16px;"><strong>1. Acceptance of Terms</strong><br />By using KoreoMail, you agree to
           these ephemeral routing terms. The service is provided "as is" without any warranties.</p>
-        <p style="margin-bottom: 16px;"><strong>2. Acceptable Use</strong><br>You agree not to use this service for
+        <p style="margin-bottom: 16px;"><strong>2. Acceptable Use</strong><br />You agree not to use this service for
           sending spam, phishing, or engaging in any illegal activities. The routing is strictly for personal privacy
           and inbox management.</p>
-        <p style="margin-bottom: 16px;"><strong>3. Ephemeral Nature</strong><br>You acknowledge that aliases and
+        <p style="margin-bottom: 16px;"><strong>3. Ephemeral Nature</strong><br />You acknowledge that aliases and
           routed emails are temporary. We hold no liability for missed, dropped, delayed, or unrouted emails.</p>
-        <p><strong>4. Termination</strong><br>We reserve the right to restrict or terminate routing access to any
+        <p><strong>4. Termination</strong><br />We reserve the right to restrict or terminate routing access to any
           specific alias or user without prior notice if abuse or excessive load is detected.</p>
       </div>
     </div>
@@ -5149,18 +5271,20 @@
   <div id="otpNotification">
     <div class="otp-notif-header">
       <div class="otp-notif-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
         New Code
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span class="otp-notif-time" id="otpNotifAge">just now</span>
         <button class="otp-notif-dismiss" onclick="dismissOtpNotif()" aria-label="Dismiss">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>
@@ -5168,9 +5292,10 @@
     <div class="otp-notif-code-row">
       <div class="otp-notif-code" id="otpNotifCode">------</div>
       <button class="otp-notif-copy" id="otpNotifCopyBtn" onclick="copyOtpNotif()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="2" width="13" height="13" rx="2"></rect>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="13" height="13" rx="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
         Copy
       </button>
@@ -5183,10 +5308,11 @@
 
   <!-- TOAST -->
   <div class="toast" id="toast">
-    <svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"></circle>
-      <path d="m9 12 2 2 4-4"></path>
-    </svg>
+    <svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg></i>
     <span id="toastMsg">Action completed</span>
   </div>
 
@@ -7470,7 +7596,7 @@
   <div id="iosToast">
     <p>Install <strong>KoreoMail</strong></p>
     <div class="steps">
-      1. Tap the <strong>Share</strong> icon ⮭<br>
+      1. Tap the <strong>Share</strong> icon &#x2BAD;<br />
       2. Tap <strong>"Add to Home Screen"</strong>
     </div>
     <button onclick="document.getElementById('iosToast').classList.remove('visible')">Got it</button>
@@ -9001,62 +9127,883 @@
      SET PIN MODAL  (first-time owner setup)
 ════════════════════════════════════════════ -->
   <div class="modal-overlay" id="setPinOverlay" onclick="if(event.target===this){}">
-    
+    <div class="modal modal-sm" id="setPinModal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          Set Your PIN
+        </div>
+      </div>
       <div class="modal-body">
         <p class="login-subtitle" style="margin-bottom:12px;">
           To transfer this alias to another user, you need to set a <strong>4-digit PIN</strong> first. This PIN
           protects your ownership and will be required to confirm the transfer.
         </p>
         <div class="pin-modal-context" id="setPinAliasCtx">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
           </svg>
           <span id="setPinAliasText">—</span>
         </div>
         <p class="pin-hint">Enter a 4-digit PIN you'll remember.</p>
         <div class="pin-input-row" id="setPinRow">
-          <input class="pin-digit" id="setPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPin',0,4)" onkeydown="pinKeydown(event,'setPin',0,4)">
-          <input class="pin-digit" id="setPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPin',1,4)" onkeydown="pinKeydown(event,'setPin',1,4)">
-          <input class="pin-digit" id="setPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPin',2,4)" onkeydown="pinKeydown(event,'setPin',2,4)">
-          <input class="pin-digit" id="setPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPin',3,4)" onkeydown="pinKeydown(event,'setPin',3,4)">
+          <input class="pin-digit" id="setPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+            autocomplete="off" oninput="pinInput(event,'setPin',0,4)" onkeydown="pinKeydown(event,'setPin',0,4)" />
+          <input class="pin-digit" id="setPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+            autocomplete="off" oninput="pinInput(event,'setPin',1,4)" onkeydown="pinKeydown(event,'setPin',1,4)" />
+          <input class="pin-digit" id="setPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+            autocomplete="off" oninput="pinInput(event,'setPin',2,4)" onkeydown="pinKeydown(event,'setPin',2,4)" />
+          <input class="pin-digit" id="setPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+            autocomplete="off" oninput="pinInput(event,'setPin',3,4)" onkeydown="pinKeydown(event,'setPin',3,4)" />
         </div>
         <p class="pin-hint">Confirm your PIN.</p>
         <div class="pin-input-row" id="setPin2Row">
-          <input class="pin-digit" id="setPinC0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPinC',0,4)" onkeydown="pinKeydown(event,'setPinC',0,4)">
-          <input class="pin-digit" id="setPinC1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPinC',1,4)" onkeydown="pinKeydown(event,'setPinC',1,4)">
-          <input class="pin-digit" id="setPinC2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPinC',2,4)" onkeydown="pinKeydown(event,'setPinC',2,4)">
-          <input class="pin-digit" id="setPinC3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" oninput="pinInput(event,'setPinC',3,4)" onkeydown="pinKeydown(event,'setPinC',3,4)">
+          <input class="pin-digit" id="setPinC0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+            autocomplete="off" oninput="pinInput(event,'setPinC',0,4)" onkeydown="pinKeydown(event,'setPinC',0,4)" />
+          <input class="pin-digit" id="setPinC1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+            autocomplete="off" oninput="pinInput(event,'setPinC',1,4)" onkeydown="pinKeydown(event,'setPinC',1,4)" />
+          <input class="pin-digit" id="setPinC2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+            autocomplete="off" oninput="pinInput(event,'setPinC',2,4)" onkeydown="pinKeydown(event,'setPinC',2,4)" />
+          <input class="pin-digit" id="setPinC3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+            autocomplete="off" oninput="pinInput(event,'setPinC',3,4)" onkeydown="pinKeydown(event,'setPinC',3,4)" />
         </div>
         <div class="pin-error-msg" id="setPinError"></div>
         <button class="btn-pill btn-primary w-full" onclick="confirmSetPin()" style="margin-top:4px;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           Set PIN &amp; Continue
         </button>
       </div>
     </div>
-  
+  </div>
 
   <!-- ═══════════════════════════════════════════
      TRANSFER ALIAS MODAL  (owner transfers)
 ════════════════════════════════════════════ -->
-  
-  
+  <div class="modal-overlay" id="transferOverlay" onclick="if(event.target===this)closeTransferModal()">
+    <div class="modal modal-sm" id="transferModal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <button class="modal-close" onclick="closeTransferModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14" />
+            <path d="M12 5l7 7-7 7" />
+          </svg>
+          Transfer Alias
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="transfer-confirm-row">
+          <strong>Warning:</strong> Once released, you will lose ownership of this alias. The next user to recover it
+          will become the new owner.
+        </div>
+        <div class="pin-modal-context">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+          </svg>
+          <span id="transferAliasText">—</span>
+        </div>
+
+        <!-- No-PIN quick release (always visible) -->
+        <button class="btn-pill w-full" onclick="confirmTransferNow()"
+          style="margin-top:14px;background:#f87171;color:#fff;border:none;padding:10px 18px;font-size:0.88rem;font-weight:600;border-radius:var(--radius-btn);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14" />
+            <path d="M12 5l7 7-7 7" />
+          </svg>
+          Release Now (No PIN)
+        </button>
+
+        <!-- Set-PIN section — shown when owner has NOT set a PIN yet -->
+        <div id="transferSetPinSection" style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+          <div
+            style="display:flex;align-items:flex-start;gap:10px;background:rgba(217,249,80,0.05);border:1px solid rgba(217,249,80,0.18);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <div>
+              <div style="font-size:0.8rem;font-weight:700;color:var(--text-main);margin-bottom:2px;">Set a Transfer PIN
+              </div>
+              <div style="font-size:0.72rem;color:var(--text-dim);line-height:1.5;">Create a 4-digit PIN so the
+                recipient can securely claim this alias. Share the PIN with them after setting it.</div>
+            </div>
+          </div>
+          <button class="btn-pill btn-primary w-full" onclick="openSetPinFromTransfer()"
+            style="display:flex;align-items:center;justify-content:center;gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Set Transfer PIN
+          </button>
+        </div>
+
+        <!-- PIN confirm section — only shown by JS when a PIN has already been set -->
+        <div id="transferPinSection"
+          style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+          <p class="pin-hint" style="margin-bottom:8px;">Confirm with your PIN to release:</p>
+          <div class="pin-input-row" id="transferPinRow">
+            <input class="pin-digit" id="transferPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+              autocomplete="off" oninput="pinInput(event,'transferPin',0,4)"
+              onkeydown="pinKeydown(event,'transferPin',0,4)" />
+            <input class="pin-digit" id="transferPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+              autocomplete="off" oninput="pinInput(event,'transferPin',1,4)"
+              onkeydown="pinKeydown(event,'transferPin',1,4)" />
+            <input class="pin-digit" id="transferPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+              autocomplete="off" oninput="pinInput(event,'transferPin',2,4)"
+              onkeydown="pinKeydown(event,'transferPin',2,4)" />
+            <input class="pin-digit" id="transferPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+              autocomplete="off" oninput="pinInput(event,'transferPin',3,4)"
+              onkeydown="pinKeydown(event,'transferPin',3,4)" />
+          </div>
+          <div class="pin-error-msg" id="transferPinError"></div>
+          <button class="btn-pill btn-outline w-full" onclick="confirmTransfer()"
+            style="margin-top:8px;padding:9px 18px;font-size:0.84rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Transfer & Release with PIN
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ═══════════════════════════════════════════
      QUICKLINK MODAL  (owner generates share link)
 ═══════════════════════════════════════════ -->
-  
-  
+  <div class="modal-overlay" id="quickLinkOverlay" onclick="if(event.target===this)closeQuickLinkModal()">
+    <div class="modal modal-sm" id="quickLinkModal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <button class="modal-close" onclick="closeQuickLinkModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+            <polyline points="16 6 12 2 8 6" />
+            <line x1="12" y1="2" x2="12" y2="15" />
+          </svg>
+          QuickLink
+        </div>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.79rem;color:var(--text-dim);line-height:1.55;margin-bottom:4px;">
+          Share read-only inbox access with anyone. The recipient can view incoming emails but <strong>cannot</strong>
+          transfer or modify ownership.
+        </p>
+
+        <!-- Alias context -->
+        <div class="pin-modal-context" style="margin-top:12px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+          </svg>
+          <span id="qlAliasText">—</span>
+        </div>
+
+        <!-- Mode toggle -->
+        <div class="ql-mode-row">
+          <button class="ql-mode-btn active" id="qlModePublicBtn" onclick="setQlMode('public')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            Public
+          </button>
+          <button class="ql-mode-btn" id="qlModePrivateBtn" onclick="setQlMode('private')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Private
+          </button>
+        </div>
+
+        <div class="ql-desc" id="qlModeDesc">Anyone with the link can instantly view this inbox — no PIN required.</div>
+
+        <!-- PIN section — only visible in private mode -->
+        <div id="qlPinSection" style="display:none;margin-bottom:14px;">
+          <p class="pin-hint" style="margin-bottom:8px;">Set a 4-digit PIN for recipients:</p>
+          <div class="pin-input-row" id="qlPinRow">
+            <input class="pin-digit" id="qlPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+              autocomplete="off" oninput="pinInput(event,'qlPin',0,4)" onkeydown="pinKeydown(event,'qlPin',0,4)" />
+            <input class="pin-digit" id="qlPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+              autocomplete="off" oninput="pinInput(event,'qlPin',1,4)" onkeydown="pinKeydown(event,'qlPin',1,4)" />
+            <input class="pin-digit" id="qlPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+              autocomplete="off" oninput="pinInput(event,'qlPin',2,4)" onkeydown="pinKeydown(event,'qlPin',2,4)" />
+            <input class="pin-digit" id="qlPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+              autocomplete="off" oninput="pinInput(event,'qlPin',3,4)" onkeydown="pinKeydown(event,'qlPin',3,4)" />
+          </div>
+          <div class="pin-error-msg" id="qlPinError"></div>
+        </div>
+
+        <button class="btn-pill btn-primary w-full" onclick="copyQuickLink()" id="qlCopyBtn"
+          style="display:flex;align-items:center;justify-content:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+            <polyline points="16 6 12 2 8 6" />
+            <line x1="12" y1="2" x2="12" y2="15" />
+          </svg>
+          Copy QuickLink
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ═══════════════════════════════════════════
      QUICKLINK ACCESS OVERLAY  (private — recipient must enter PIN)
 ═══════════════════════════════════════════ -->
-  
-  
+  <div id="qlAccessOverlay">
+    <div class="ql-access-card">
+      <div class="ql-access-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      </div>
+      <div class="ql-access-title">Private Inbox</div>
+      <div class="ql-access-sub">This inbox was shared with a PIN. Enter it below to view:</div>
+      <div class="ql-access-alias" id="qlAccessAlias">—</div>
+      <div class="pin-input-row" id="qlVerifyPinRow" style="justify-content:center;margin:0 0 10px;">
+        <input class="pin-digit" id="qlVerifyPin0" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+          autocomplete="off" oninput="pinInput(event,'qlVerifyPin',0,4)"
+          onkeydown="pinKeydown(event,'qlVerifyPin',0,4)" />
+        <input class="pin-digit" id="qlVerifyPin1" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+          autocomplete="off" oninput="pinInput(event,'qlVerifyPin',1,4)"
+          onkeydown="pinKeydown(event,'qlVerifyPin',1,4)" />
+        <input class="pin-digit" id="qlVerifyPin2" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+          autocomplete="off" oninput="pinInput(event,'qlVerifyPin',2,4)"
+          onkeydown="pinKeydown(event,'qlVerifyPin',2,4)" />
+        <input class="pin-digit" id="qlVerifyPin3" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+          autocomplete="off" oninput="qlVerifyPinAutoSubmit(event)" onkeydown="pinKeydown(event,'qlVerifyPin',3,4)" />
+      </div>
+      <div class="pin-error-msg" id="qlVerifyError"></div>
+      <button class="btn-pill btn-primary w-full" onclick="verifyQuickLinkPin()"
+        style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        View Inbox
+      </button>
+    </div>
+  </div>
+
+
+
+  <div id="adminOverlay">
+    <div class="adm-wrap">
+
+      <!-- Topbar -->
+      <div class="adm-topbar">
+        <div class="adm-logo">
+          <div class="adm-logo-dot"></div>
+          <h2>KoreoMail</h2>
+          <span>admin</span>
+        </div>
+        <button class="btn-pill btn-outline btn-sm" onclick="closeAdminPanel()"
+          style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:0.8rem;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Sign out
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="adm-stats">
+        <div class="adm-stat">
+          <div class="adm-val accent" id="admStatTotal">—</div>
+          <div class="adm-lbl">Valid emails</div>
+        </div>
+        <div class="adm-stat">
+          <div class="adm-val" id="admStatToday">—</div>
+          <div class="adm-lbl">Added today</div>
+        </div>
+        <div class="adm-stat">
+          <div class="adm-val" id="admStatDomains">—</div>
+          <div class="adm-lbl">Unique domains</div>
+        </div>
+      </div>
+
+      <!-- Section nav -->
+      <div class="adm-tabs">
+        <div class="adm-tab adm-nav-btn active" data-section="emails" onclick="admSwitchSection('emails')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          Valid Emails
+        </div>
+        <div class="adm-tab adm-nav-btn" data-section="fraud" onclick="admSwitchSection('fraud')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Fraud Detector
+        </div>
+        <div class="adm-tab adm-nav-btn" data-section="sessions" onclick="admSwitchSection('sessions')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Sessions
+        </div>
+        <div class="adm-tab adm-nav-btn" data-section="ownership" onclick="admSwitchSection('ownership')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Ownership
+        </div>
+        <div class="adm-tab adm-nav-btn" data-section="gmail" onclick="admSwitchSection('gmail')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="M7 11h5"/></svg>
+          Gmail
+        </div>
+        <div class="adm-tab adm-nav-btn" data-section="subscriptions" onclick="admSwitchSection('subscriptions')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+          Subscriptions
+        </div>
+      </div>
+
+      <!-- ── GMAIL ACCOUNTS SECTION ── -->
+      <div id="admSectionGmail" style="display:none;">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+              Connected Gmail Accounts
+            </div>
+            <button class="btn-pill btn-outline btn-sm" onclick="admLoadGmailAccounts()"
+              style="display:flex;align-items:center;gap:5px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              Refresh
+            </button>
+          </div>
+          <div id="admGmailList" style="min-height:60px;">
+            <div class="adm-loading"><span class="adm-spinner"></span> Loading accounts&hellip;</div>
+          </div>
+        </div>
+
+        <!-- Add Gmail Account card -->
+        <div class="adm-card" style="margin-top:12px;">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="16" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+              </svg>
+              Add Gmail Account
+            </div>
+          </div>
+          <p style="font-size:0.78rem;color:var(--text-dim);line-height:1.55;margin-bottom:12px;">
+            Enter the Gmail address you want to connect, then click <strong>Generate OAuth Link</strong>. Open that link
+            in a browser signed into that Google account and grant access.
+          </p>
+          <div
+            style="display:flex; gap: 6px; align-items: center; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 5px; padding-left: 14px; transition: all 0.2s;"
+            onfocusin="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 0 2px rgba(217,249,80,0.1)'"
+            onfocusout="this.style.borderColor='var(--border)'; this.style.boxShadow='none'">
+            <input id="admGmailInput" type="email" placeholder="account@gmail.com"
+              style="flex:1; border:none; background:transparent; font-size:0.85rem; color:var(--text); outline:none;"
+              onkeydown="if(event.key==='Enter')admGenerateOAuthLink()" />
+            <button class="btn-pill btn-primary" onclick="admGenerateOAuthLink()" id="admGmailConnectBtn"
+              style="white-space:nowrap; display:flex; align-items:center; gap:6px; padding:8px 16px; font-size:0.8rem; font-weight:700; border-radius: 8px; height: 34px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+              Generate Link
+            </button>
+          </div>
+          <div id="admOAuthLinkWrap" style="display:none;margin-top:12px;">
+            <div class="gmail-oauth-card">
+              <div class="gmail-oauth-header">
+                <span class="gmail-oauth-badge">OAuth Link Ready</span>
+                <span style="font-size:0.69rem;color:var(--text-muted);">Sign into <strong id="admOAuthAccountHint"
+                    style="color:var(--text-dim);font-weight:700;"></strong> to authorize</span>
+              </div>
+              <div id="admOAuthLinkText"
+                style="font-family:'JetBrains Mono',monospace;font-size:0.67rem;color:var(--code-text);word-break:break-all;margin-bottom:10px;line-height:1.65;background:var(--bg-app);border-radius:7px;padding:9px 11px;border:1px solid var(--border);">
+              </div>
+              <div style="display:flex;gap:7px;">
+                <button class="btn-pill btn-primary btn-sm" onclick="admCopyOAuthLink()"
+                  style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="2" width="13" height="13" rx="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  Copy Link
+                </button>
+                <button class="btn-pill btn-outline btn-sm"
+                  onclick="window.open(document.getElementById('admOAuthLinkText').textContent,'_blank')"
+                  style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                  Open Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SQL setup card -->
+        <div class="adm-card"
+          style="margin-top:12px;background:rgba(96,165,250,0.04);border-color:rgba(96,165,250,0.18);">
+          <div
+            style="font-size:0.72rem;font-weight:700;color:#60a5fa;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            One-time Supabase setup (run in SQL editor if not done)
+          </div>
+          <pre
+            style="font-family:'JetBrains Mono',monospace;font-size:0.66rem;color:var(--text-dim);white-space:pre-wrap;line-height:1.7;background:var(--bg-input);border-radius:7px;padding:10px;overflow-x:auto;">-- 1. Create gmail_accounts table
+CREATE TABLE IF NOT EXISTS gmail_accounts (
+  email          TEXT PRIMARY KEY,
+  tokens         JSONB NOT NULL DEFAULT '{}',
+  watch_expiry   TIMESTAMPTZ,
+  watch_resource TEXT,
+  added_at       TIMESTAMPTZ DEFAULT now(),
+  owner_fp       TEXT
+);
+
+-- 2. Add gmail_account column to allowed_emails
+ALTER TABLE allowed_emails
+  ADD COLUMN IF NOT EXISTS gmail_account TEXT;
+
+-- 3. Add gmail_account column to emails (required for routing)
+ALTER TABLE emails
+  ADD COLUMN IF NOT EXISTS gmail_account TEXT;
+
+-- 4. Create admin_settings table for dynamic configs (like Backup PIN)
+CREATE TABLE IF NOT EXISTS admin_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);
+
+-- 5. Create subscription_keys table for user subscriptions
+CREATE TABLE IF NOT EXISTS subscription_keys (
+  key TEXT PRIMARY KEY,
+  tier TEXT NOT NULL,
+  billing_cycle TEXT NOT NULL,
+  fingerprint TEXT,
+  used_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);</pre>
+        </div>
+      </div>
+
+      <!-- ── SUBSCRIPTIONS SECTION ── -->
+      <div id="admSectionSubscriptions" style="display:none;">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              🔑 Subscription Keys
+            </div>
+            <button class="btn-pill btn-outline btn-sm" onclick="admLoadSubscriptions()"
+              style="display:flex;align-items:center;gap:5px;">
+              Refresh
+            </button>
+          </div>
+
+          <div style="display:flex; gap: 8px; flex-wrap:wrap; margin-bottom: 15px;">
+            <select id="admSubTier"
+              style="padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text);">
+              <option value="basic">Basic</option>
+              <option value="pro">Pro</option>
+              <option value="team">Team</option>
+            </select>
+            <select id="admSubCycle"
+              style="padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text);">
+              <option value="monthly">Monthly</option>
+              <option value="annual">Annual</option>
+            </select>
+            <input id="admSubAmount" type="number" min="1" max="100" value="1"
+              style="width: 60px; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text);" />
+            <button class="btn-pill btn-primary btn-sm" onclick="admGenerateKeys()">Generate Keys</button>
+          </div>
+
+          <div id="admSubList" style="min-height:60px;">
+            <div class="adm-loading"><span class="adm-spinner"></span> Loading keys&hellip;</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email management section -->
+      <div id="admSectionEmails">
+        <!-- Add emails card -->
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="16" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+              </svg>
+              Add valid emails
+            </div>
+          </div>
+
+          <div class="adm-tabs">
+            <div class="adm-tab active" onclick="admSwitchTab('manual')">Manual input</div>
+            <div class="adm-tab" onclick="admSwitchTab('upload')">Upload .txt file</div>
+          </div>
+
+          <div class="adm-tab-panel active" id="admTabManual">
+            <textarea class="adm-textarea" id="admEmailInput"
+              placeholder="one@example.com&#10;two@gmail.com&#10;three@domain.org&#10;&#10;One email per line — no limit"></textarea>
+            <div class="adm-row">
+              <span class="adm-hint">Each line = one valid email address</span>
+              <button class="btn-pill btn-outline btn-sm" onclick="admClearInput()">Clear</button>
+              <button class="btn-pill btn-primary btn-sm" id="admAddBtn" onclick="admAddEmails()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add emails
+              </button>
+            </div>
+          </div>
+
+          <div class="adm-tab-panel" id="admTabUpload">
+            <div class="adm-upload-zone" id="admUploadZone">
+              <input type="file" accept=".txt,text/plain" id="admFileInput" onchange="admHandleFile(this)" />
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted)">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <p>Drop a .txt file here or click to browse</p>
+              <small>One email per line — any file size</small>
+              <div class="adm-file-label" id="admFileLabel"></div>
+            </div>
+            <div class="adm-row">
+              <span class="adm-hint" id="admFileHint">No file selected</span>
+              <button class="btn-pill btn-primary btn-sm" id="admUploadBtn" onclick="admAddFromFile()" disabled>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Import emails
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email list card -->
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+              Valid email list
+              <span class="adm-count" id="admListCount">0</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <button class="btn-pill btn-outline btn-sm" onclick="admLoadEmails(true)"
+                style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-.18-4.5" />
+                </svg>
+                Refresh
+              </button>
+              <button class="btn-pill btn-sm adm-btn-del" onclick="admDeleteAll()"
+                style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;background:transparent;border:1px solid #f87171;color:#f87171;"
+                title="Delete all emails">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14H6L5 6" />
+                  <path d="M9 6V4h6v2" />
+                </svg>
+                Delete all
+              </button>
+            </div>
+          </div>
+
+          <div class="adm-search-row">
+            <input class="adm-input" type="text" id="admSearch" placeholder="Search emails..."
+              oninput="admDebounceSearch()" />
+            <button class="btn-pill btn-outline btn-sm" onclick="admClearSearch()" style="padding:8px 11px;"
+              title="Clear">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="adm-bulk-bar" id="admBulkBar">
+            <strong id="admSelCount">0</strong> selected
+            <button class="adm-btn-del" onclick="admDeleteSelected()">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14H6L5 6" />
+                <path d="M9 6V4h6v2" />
+              </svg>
+              Delete selected
+            </button>
+            <button class="btn-pill btn-outline btn-sm" onclick="admClearSel()"
+              style="padding:4px 10px;font-size:0.75rem;margin-left:auto;">Cancel</button>
+          </div>
+
+          <div id="admEmailList" class="adm-email-list">
+            <div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>
+          </div>
+
+          <div class="adm-pagination" id="admPagination"></div>
+        </div>
+
+      </div><!-- /admSectionEmails -->
+
+      <!-- Fraud Detector section -->
+      <div id="admSectionFraud" style="display:none;">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              Fraud Detector
+            </div>
+            <button class="btn-pill btn-outline btn-sm" onclick="admLoadFraud()"
+              style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-.18-4.5" />
+              </svg>
+              Refresh
+            </button>
+          </div>
+
+          <!-- Summary stats -->
+          <div class="fraud-stats">
+            <div class="fraud-stat red">
+              <div class="fs-val" id="fraudStatPerm">—</div>
+              <div class="fs-lbl">⛔ Permanent bans</div>
+            </div>
+            <div class="fraud-stat orange">
+              <div class="fs-val" id="fraudStatActive">—</div>
+              <div class="fs-lbl">🔴 Active blocks</div>
+            </div>
+            <div class="fraud-stat yellow">
+              <div class="fs-val" id="fraudStatWarned">—</div>
+              <div class="fs-lbl">⚠️ Warned</div>
+            </div>
+          </div>
+
+          <!-- Fraud log table -->
+          <div id="fraudList">
+            <div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>
+          </div>
+          <div class="adm-pagination" id="fraudPag"></div>
+
+          <!-- Legend -->
+          <div
+            style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:0.68rem;color:var(--text-muted);">Legend:</span>
+            <span class="fraud-chip ip">IP</span><span style="font-size:0.68rem;color:var(--text-muted);">= IP-range
+              key</span>
+            <span class="fraud-chip permanent">Permanent</span>
+            <span class="fraud-chip blocked">Blocked</span>
+            <span class="fraud-chip warned">Warned</span>
+          </div>
+        </div>
+      </div><!-- /admSectionFraud -->
+
+      <!-- ═══════════════ SESSIONS section ═══════════════ -->
+      <div id="admSectionSessions" style="display:none;">
+        <!-- SECURITY SETTINGS -->
+        <div class="adm-card" style="margin-bottom: 12px;">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              Security Settings
+            </div>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">Set a master fallback
+            PIN. If an email is owned but the user forgets their PIN, this Backup PIN can be used to bypass the lock.
+          </p>
+          <div
+            style="display:flex; gap: 6px; align-items: center; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 5px; padding-left: 14px; transition: all 0.2s;"
+            onfocusin="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 0 2px rgba(217,249,80,0.1)'"
+            onfocusout="this.style.borderColor='var(--border)'; this.style.boxShadow='none'">
+            <input id="admMasterPin" type="text" placeholder="e.g. 9999 (Leave blank to disable)" maxlength="4"
+              style="flex:1; border:none; background:transparent; font-size:0.85rem; color:var(--text); outline:none; font-family:'JetBrains Mono',monospace;"
+              onkeydown="if(event.key==='Enter')admSaveMasterPin()" />
+            <button class="btn-pill btn-primary" onclick="admSaveMasterPin()" id="admSavePinBtn"
+              style="white-space:nowrap; display:flex; align-items:center; gap:6px; padding:8px 16px; font-size:0.8rem; font-weight:700; border-radius: 8px; height: 34px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              Save PIN
+            </button>
+          </div>
+        </div>
+
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" />
+                <path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z" />
+              </svg>
+              Email Sessions
+              <span class="adm-count" id="admSessionCount">0</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-pill btn-outline btn-sm" onclick="admLoadSessions()"
+                style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-.18-4.5" />
+                </svg>
+                Refresh
+              </button>
+            </div>
+          </div>
+          <div class="adm-search-row">
+            <input class="adm-input" type="text" id="admSessionSearch" placeholder="Search by alias or session ID…"
+              oninput="admSessionDebounceSearch()" />
+            <button class="btn-pill btn-outline btn-sm" onclick="admClearSessionSearch()" style="padding:8px 11px;"
+              title="Clear">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">Delete a session row
+            to allow a user to re-recover their alias from any device. This does <strong>not</strong> delete their
+            emails.</p>
+          <div id="admSessionList" class="adm-email-list">
+            <div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>
+          </div>
+          <div class="adm-pagination" id="admSessionPag"></div>
+        </div>
+      </div><!-- /admSectionSessions -->
+
+      <!-- ═══════════════ OWNERSHIP section ═══════════════ -->
+      <div id="admSectionOwnership" style="display:none;">
+        <div class="adm-card">
+          <div class="adm-card-head">
+            <div class="adm-card-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              Alias Ownership
+              <span class="adm-count" id="admOwnerCount">0</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-pill btn-outline btn-sm" onclick="admLoadOwnership()"
+                style="padding:5px 10px;font-size:0.75rem;display:flex;align-items:center;gap:5px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-.18-4.5" />
+                </svg>
+                Refresh
+              </button>
+            </div>
+          </div>
+          <div class="adm-search-row">
+            <input class="adm-input" type="text" id="admOwnerSearch" placeholder="Search by alias or owner SID…"
+              oninput="admOwnerDebounceSearch()" />
+            <button class="btn-pill btn-outline btn-sm" onclick="admClearOwnerSearch()" style="padding:8px 11px;"
+              title="Clear">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">Delete an ownership
+            record to fully release an alias — the next user who recovers it becomes the new owner.</p>
+          <div id="admOwnerList" class="adm-email-list">
+            <div class="adm-loading"><span class="adm-spinner"></span> Loading…</div>
+          </div>
+          <div class="adm-pagination" id="admOwnerPag"></div>
+        </div>
+      </div><!-- /admSectionOwnership -->
+
+    </div>
+  </div>
 
 
 
@@ -9167,213 +10114,6 @@
     })();
   </script>
 
+</body>
 
-
-
-<script>
-// User Authentication Logic
-let currentUser = null;
-
-async function checkSession() {
-  const { data: { session } } = await supabase.auth.getSession();
-  currentUser = session ? session.user : null;
-  updateAuthUI();
-  if (currentUser) {
-    loadPrivateGmailAccounts();
-  } else {
-    loadGlobalGmailAccounts();
-  }
-}
-
-function updateAuthUI() {
-  const btnLogin = document.getElementById('btnUserLogin');
-  const badge = document.getElementById('userProfileBadge');
-  const emailDisp = document.getElementById('userEmailDisplay');
-  const promptArea = document.getElementById('genLoginPromptArea');
-  const addArea = document.getElementById('genAddGmailArea');
-  
-  if (currentUser) {
-    if (btnLogin) btnLogin.style.display = 'none';
-    if (badge) badge.style.display = 'flex';
-    if (emailDisp) emailDisp.textContent = currentUser.email;
-    if (promptArea) promptArea.style.display = 'none';
-    if (addArea) addArea.style.display = 'block';
-  } else {
-    if (btnLogin) btnLogin.style.display = 'inline-block';
-    if (badge) badge.style.display = 'none';
-    if (promptArea) promptArea.style.display = 'block';
-    if (addArea) addArea.style.display = 'none';
-  }
-}
-
-function openUserAuthModal() {
-  document.getElementById('userAuthOverlay').style.display = 'flex';
-}
-function closeUserAuthModal() {
-  document.getElementById('userAuthOverlay').style.display = 'none';
-}
-
-function switchAuthTab(tab) {
-  document.getElementById('tabSignIn').classList.remove('active');
-  document.getElementById('tabSignUp').classList.remove('active');
-  document.getElementById('panelSignIn').style.display = 'none';
-  document.getElementById('panelSignUp').style.display = 'none';
-  
-  if (tab === 'signin') {
-    document.getElementById('tabSignIn').classList.add('active');
-    document.getElementById('panelSignIn').style.display = 'block';
-  } else {
-    document.getElementById('tabSignUp').classList.add('active');
-    document.getElementById('panelSignUp').style.display = 'block';
-  }
-}
-
-async function doEmailSignIn() {
-  const email = document.getElementById('authEmail').value;
-  const password = document.getElementById('authPassword').value;
-  if (!email || !password) return alert('Enter email and password');
-  
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return alert(error.message);
-  
-  closeUserAuthModal();
-  checkSession();
-}
-
-async function doEmailSignUp() {
-  const email = document.getElementById('regEmail').value;
-  const password = document.getElementById('regPassword').value;
-  if (!email || !password) return alert('Enter email and password');
-  
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) return alert(error.message);
-  
-  alert('Account created successfully! You are now signed in.');
-  closeUserAuthModal();
-  checkSession();
-}
-
-async function doUserLogout() {
-  await supabase.auth.signOut();
-  currentUser = null;
-  updateAuthUI();
-  document.getElementById('genGmailList').innerHTML = ''; // clear accounts
-  loadGlobalGmailAccounts();
-}
-
-async function doGoogleLogin() {
-  alert('Google login will be configured by the admin later.');
-}
-
-async function loadPrivateGmailAccounts() {
-  const list = document.getElementById('genGmailList');
-  if(!list) return;
-  list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading accounts...</div>';
-  
-  // Load from Supabase. RLS policy ensures we only get global + our own.
-  const { data, error } = await supabase.from('gmail_accounts').select('email, user_id, visible').eq('visible', true);
-  if (error) {
-    list.innerHTML = '<div style="color:red">Failed to load accounts</div>';
-    return;
-  }
-  
-  if (!data || data.length === 0) {
-    list.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">No Gmail accounts available.</div>';
-    return;
-  }
-  
-  renderGmailList(list, data);
-}
-
-async function loadGlobalGmailAccounts() {
-  const list = document.getElementById('genGmailList');
-  if(!list) return;
-  list.innerHTML = '<div class="adm-loading"><span class="adm-spinner"></span> Loading accounts...</div>';
-  
-  // Non-authenticated users can only read global accounts (RLS handles this)
-  const { data, error } = await supabase.from('gmail_accounts').select('email, user_id, visible').eq('visible', true);
-  if (error || !data) {
-    list.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">No Global Gmail accounts available. Log in to add your own.</div>';
-    return;
-  }
-  renderGmailList(list, data);
-}
-
-function renderGmailList(list, data) {
-  list.innerHTML = '';
-  data.forEach(acc => {
-    const isPrivate = currentUser && acc.user_id === currentUser.id;
-    const badge = isPrivate 
-      ? '<span style="background:#3b82f6;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.6rem;font-weight:700;">PRIVATE</span>' 
-      : '<span style="background:#10b981;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.6rem;font-weight:700;">GLOBAL</span>';
-    
-    const div = document.createElement('div');
-    div.style.cssText = 'padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-input); display:flex; align-items:center; justify-content:space-between; cursor:pointer; margin-bottom: 6px;';
-    div.innerHTML = `
-      <div style="display:flex; align-items:center; gap:8px;">
-        <input type="radio" name="gmail_choice" value="${acc.email}" style="cursor:pointer;">
-        <span style="font-size:0.85rem; font-weight:600;">${acc.email}</span>
-      </div>
-      ${badge}
-    `;
-    div.onclick = () => { div.querySelector('input').checked = true; };
-    list.appendChild(div);
-  });
-  
-  // Select first by default
-  const firstRadio = list.querySelector('input[type="radio"]');
-  if (firstRadio) firstRadio.checked = true;
-}
-
-async function initiateAddPrivateGmail() {
-  if (!currentUser) return;
-  const email = prompt('Enter the exact Gmail address you want to connect:');
-  if (!email) return;
-  
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session.access_token;
-  
-  const url = RAILWAY_URL + '/auth/login?account=' + encodeURIComponent(email) + '&token=' + encodeURIComponent(token);
-  // Open popup
-  const popup = window.open(url, 'ConnectGmail', 'width=500,height=600');
-  
-  // Poll until it closes to refresh accounts
-  const timer = setInterval(() => {
-    if(popup.closed) {
-      clearInterval(timer);
-      loadPrivateGmailAccounts();
-    }
-  }, 1000);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(checkSession, 500);
-  
-  // Fix the old generate() function to read from radio buttons instead of select
-  const oldGen = window.generate;
-  if(oldGen) {
-    window.generate = async function() {
-      const selected = document.querySelector('input[name="gmail_choice"]:checked');
-      if(!selected) {
-         showToast('Please select a Gmail account', 'error');
-         return;
-      }
-      
-      // Override the actual form value in the DOM if any logic relies on it
-      const oldSelect = document.getElementById('genGmailSelect');
-      if(oldSelect) oldSelect.value = selected.value;
-      else {
-        // Mock it for the generate function which expects document.getElementById('genGmailSelect').value
-        const mockInput = document.createElement('input');
-        mockInput.type = 'hidden';
-        mockInput.id = 'genGmailSelect';
-        mockInput.value = selected.value;
-        document.body.appendChild(mockInput);
-      }
-      
-      return oldGen.apply(this, arguments);
-    }
-  }
-});
-</script>
-</body></html>
+</html>
