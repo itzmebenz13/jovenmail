@@ -893,7 +893,7 @@ app.post('/api/set-transfer-pin', async function (req, res) {
   }
 });
 
-// ── CLAIM WITH PIN ───────────────────────────────────────────
+// ── CLAIM WITH PIN ───────────────────────────────────────────-
 const pinAttempts = {};
 const PIN_ATTEMPT_LIMIT = 5;
 const PIN_ATTEMPT_WINDOW = 60 * 60 * 1000;
