@@ -4370,6 +4370,13 @@
     </header>
 
     <main>
+      <div class="main-tabs-wrapper">
+        <div class="main-tabs">
+          <button class="main-tab active" id="tabBtnGenerator" onclick="switchMainTab('generator')">Email Generator</button>
+          <button class="main-tab" id="tabBtnLoad" onclick="switchMainTab('load')">Load Inbox</button>
+        </div>
+      </div>
+
       <section class="hero">
         <div class="km-hero">
           <h1 class="km-hero-headline">instant. private. <span class="km-hero-accent">automated.</span></h1>
@@ -4459,6 +4466,58 @@
             white-space: nowrap;
           }
           .km-chip-sm svg { color: #58CC02; flex-shrink: 0; }
+          .main-tabs-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 16px 0 10px 0;
+          }
+          .main-tabs {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+          }
+          .main-tab {
+            background: transparent;
+            color: var(--text-dim);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .main-tab:hover {
+            color: var(--text-main);
+          }
+          .main-tab.active {
+            background: var(--surface-2);
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          }
+          body[data-theme="neubrutalism"] .main-tabs {
+            background: var(--surface-1);
+            border: 3px solid var(--border-strong);
+            border-radius: 0;
+            box-shadow: 4px 4px 0 var(--border-strong);
+          }
+          body[data-theme="neubrutalism"] .main-tab {
+            border-radius: 0;
+            font-weight: 900;
+            text-transform: uppercase;
+          }
+          body[data-theme="neubrutalism"] .main-tab.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: none;
+            border: 2px solid var(--border-strong);
+            padding: 6px 14px;
+            transform: translate(2px, 2px);
+          }
           @media (max-width: 480px) {
             .km-hero-headline { font-size: 1.5rem; }
             .km-hero-sub { font-size: 0.74rem; }
@@ -4551,6 +4610,45 @@
       </div>
 
       <!-- CONTROL CARD -->
+      <div id="tabGenerator" style="display:block;">
+        <div class="container" style="display: flex;">
+          <div class="input-wrapper">
+            <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.55;margin-bottom:16px;text-align:center;">
+              Pick one of the available Gmail accounts below. We'll generate a unique dot-variant alias routed to that inbox — no typing required.
+            </p>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+                Gmail Account
+              </label>
+              <div class="gen-select-wrap">
+                <select class="gen-gmail-select" id="genGmailSelect">
+                  <option value="">Loading accounts…</option>
+                </select>
+                <svg class="gen-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+            </div>
+
+            <div id="genError" style="display:none;margin-bottom:12px;font-size:0.75rem;color:#f87171;align-items:center;gap:5px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:8px 10px;"></div>
+
+            <button class="btn-pill btn-generate w-full" id="genBtn" onclick="doGenerateAlias()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;font-size:0.9rem;">
+              <svg id="genBtnIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+              <div id="genBtnSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.65s linear infinite;flex-shrink:0;"></div>
+              <span id="genBtnLabel">Generate Alias</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tabLoad" style="display:none;">
       <div class="control-card">
         <div class="card-header">
           <div class="card-title">
@@ -4751,19 +4849,6 @@
             <div class="btn-recover-spinner"></div>
             <span id="recoverBtnLabel">Load Inbox (Recover)</span>
           </button>
-          <!-- Generate Email Alias — alternative to manual entry -->
-          <div class="gen-divider">
-            <div class="gen-divider-line"></div>
-            <span class="gen-divider-text">or</span>
-            <div class="gen-divider-line"></div>
-          </div>
-          <button class="btn-pill btn-generate" id="openGenerateBtn"
-            style="width:100%;padding:10px 18px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:0.86rem;"
-            onclick="openGenerateModal()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-            </svg>
-            Generate Email Alias
           </button>
           <!-- Recent aliases — shown when history exists -->
           <div id="recentAliasesWrap" style="display:none;margin-top:14px;">
@@ -7437,6 +7522,7 @@
       // Apply saved UI theme
       var savedUi = localStorage.getItem('ui-theme') || 'meiro';
       setUiTheme(savedUi);
+      initGenerateModal();
 
       // Check subscription status
       checkSubscriptionStatus();
@@ -8826,6 +8912,25 @@
     var _genAlias = '';
     var _genBusy  = false;
 
+    function switchMainTab(tabId) {
+      var genTab = document.getElementById('tabGenerator');
+      var loadTab = document.getElementById('tabLoad');
+      var genBtn = document.getElementById('tabBtnGenerator');
+      var loadBtn = document.getElementById('tabBtnLoad');
+      
+      if (tabId === 'generator') {
+        genTab.style.display = 'block';
+        loadTab.style.display = 'none';
+        genBtn.classList.add('active');
+        loadBtn.classList.remove('active');
+      } else {
+        genTab.style.display = 'none';
+        loadTab.style.display = 'block';
+        loadBtn.classList.add('active');
+        genBtn.classList.remove('active');
+      }
+    }
+
     async function openGenerateModal() {
       // Reset state
       _genAlias = '';
@@ -8921,13 +9026,13 @@
           return;
         }
 
-        // Show result
+        // Auto-redirect to Load Inbox tab and load it
         _genAlias = data.alias;
-        var aliasEl = document.getElementById('genResultAlias');
-        if (aliasEl)   aliasEl.textContent = data.alias;
-        if (resultBox) resultBox.style.display = 'block';
-        if (label)     label.textContent = 'Generate Another';
-        showToast('\u2713 Alias ready: ' + data.alias);
+        switchMainTab('load');
+        var input = document.getElementById('recoverInput');
+        if (input) input.value = _genAlias;
+        showToast('\u2713 Alias generated: ' + data.alias);
+        await recoverAlias();
 
       } catch (e) {
         showGenError('Connection error. Please try again.');
@@ -9305,103 +9410,7 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════
-     GENERATE EMAIL ALIAS MODAL
-════════════════════════════════════════════ -->
-  <div class="modal-overlay" id="generateEmailOverlay" onclick="if(event.target===this)closeGenerateModal()">
-    <div class="modal modal-sm" id="generateEmailModal" onclick="event.stopPropagation()">
-      <div class="modal-head">
-        <button class="modal-close" onclick="closeGenerateModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-        <div class="modal-subject" style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-          </svg>
-          Generate Email Alias
-        </div>
-      </div>
-      <div class="modal-body">
-        <p style="font-size:0.8rem;color:var(--text-dim);line-height:1.55;margin-bottom:16px;">
-          Pick one of the available Gmail accounts below. We'll generate a unique dot-variant alias routed to that inbox — no typing required.
-        </p>
 
-        <!-- Gmail account selector -->
-        <div class="form-group">
-          <label>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="2"/>
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-            </svg>
-            Gmail Account
-          </label>
-          <div class="gen-select-wrap">
-            <select class="gen-gmail-select" id="genGmailSelect">
-              <option value="">Loading accounts…</option>
-            </select>
-            <svg class="gen-select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Error message -->
-        <div id="genError"
-          style="display:none;margin-bottom:12px;font-size:0.75rem;color:#f87171;align-items:center;gap:5px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:8px 10px;">
-        </div>
-
-        <!-- Result box (hidden until alias is generated) -->
-        <div class="gen-result-box" id="genResultBox">
-          <div class="gen-result-label">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-              stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            Alias Ready
-          </div>
-          <div class="gen-result-alias" id="genResultAlias"></div>
-          <div class="gen-result-actions">
-            <button class="btn-pill btn-primary" id="genLoadBtn" onclick="genLoadInbox()"
-              style="flex:1;padding:8px 12px;font-size:0.82rem;display:flex;align-items:center;justify-content:center;gap:6px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                <polyline points="10 17 15 12 10 7"/>
-                <line x1="15" y1="12" x2="3" y2="12"/>
-              </svg>
-              Load Inbox
-            </button>
-            <button class="btn-pill btn-outline" id="genCopyBtn" onclick="genCopyAlias()"
-              style="padding:8px 14px;font-size:0.82rem;display:flex;align-items:center;gap:5px;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2"/>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-              </svg>
-              Copy
-            </button>
-          </div>
-        </div>
-
-        <!-- Generate / Regenerate button -->
-        <button class="btn-pill btn-generate w-full" id="genBtn" onclick="doGenerateAlias()"
-          style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;font-size:0.9rem;">
-          <svg id="genBtnIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-          </svg>
-          <div id="genBtnSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.65s linear infinite;flex-shrink:0;"></div>
-          <span id="genBtnLabel">Generate Alias</span>
-        </button>
-      </div>
-    </div>
-  </div>
 
   <div id="adminOverlay">
     <div class="adm-wrap">
