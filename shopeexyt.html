@@ -36,20 +36,10 @@
     </script>
     <style>
         /* Custom scrollbar for textareas to look modern */
-        textarea::-webkit-scrollbar {
-            width: 8px;
-        }
-        textarea::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-            border-radius: 4px;
-        }
-        textarea::-webkit-scrollbar-thumb {
-            background: #ccc; 
-            border-radius: 4px;
-        }
-        textarea::-webkit-scrollbar-thumb:hover {
-            background: #999; 
-        }
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb:hover { background: #999; }
         
         /* Toast animation */
         @keyframes slideDown {
@@ -88,7 +78,6 @@
 
         <!-- Main Header -->
         <div class="max-w-[1200px] mx-auto px-4 py-4 md:py-5 flex items-center">
-            <!-- Fake Logo -->
             <div class="flex items-center text-white cursor-pointer select-none">
                 <svg class="w-8 h-8 md:w-10 md:h-10 mr-2" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M16.5 6h-9c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 7.5h-5v-1.5h5v1.5zm0-3h-5v-1.5h5v1.5z"/>
@@ -109,11 +98,11 @@
             <div class="px-6 md:px-8 py-5 border-b border-shopee-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-[1.125rem] font-medium text-shopee-text capitalize">Convert Affiliate Link</h1>
-                    <p class="text-[0.875rem] text-shopee-sub mt-1">Transform any Shopee product or share URL into your personal affiliate tracker.</p>
+                    <p class="text-[0.875rem] text-shopee-sub mt-1">Transform any Shopee product URL into your personal affiliate tracker.</p>
                 </div>
                 <div class="bg-shopee-light text-shopee px-3 py-1.5 rounded text-xs font-medium border border-shopee/20 flex items-center justify-center gap-1 w-fit">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    Auto-Extracts
+                    Fast Generation
                 </div>
             </div>
 
@@ -124,12 +113,12 @@
                 <div>
                     <label class="block text-[0.875rem] font-medium text-shopee-text mb-2 flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-shopee" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                        Original Product or Share Link
+                        Original Product Link
                     </label>
                     <textarea 
                         id="input" 
                         class="w-full h-[100px] bg-white border border-shopee-border rounded-sm p-3 text-[0.875rem] text-shopee-text placeholder-gray-400 focus:outline-none focus:border-shopee focus:ring-1 focus:ring-shopee transition-colors resize-y" 
-                        placeholder="Paste the link here (e.g., https://s.shopee.ph/... or https://shopee.ph/product/...)"></textarea>
+                        placeholder="Paste the product link here (e.g., https://shopee.ph/product/...)"></textarea>
                 </div>
 
                 <!-- Action Bar -->
@@ -145,8 +134,8 @@
                 <!-- Output Section -->
                 <div class="pt-2">
                     <label class="block text-[0.875rem] font-medium text-shopee-text mb-2 flex items-center justify-between">
-                        <div class="flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-[#26aa99]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div class="flex items-center gap-1.5 text-[#26aa99]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             Your Affiliate Link
                         </div>
                     </label>
@@ -159,10 +148,10 @@
                         
                         <div class="absolute bottom-3 right-3 left-3 md:left-auto flex justify-end">
                             <button 
-                                id="openLink" 
+                                id="copy" 
                                 class="bg-white border border-shopee-border hover:bg-gray-50 text-shopee-text text-[0.875rem] font-medium py-1.5 px-4 rounded-sm shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <svg class="w-4 h-4 text-shopee-sub" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                <span id="openText">Open Link</span>
+                                <svg class="w-4 h-4 text-shopee-sub" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                <span id="copyText">Copy Link</span>
                             </button>
                         </div>
                     </div>
@@ -173,7 +162,7 @@
             <!-- Footer area -->
             <div class="bg-gray-50 px-6 md:px-8 py-4 border-t border-shopee-border text-[0.75rem] text-shopee-sub flex justify-between items-center">
                 <span>Secured with Base Shopee Affiliate ID</span>
-                <span class="text-gray-400">v1.3.0</span>
+                <span class="text-gray-400">v1.0.0</span>
             </div>
         </div>
     </main>
@@ -196,7 +185,6 @@
             const toastIcon = document.getElementById('toastIcon');
             
             clearTimeout(toastTimeout);
-            
             toastMessage.textContent = message;
             
             if (type === 'error') {
@@ -210,101 +198,66 @@
             toastTimeout = setTimeout(() => {
                 toast.classList.add('hidden');
                 toast.classList.remove('toast-enter');
-            }, 3500);
+            }, 3000);
         }
 
-        // Feature: Unshorten URL to bypass CORS and get the actual product link
-        async function unshortenLink(shortUrl) {
-            // Attempt 1: unshorten.me API
-            try {
-                const response = await fetch(`https://unshorten.me/api/v2/unshorten?url=${encodeURIComponent(shortUrl)}`);
-                if (response.ok) {
-                    const text = await response.text();
-                    if (text && (text.includes('shopee.ph') || text.includes('shopee.'))) {
-                        return text.trim();
-                    }
-                }
-            } catch (e) {
-                console.warn("Primary unshorten API failed", e);
-            }
-
-            // Attempt 2: Fallback to allorigins to read the canonical link inside HTML
-            try {
-                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(shortUrl)}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    const html = data.contents;
-                    
-                    // Shopee often puts the final URL in a <link rel="canonical" href="...">
-                    const canonicalMatch = html.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i);
-                    if (canonicalMatch && canonicalMatch[1]) {
-                        return canonicalMatch[1];
-                    }
-                }
-            } catch (e) {
-                console.warn("Fallback unshorten API failed", e);
-            }
-
-            // If we absolutely cannot unshorten it client-side due to strict blockers
-            throw new Error("Browser blocked extraction. Please open the short link in a new tab, copy the long URL, and paste it here.");
-        }
-
-        document.getElementById("convert").onclick = async function() {
-            let inputText = document.getElementById("input").value.trim();
+        document.getElementById("convert").onclick = function() {
+            let link = document.getElementById("input").value.trim();
             const convertBtn = this;
 
-            if (!inputText) {
+            if (!link) {
                 showToast("Please paste a Shopee product link first.", "error");
                 return;
             }
 
-            // Auto-extract the URL if the user pasted extra text around it
-            let urlMatch = inputText.match(/(https?:\/\/[^\s]+)/);
-            let link = urlMatch ? urlMatch[1] : inputText;
-
-            // Set loading state
+            // Simple loading state for visual feedback
             const originalContent = convertBtn.innerHTML;
+            convertBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...`;
             convertBtn.classList.add('opacity-80', 'cursor-not-allowed');
-            convertBtn.disabled = true;
 
-            try {
-                let finalLink = link;
-                
-                // If it's a short link, attempt to extract the long URL
-                if (link.includes('s.shopee.ph') || link.includes('shp.ee')) {
-                    convertBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Extracting Link...`;
-                    finalLink = await unshortenLink(link);
-                } else {
-                    convertBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...`;
+            setTimeout(() => {
+                try {
+                    let url = new URL(BASE_LINK);
+                    url.searchParams.set("origin_link", link);
+                    document.getElementById("output").value = url.toString();
+                    
+                    showToast("Affiliate link generated successfully!", "success");
+                } catch (e) {
+                    showToast("Invalid URL format. Please ensure it's a valid link.", "error");
+                } finally {
+                    convertBtn.innerHTML = originalContent;
+                    convertBtn.classList.remove('opacity-80', 'cursor-not-allowed');
                 }
-
-                // Generate Final Affiliate Link
-                let url = new URL(BASE_LINK);
-                url.searchParams.set("origin_link", finalLink);
-                document.getElementById("output").value = url.toString();
-                
-                showToast("Affiliate link generated successfully!", "success");
-            } catch (e) {
-                showToast(e.message || "Invalid URL format. Please ensure it's a valid link.", "error");
-            } finally {
-                // Revert button state
-                convertBtn.innerHTML = originalContent;
-                convertBtn.classList.remove('opacity-80', 'cursor-not-allowed');
-                convertBtn.disabled = false;
-            }
+            }, 400); // 400ms delay to give a smooth UX feel
         };
 
-        // Replaced 'Copy Link' with 'Open Link'
-        document.getElementById("openLink").onclick = function() {
+        document.getElementById("copy").onclick = async function() {
             let out = document.getElementById("output");
+            const copyText = document.getElementById("copyText");
 
             if (!out.value) {
-                showToast("Nothing to open yet. Generate a link first.", "error");
+                showToast("Nothing to copy yet. Generate a link first.", "error");
                 return;
             }
 
-            // Open the generated link in a new tab
-            window.open(out.value, '_blank');
+            try {
+                await navigator.clipboard.writeText(out.value);
+            } catch (err) {
+                // Fallback for older browsers
+                out.select();
+                document.execCommand('copy');
+            }
+
+            // Visual feedback
+            copyText.textContent = "Copied!";
+            this.classList.add('text-[#26aa99]', 'border-[#26aa99]');
+            
+            showToast("Link copied to clipboard!", "success");
+
+            setTimeout(() => {
+                copyText.textContent = "Copy Link";
+                this.classList.remove('text-[#26aa99]', 'border-[#26aa99]');
+            }, 2000);
         };
     </script>
 </body>
