@@ -1,0 +1,279 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopee Affiliate Link Converter</title>
+    <!-- Use Roboto to closely match Shopee's default typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS for Figma-level precision styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        shopee: {
+                            DEFAULT: '#ee4d2d',
+                            hover: '#d73211',
+                            bg: '#f5f5f5',
+                            text: '#222222',
+                            sub: '#757575',
+                            border: '#e5e5e5',
+                            light: '#fff2f0'
+                        }
+                    },
+                    boxShadow: {
+                        'shopee': '0 1px 1px 0 rgba(0,0,0,.05)',
+                        'floating': '0 3px 10px 0 rgba(0,0,0,.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for textareas to look modern */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #ccc; 
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #999; 
+        }
+        
+        /* Toast animation */
+        @keyframes slideDown {
+            from { transform: translate(-50%, -100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideDown 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-shopee-bg text-shopee-text font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Shopee-style Header -->
+    <header class="bg-gradient-to-b from-[#f53d2d] to-[#f63] shadow-sm z-50">
+        <!-- Top Nav (Hidden on smaller screens to prevent layout breakage) -->
+        <div class="max-w-[1200px] mx-auto px-4 hidden md:flex justify-between items-center text-white/90 text-[13px] py-1.5">
+            <div class="flex gap-4 items-center">
+                <a href="#" class="hover:text-white transition">Seller Centre</a>
+                <span class="border-l border-white/30 h-3"></span>
+                <a href="#" class="hover:text-white transition">Download</a>
+                <span class="border-l border-white/30 h-3"></span>
+                <a href="#" class="hover:text-white transition">Follow us on Social Media</a>
+            </div>
+            <div class="flex gap-4 items-center">
+                <a href="#" class="hover:text-white transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    Notifications
+                </a>
+                <a href="#" class="hover:text-white transition flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Help
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Header -->
+        <div class="max-w-[1200px] mx-auto px-4 py-4 md:py-5 flex items-center">
+            <!-- Fake Logo -->
+            <div class="flex items-center text-white cursor-pointer select-none">
+                <svg class="w-8 h-8 md:w-10 md:h-10 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M16.5 6h-9c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 7.5h-5v-1.5h5v1.5zm0-3h-5v-1.5h5v1.5z"/>
+                </svg>
+                <div class="flex items-baseline">
+                    <span class="text-2xl md:text-3xl font-medium tracking-tight">Shopee</span>
+                    <span class="text-xs md:text-sm font-medium border-l border-white/50 pl-2 ml-2">Affiliate Tool</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex justify-center py-6 md:py-10 px-4">
+        <div class="bg-white w-full max-w-[800px] rounded-sm shadow-shopee border border-black/5 overflow-hidden flex flex-col">
+            
+            <!-- Card Header -->
+            <div class="px-6 md:px-8 py-5 border-b border-shopee-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-[1.125rem] font-medium text-shopee-text capitalize">Convert Affiliate Link</h1>
+                    <p class="text-[0.875rem] text-shopee-sub mt-1">Transform any Shopee product URL into your personal affiliate tracker.</p>
+                </div>
+                <div class="bg-shopee-light text-shopee px-3 py-1.5 rounded text-xs font-medium border border-shopee/20 flex items-center justify-center gap-1 w-fit">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Fast Generation
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6 md:p-8 flex flex-col gap-6">
+                
+                <!-- Input Section -->
+                <div>
+                    <label class="block text-[0.875rem] font-medium text-shopee-text mb-2 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-shopee" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                        Original Product Link
+                    </label>
+                    <textarea 
+                        id="input" 
+                        class="w-full h-[100px] bg-white border border-shopee-border rounded-sm p-3 text-[0.875rem] text-shopee-text placeholder-gray-400 focus:outline-none focus:border-shopee focus:ring-1 focus:ring-shopee transition-colors resize-y" 
+                        placeholder="Paste the product link here (e.g., https://shopee.ph/product/...)"></textarea>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="flex justify-end border-b border-shopee-border pb-6">
+                    <button 
+                        id="convert" 
+                        class="w-full sm:w-auto bg-shopee hover:bg-shopee-hover text-white text-[0.875rem] font-medium py-2.5 px-8 rounded-sm shadow-sm transition-colors flex justify-center items-center gap-2">
+                        <span>Generate Link</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Output Section -->
+                <div class="pt-2">
+                    <label class="block text-[0.875rem] font-medium text-shopee-text mb-2 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-[#26aa99]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Your Affiliate Link
+                        </div>
+                    </label>
+                    <div class="relative group">
+                        <textarea 
+                            id="output" 
+                            readonly 
+                            class="w-full h-[130px] md:h-[120px] bg-gray-50 border border-shopee-border rounded-sm p-3 pb-[50px] md:pb-3 md:pr-[130px] text-[0.875rem] text-shopee-text focus:outline-none focus:border-[#26aa99] transition-colors resize-none" 
+                            placeholder="Generated link will appear here..."></textarea>
+                        
+                        <div class="absolute bottom-3 right-3 left-3 md:left-auto flex justify-end">
+                            <button 
+                                id="copy" 
+                                class="bg-white border border-shopee-border hover:bg-gray-50 text-shopee-text text-[0.875rem] font-medium py-1.5 px-4 rounded-sm shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg class="w-4 h-4 text-shopee-sub" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                <span id="copyText">Copy Link</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer area -->
+            <div class="bg-gray-50 px-6 md:px-8 py-4 border-t border-shopee-border text-[0.75rem] text-shopee-sub flex justify-between items-center">
+                <span>Secured with Base Shopee Affiliate ID</span>
+                <span class="text-gray-400">v1.2.0</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Toast Notification -->
+    <div id="toast" class="fixed top-8 left-1/2 hidden z-[100] flex items-center gap-3 px-4 py-3 rounded shadow-floating bg-white border-l-4 text-[0.875rem] font-medium text-shopee-text w-[90%] max-w-[400px]">
+        <div id="toastIcon" class="shrink-0"></div>
+        <span id="toastMessage">Message goes here</span>
+    </div>
+
+    <script>
+        const BASE_LINK = "https://s.shopee.ph/an_redir?affiliate_id=13339680153&origin_link=https%3A%2F%2Fshopee.ph%2Fproduct%2F98477970%2F23972212767%3Fgads_t_sig%3DgqRjZGVrxHCFomtpsTE0MjUxOnRzc19zZGtfa2V5omt20QABpGFsZ2_SAAAAZKNkZWvAomN0xEAAAAAM_NxfHGgeczprZR4Q8tPoOfvwhbtN63JlB369xGJA1mbqBWuW2sVWxQjSJT_xT_mbG0_W5kumedB_GGTjqmNpcGhlcnRleHTEbAAAAAwD20ZGO3UUiWJ47NHWlmMT8GusU1ySrF3aXC9XPf-58OsnuDQjBHsTBv3SSIX0NNJBuXlQItwl7HMDsXxAcAefGmqwPn2VPZA3Tjg5mSaHyD7qOWx9r-0iZvYa6UMRrw0dAyWkVIA6bQ&sub_id=YT3-mnUpOFkyGpofmhWyop_jjhMi_WY2eyebK6Svl2kZYFRytZ5F_A5gEw6E6pPRCspt_WpJMeQJkdTnLKpyolzDfVfAs4q2RXtkjqgQKHtPts2_M0xXi7qXlZ7CS4XD93IxQYkl";
+        
+        let toastTimeout;
+
+        // Custom Toast Function
+        function showToast(message, type = 'error') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            clearTimeout(toastTimeout);
+            
+            toastMessage.textContent = message;
+            
+            if (type === 'error') {
+                toast.className = 'fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-4 py-3 rounded shadow-floating bg-white border-l-4 border-shopee text-[0.875rem] font-medium text-shopee-text toast-enter w-[90%] max-w-[400px]';
+                toastIcon.innerHTML = `<svg class="w-5 h-5 text-shopee" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            } else if (type === 'success') {
+                toast.className = 'fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-4 py-3 rounded shadow-floating bg-white border-l-4 border-[#26aa99] text-[0.875rem] font-medium text-shopee-text toast-enter w-[90%] max-w-[400px]';
+                toastIcon.innerHTML = `<svg class="w-5 h-5 text-[#26aa99]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            }
+
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('toast-enter');
+            }, 3000);
+        }
+
+        document.getElementById("convert").onclick = function() {
+            let link = document.getElementById("input").value.trim();
+            const convertBtn = this;
+
+            if (!link) {
+                showToast("Please paste a Shopee product link first.", "error");
+                return;
+            }
+
+            // Simple loading state
+            const originalContent = convertBtn.innerHTML;
+            convertBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...`;
+            convertBtn.classList.add('opacity-80', 'cursor-not-allowed');
+
+            setTimeout(() => {
+                try {
+                    let url = new URL(BASE_LINK);
+                    url.searchParams.set("origin_link", link);
+                    document.getElementById("output").value = url.toString();
+                    
+                    showToast("Affiliate link generated successfully!", "success");
+                } catch (e) {
+                    showToast("Invalid URL format. Please ensure it's a valid link.", "error");
+                } finally {
+                    // Revert button state
+                    convertBtn.innerHTML = originalContent;
+                    convertBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                }
+            }, 400); // Fake slight delay for UX feel
+        };
+
+        document.getElementById("copy").onclick = async function() {
+            let out = document.getElementById("output");
+            const copyText = document.getElementById("copyText");
+
+            if (!out.value) {
+                showToast("Nothing to copy yet. Generate a link first.", "error");
+                return;
+            }
+
+            try {
+                // Primary method using modern API
+                await navigator.clipboard.writeText(out.value);
+            } catch (err) {
+                // Fallback method required for some iFrame environments
+                out.select();
+                document.execCommand('copy');
+            }
+
+            // Visual feedback on button
+            copyText.textContent = "Copied!";
+            this.classList.add('text-[#26aa99]', 'border-[#26aa99]');
+            
+            showToast("Link copied to clipboard!", "success");
+
+            setTimeout(() => {
+                copyText.textContent = "Copy Link";
+                this.classList.remove('text-[#26aa99]', 'border-[#26aa99]');
+            }, 2000);
+        };
+    </script>
+</body>
+</html>
